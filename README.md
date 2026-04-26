@@ -72,6 +72,115 @@ Wichtige Regeln:
 - Backend: Express + TypeScript
 - Datenbank: PostgreSQL
 
+## Lokales Setup Backend + PostgreSQL
+
+### 1) PostgreSQL installieren und starten (macOS + Homebrew)
+
+```bash
+brew install postgresql@17
+brew services start postgresql@17
+```
+
+Prüfen, ob Postgres läuft:
+
+```bash
+pg_isready
+```
+
+### 2) Datenbank `roomfull` anlegen
+
+```bash
+createdb roomfull
+psql -l | rg roomfull
+```
+
+Falls `createdb` meldet, dass die DB schon existiert, ist das in Ordnung.
+
+### 3) Backend-Umgebung einrichten
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Wichtig: In `backend/.env` muss `DATABASE_URL` zu deinem lokalen DB-User passen.
+
+Beispiel:
+
+```env
+DATABASE_URL=postgresql://michaelbuschmann@localhost:5432/roomfull?schema=public
+```
+
+### 4) Bestehende Prisma-Migrationen anwenden
+
+```bash
+cd backend
+npm run prisma:migrate:deploy
+```
+
+### Prisma-Migrationen: `dev` vs `deploy`
+
+Für lokale Feature-Entwicklung und Schema-Änderungen ist der Unterschied wichtig:
+
+- `npm run prisma:migrate:dev`
+  - erstellt aus `prisma/schema.prisma` eine **neue Migration**
+  - legt sie in `prisma/migrations/...` ab
+  - wendet sie lokal direkt an
+  - Verwendung: **wenn du am Datenmodell arbeitest**
+
+- `npm run prisma:migrate:deploy`
+  - erstellt **keine** neue Migration
+  - spielt nur bereits vorhandene Migrationen aus `prisma/migrations/...` ein
+  - Verwendung: **Setup/CI/Staging/Production**
+
+### Prisma Studio (DB-Inhalte visuell prüfen)
+
+Prisma Studio zeigt dir Tabelleninhalte in einer UI und ist ideal für schnelle Checks nach Migration/Seed.
+
+```bash
+cd backend
+npx prisma studio
+```
+
+Beispiel-Check nach dem SpaceType-Seed:
+- Tabelle `SpaceType` öffnen
+- prüfen, dass genau diese Einträge vorhanden sind:
+  - `Hot Desk`
+  - `Booth`
+  - `Team Room`
+
+### 5) Backend starten
+
+Standard Dev-Mode:
+
+```bash
+npm run dev
+```
+
+Dev-Mode mit Auto-Restart bei `src/*.ts` und `prisma/schema.prisma`:
+
+```bash
+npm run dev:hot
+```
+
+## API-Dokumentation mit OpenAPI und Swagger
+
+Die API ist über OpenAPI dokumentiert und per Swagger UI direkt testbar.
+
+- OpenAPI-Spezifikation: `backend/openapi.json`
+- Swagger UI im laufenden Backend: `http://localhost:4000/docs`
+
+Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
+
+### Lokale Nutzung
+
+1. Backend starten:
+   ```bash
+   cd backend
+   npm run dev
+   ```
+2. Swagger öffnen:
+   - `http://localhost:4000/docs`
+
 ## Projektstruktur
 
 ```txt
