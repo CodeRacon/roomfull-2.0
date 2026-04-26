@@ -1,77 +1,128 @@
-import { NextFunction, Request, Response } from "express";
-import { z } from "zod";
+import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
 import {
-  getCurrentUser,
-  loginUser,
-  registerUser,
+	getCurrentUser,
+	loginUser,
+	registerUser,
 } from "../services/auth.service.js";
 
-const registerSchema = z.object({
-  name: z.string().trim().min(1, "name is required"),
-  email: z.string().trim().toLowerCase().email("email must be valid"),
-  password: z.string().min(8, "password must have at least 8 characters"),
-});
+type RegisterBody = {
+	name: string;
+	email: string;
+	password: string;
+};
 
-const loginSchema = z.object({
-  email: z.string().trim().toLowerCase().email("email must be valid"),
-  password: z.string().min(1, "password is required"),
-});
+type LoginBody = {
+	email: string;
+	password: string;
+};
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const INVALID_BODY_MESSAGE = "Ungültiger Request Body";
+const UNAUTHORIZED_MESSAGE = "Nicht eingeloggt";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null;
+}
+
+function fail(next: NextFunction, statusCode: number, message: string): void {
+	next(new AppError(statusCode, message));
+}
+
+function parseAuthUserId(auth: Request["auth"]): string | null {
+	const userId = auth?.userId?.trim() ?? "";
+	return userId.length > 0 ? userId : null;
+}
+
+function parseRegisterBody(body: unknown): RegisterBody | null {
+	if (!isRecord(body)) {
+		return null;
+	}
+
+	const name = typeof body.name === "string" ? body.name.trim() : "";
+	const email =
+		typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+	const password = typeof body.password === "string" ? body.password : "";
+
+	if (name.length === 0 || !EMAIL_REGEX.test(email) || password.length < 8) {
+		return null;
+	}
+
+	return { name, email, password };
+}
+
+function parseLoginBody(body: unknown): LoginBody | null {
+	if (!isRecord(body)) {
+		return null;
+	}
+
+	const email =
+		typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+	const password = typeof body.password === "string" ? body.password : "";
+
+	if (!EMAIL_REGEX.test(email) || password.length === 0) {
+		return null;
+	}
+
+	return { email, password };
+}
 
 export async function registerController(
-  req: Request,
-  res: Response,
-  next: NextFunction,
+	req: Request,
+	res: Response,
+	next: NextFunction,
 ): Promise<void> {
-  const parsed = registerSchema.safeParse(req.body);
+	const input = parseRegisterBody(req.body);
 
-  if (!parsed.success) {
-    next(new AppError(400, "Ungültiger Request Body", parsed.error.flatten()));
-    return;
-  }
+	if (!input) {
+		fail(next, 400, INVALID_BODY_MESSAGE);
+		return;
+	}
 
-  try {
-    const authResponse = await registerUser(parsed.data);
-    res.status(201).json(authResponse);
-  } catch (error) {
-    next(error);
-  }
+	try {
+		const authResponse = await registerUser(input);
+		res.status(201).json(authResponse);
+	} catch (error) {
+		next(error);
+	}
 }
 
 export async function loginController(
-  req: Request,
-  res: Response,
-  next: NextFunction,
+	req: Request,
+	res: Response,
+	next: NextFunction,
 ): Promise<void> {
-  const parsed = loginSchema.safeParse(req.body);
+	const input = parseLoginBody(req.body);
 
-  if (!parsed.success) {
-    next(new AppError(400, "Ungültiger Request Body", parsed.error.flatten()));
-    return;
-  }
+	if (!input) {
+		fail(next, 400, INVALID_BODY_MESSAGE);
+		return;
+	}
 
-  try {
-    const authResponse = await loginUser(parsed.data);
-    res.status(200).json(authResponse);
-  } catch (error) {
-    next(error);
-  }
+	try {
+		const authResponse = await loginUser(input);
+		res.status(200).json(authResponse);
+	} catch (error) {
+		next(error);
+	}
 }
 
 export async function meController(
-  req: Request,
-  res: Response,
-  next: NextFunction,
+	req: Request,
+	res: Response,
+	next: NextFunction,
 ): Promise<void> {
-  if (!req.auth?.userId) {
-    next(new AppError(401, "Nicht eingeloggt"));
-    return;
-  }
+	const userId = parseAuthUserId(req.auth);
 
-  try {
-    const user = await getCurrentUser(req.auth.userId);
-    res.status(200).json({ user });
-  } catch (error) {
-    next(error);
-  }
+	if (!userId) {
+		fail(next, 401, UNAUTHORIZED_MESSAGE);
+		return;
+	}
+
+	try {
+		const user = await getCurrentUser(userId);
+		res.status(200).json({ user });
+	} catch (error) {
+		next(error);
+	}
 }
