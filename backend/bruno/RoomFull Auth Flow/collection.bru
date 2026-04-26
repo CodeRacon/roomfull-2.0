@@ -1,0 +1,28 @@
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:4000
+  userName: Max Mustermann
+  userEmail: max@example.com
+  userPassword: secret123
+  adminEmail: admin@example.com
+  adminPassword: secret123
+  token: 
+  spaceTypeId: cmo5pkb980002wv5do8vecqz8
+  spaceId: 
+  spaceName: Team Room Alpha
+  spaceDescription: Ruhiger Team-Raum mit Whiteboard
+  spaceCapacity: 6
+  opensAt: 08:00
+  closesAt: 18:00
+  updatedSpaceName: Team Room Alpha Updated
+  updatedSpaceDescription: Aktualisierte Beschreibung
+  updatedSpaceCapacity: 8
+}
+
+docs {
+  Register -> Login -> Me -> Public Spaces -> Auth Login (Admin) -> Admin Create/Update/Deactivate
+  Hinweis: spaceTypeId vor Admin Create setzen (z.B. via Prisma Studio aus table space_types)
+}

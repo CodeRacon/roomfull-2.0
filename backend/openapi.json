@@ -1,267 +1,618 @@
 {
-  "openapi": "3.0.3",
-  "info": {
-    "title": "RoomFull Backend API",
-    "version": "0.1.0",
-    "description": "Auth-Slice für RoomFull 2.0 (Register, Login, Me)."
-  },
-  "servers": [
-    {
-      "url": "http://localhost:4000/api"
-    }
-  ],
-  "tags": [
-    {
-      "name": "Auth"
-    }
-  ],
-  "paths": {
-    "/auth/register": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "Neuen User registrieren",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Registrierung erfolgreich",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          }
-        }
-      }
-    },
-    "/auth/login": {
-      "post": {
-        "tags": ["Auth"],
-        "summary": "User einloggen",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LoginRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Login erfolgreich",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          }
-        }
-      }
-    },
-    "/auth/me": {
-      "get": {
-        "tags": ["Auth"],
-        "summary": "Eingeloggten User laden",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "User-Profil",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "user": {
-                      "$ref": "#/components/schemas/PublicUser"
-                    }
-                  },
-                  "required": ["user"]
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          }
-        }
-      }
-    }
-  },
-  "components": {
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
-      }
-    },
-    "schemas": {
-      "RegisterRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "example": "Max Mustermann"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "max@example.com"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8,
-            "example": "secret123"
-          }
-        },
-        "required": ["name", "email", "password"]
-      },
-      "LoginRequest": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "max@example.com"
-          },
-          "password": {
-            "type": "string",
-            "example": "secret123"
-          }
-        },
-        "required": ["email", "password"]
-      },
-      "PublicUser": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "example": "ckxyz123456"
-          },
-          "name": {
-            "type": "string",
-            "example": "Max Mustermann"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "max@example.com"
-          },
-          "role": {
-            "type": "string",
-            "enum": ["CUSTOMER", "ADMIN"],
-            "example": "CUSTOMER"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": ["id", "name", "email", "role", "createdAt"]
-      },
-      "AuthResponse": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string"
-          },
-          "user": {
-            "$ref": "#/components/schemas/PublicUser"
-          }
-        },
-        "required": ["token", "user"]
-      },
-      "ApiError": {
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "message": {
-                "type": "string"
-              },
-              "details": {}
-            },
-            "required": ["message"]
-          }
-        },
-        "required": ["error"]
-      }
-    },
-    "responses": {
-      "BadRequest": {
-        "description": "Ungültige Eingabe",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ApiError"
-            }
-          }
-        }
-      },
-      "Unauthorized": {
-        "description": "Nicht autorisiert",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ApiError"
-            }
-          }
-        }
-      },
-      "NotFound": {
-        "description": "Nicht gefunden",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ApiError"
-            }
-          }
-        }
-      },
-      "Conflict": {
-        "description": "Konflikt",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ApiError"
-            }
-          }
-        }
-      }
-    }
-  }
+	"openapi": "3.0.3",
+	"info": {
+		"title": "RoomFull Backend API",
+		"version": "0.2.0",
+		"description": "Auth-, Public-Spaces- und Admin-Spaces-Slice für RoomFull 2.0."
+	},
+	"servers": [
+		{
+			"url": "http://localhost:4000/api"
+		}
+	],
+	"tags": [
+		{
+			"name": "Auth"
+		},
+		{
+			"name": "Public Spaces"
+		},
+		{
+			"name": "Admin Spaces"
+		}
+	],
+	"paths": {
+		"/auth/register": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "Neuen User registrieren",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RegisterRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Registrierung erfolgreich",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					}
+				}
+			}
+		},
+		"/auth/login": {
+			"post": {
+				"tags": ["Auth"],
+				"summary": "User einloggen",
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/LoginRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Login erfolgreich",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
+				}
+			}
+		},
+		"/auth/me": {
+			"get": {
+				"tags": ["Auth"],
+				"summary": "Eingeloggten User laden",
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "User-Profil",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"user": {
+											"$ref": "#/components/schemas/PublicUser"
+										}
+									},
+									"required": ["user"]
+								}
+							}
+						}
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/public/spaces": {
+			"get": {
+				"tags": ["Public Spaces"],
+				"summary": "Aktive Räume laden",
+				"responses": {
+					"200": {
+						"description": "Liste aktiver Räume",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SpaceListResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/public/spaces/{spaceId}": {
+			"get": {
+				"tags": ["Public Spaces"],
+				"summary": "Aktiven Raum per ID laden",
+				"parameters": [
+					{
+						"name": "spaceId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Raumdetails",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SpaceResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/admin/spaces": {
+			"post": {
+				"tags": ["Admin Spaces"],
+				"summary": "Neuen Space erstellen",
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateSpaceRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Space erfolgreich erstellt",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SpaceResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/admin/spaces/{spaceId}": {
+			"put": {
+				"tags": ["Admin Spaces"],
+				"summary": "Space aktualisieren",
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "spaceId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateSpaceRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Space erfolgreich aktualisiert",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SpaceResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		},
+		"/admin/spaces/{spaceId}/deactivate": {
+			"patch": {
+				"tags": ["Admin Spaces"],
+				"summary": "Space deaktivieren",
+				"security": [
+					{
+						"bearerAuth": []
+					}
+				],
+				"parameters": [
+					{
+						"name": "spaceId",
+						"in": "path",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Space erfolgreich deaktiviert",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/SpaceResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"bearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "JWT"
+			}
+		},
+		"schemas": {
+			"RegisterRequest": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"example": "Max Mustermann"
+					},
+					"email": {
+						"type": "string",
+						"format": "email",
+						"example": "max@example.com"
+					},
+					"password": {
+						"type": "string",
+						"minLength": 8,
+						"example": "secret123"
+					}
+				},
+				"required": ["name", "email", "password"]
+			},
+			"LoginRequest": {
+				"type": "object",
+				"properties": {
+					"email": {
+						"type": "string",
+						"format": "email",
+						"example": "max@example.com"
+					},
+					"password": {
+						"type": "string",
+						"example": "secret123"
+					}
+				},
+				"required": ["email", "password"]
+			},
+			"PublicUser": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"example": "ckxyz123456"
+					},
+					"name": {
+						"type": "string",
+						"example": "Max Mustermann"
+					},
+					"email": {
+						"type": "string",
+						"format": "email",
+						"example": "max@example.com"
+					},
+					"role": {
+						"type": "string",
+						"enum": ["CUSTOMER", "ADMIN"],
+						"example": "CUSTOMER"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": ["id", "name", "email", "role", "createdAt"]
+			},
+			"AuthResponse": {
+				"type": "object",
+				"properties": {
+					"token": {
+						"type": "string"
+					},
+					"user": {
+						"$ref": "#/components/schemas/PublicUser"
+					}
+				},
+				"required": ["token", "user"]
+			},
+			"Space": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"opensAt": {
+						"type": "string",
+						"example": "08:00"
+					},
+					"closesAt": {
+						"type": "string",
+						"example": "18:00"
+					},
+					"spaceTypeId": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"description",
+					"capacity",
+					"isActive",
+					"opensAt",
+					"closesAt",
+					"spaceTypeId",
+					"createdAt",
+					"updatedAt"
+				]
+			},
+			"CreateSpaceRequest": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"opensAt": {
+						"type": "string",
+						"example": "08:00"
+					},
+					"closesAt": {
+						"type": "string",
+						"example": "18:00"
+					},
+					"spaceTypeId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"description",
+					"capacity",
+					"opensAt",
+					"closesAt",
+					"spaceTypeId"
+				]
+			},
+			"UpdateSpaceRequest": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"opensAt": {
+						"type": "string",
+						"example": "08:00"
+					},
+					"closesAt": {
+						"type": "string",
+						"example": "18:00"
+					},
+					"spaceTypeId": {
+						"type": "string"
+					}
+				}
+			},
+			"SpaceResponse": {
+				"type": "object",
+				"properties": {
+					"space": {
+						"$ref": "#/components/schemas/Space"
+					}
+				},
+				"required": ["space"]
+			},
+			"SpaceListResponse": {
+				"type": "object",
+				"properties": {
+					"spaces": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/Space"
+						}
+					}
+				},
+				"required": ["spaces"]
+			},
+			"ApiError": {
+				"type": "object",
+				"properties": {
+					"error": {
+						"type": "object",
+						"properties": {
+							"message": {
+								"type": "string"
+							},
+							"details": {}
+						},
+						"required": ["message"]
+					}
+				},
+				"required": ["error"]
+			}
+		},
+		"responses": {
+			"BadRequest": {
+				"description": "Ungültige Eingabe",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
+					}
+				}
+			},
+			"Unauthorized": {
+				"description": "Nicht autorisiert",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
+					}
+				}
+			},
+			"Forbidden": {
+				"description": "Keine Berechtigung",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
+					}
+				}
+			},
+			"NotFound": {
+				"description": "Nicht gefunden",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
+					}
+				}
+			},
+			"Conflict": {
+				"description": "Konflikt",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
+					}
+				}
+			}
+		}
+	}
 }

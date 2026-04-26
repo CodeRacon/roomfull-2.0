@@ -1,0 +1,15 @@
+meta {
+  name: Public Spaces List
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/public/spaces
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}

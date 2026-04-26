@@ -1,0 +1,38 @@
+meta {
+  name: Admin Create Space
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/admin/spaces
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "{{spaceName}}",
+    "description": "{{spaceDescription}}",
+    "capacity": {{spaceCapacity}},
+    "opensAt": "{{opensAt}}",
+    "closesAt": "{{closesAt}}",
+    "spaceTypeId": "{{spaceTypeId}}"
+  }
+}
+
+script:post-response {
+  const json = res.getBody();
+  if (json.space && json.space.id) {
+    bru.setVar('spaceId', json.space.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

@@ -1,0 +1,33 @@
+meta {
+  name: Auth Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "{{userEmail}}",
+    "password": "{{userPassword}}"
+  }
+}
+
+script:post-response {
+  const json = res.getBody();
+  if (json.token) {
+    bru.setVar('token', json.token);
+  }
+}
+
+settings {
+  encodeUrl: true
+}

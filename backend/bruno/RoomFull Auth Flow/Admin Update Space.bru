@@ -1,0 +1,28 @@
+meta {
+  name: Admin Update Space
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/admin/spaces/{{spaceId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "{{updatedSpaceName}}",
+    "description": "{{updatedSpaceDescription}}",
+    "capacity": {{updatedSpaceCapacity}}
+  }
+}
+
+settings {
+  encodeUrl: true
+}

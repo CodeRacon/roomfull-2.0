@@ -10,16 +10,52 @@ datasource db {
 enum UserRole {
   CUSTOMER @map("customer")
   ADMIN    @map("admin")
+
+  @@map("user_role")
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String   @map("password_hash")
-  role         UserRole @default(CUSTOMER)
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id                String                  @id @default(cuid())
+  name              String                
+  email             String                  @unique
+  passwordHash      String                  @map("password_hash")
+  role              UserRole                @default(CUSTOMER)
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model SpaceType {
+  id                String                  @id @default(cuid())
+  name              String                  @unique
+
+  spaces            Space[]                
+
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+
+  @@map("space_types")
+}
+
+
+model Space {
+  id                String                  @id @default(cuid()) 
+  name              String 
+
+  spaceType         SpaceType               @relation(fields: [spaceTypeId], references: [id])
+
+  description       String 
+  capacity          Int                     
+  isActive          Boolean                 @default(true)
+
+  opensAt           String                  @map("opens_at")
+  closesAt          String                  @map("closes_at")
+
+  spaceTypeId       String                  @map("space_type_id")
+  
+  createdAt         DateTime                @default(now()) @map("created_at")
+  updatedAt         DateTime                @updatedAt @map("updated_at")
+
+  @@map("spaces")
 }
