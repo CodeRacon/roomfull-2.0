@@ -31,8 +31,10 @@ function parseCreateBookingBody(body: unknown): CreateBookingBody | null {
 
 	const start = typeof body.start === "string" ? body.start.trim() : "";
 	const end = typeof body.end === "string" ? body.end.trim() : "";
-	const unitId = typeof body.unitId === "string" ? body.unitId.trim() : undefined;
-	const areaId = typeof body.areaId === "string" ? body.areaId.trim() : undefined;
+	const unitId =
+		typeof body.unitId === "string" ? body.unitId.trim() : undefined;
+	const areaId =
+		typeof body.areaId === "string" ? body.areaId.trim() : undefined;
 	const unitType =
 		typeof body.unitType === "string" ? body.unitType.trim() : undefined;
 

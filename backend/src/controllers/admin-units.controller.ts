@@ -47,7 +47,8 @@ function parseCreateUnitBody(body: unknown): CreateUnitBody | null {
 
 	const isActive =
 		typeof body.isActive === "boolean" ? body.isActive : undefined;
-	const areaId = typeof body.areaId === "string" ? body.areaId.trim() : undefined;
+	const areaId =
+		typeof body.areaId === "string" ? body.areaId.trim() : undefined;
 	const displayOrder =
 		typeof body.displayOrder === "number" ? body.displayOrder : undefined;
 

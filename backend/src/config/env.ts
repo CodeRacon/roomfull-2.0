@@ -19,7 +19,11 @@ function parsePort(value: string | undefined, fallback: number): number {
 	return parsed;
 }
 
-function parseUrl(value: string | undefined, fallback: string, envName: string): string {
+function parseUrl(
+	value: string | undefined,
+	fallback: string,
+	envName: string,
+): string {
 	const candidate = value?.trim() || fallback;
 
 	try {

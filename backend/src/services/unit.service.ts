@@ -1,6 +1,6 @@
 import type { BookableUnit } from "@prisma/client";
-import { hasOverlappingActiveBookings } from "../db/booking.repository.js";
 import { doesAreaExist } from "../db/area.repository.js";
+import { hasOverlappingActiveBookings } from "../db/booking.repository.js";
 import {
 	type CreateUnitInput,
 	createUnit,
@@ -135,8 +135,7 @@ function normalizeUpdateInput(input: UpdateUnitInput): UpdateUnitInput {
 
 	if (input.areaId !== undefined) {
 		const trimmedAreaId = input.areaId.trim();
-		normalized.areaId =
-			trimmedAreaId.length > 0 ? trimmedAreaId : undefined;
+		normalized.areaId = trimmedAreaId.length > 0 ? trimmedAreaId : undefined;
 	}
 
 	if (input.capacity !== undefined) {
@@ -221,7 +220,9 @@ function validateUpdateInput(input: UpdateUnitInput): void {
 	}
 }
 
-export async function createNewUnit(input: CreateUnitInput): Promise<BookableUnit> {
+export async function createNewUnit(
+	input: CreateUnitInput,
+): Promise<BookableUnit> {
 	const normalizedInput = normalizeCreateInput(input);
 
 	validateCreateInput(normalizedInput);
@@ -318,7 +319,9 @@ export async function updateExistingUnit(
 	return updateUnit(normalizedInput);
 }
 
-export async function deactivateExistingUnit(id: string): Promise<BookableUnit> {
+export async function deactivateExistingUnit(
+	id: string,
+): Promise<BookableUnit> {
 	const unitId = id.trim();
 
 	await assertUnitExists(unitId);

@@ -1,6 +1,6 @@
 import {
-	BookingStatus,
 	type BookableUnit,
+	BookingStatus,
 	Prisma,
 	type UnitTypeName,
 } from "@prisma/client";
@@ -82,7 +82,9 @@ export async function findUnitTypeByName(name: UnitTypeName) {
 	});
 }
 
-export async function createUnit(input: CreateUnitInput): Promise<BookableUnit> {
+export async function createUnit(
+	input: CreateUnitInput,
+): Promise<BookableUnit> {
 	return prisma.bookableUnit.create({
 		data: {
 			name: input.name,
@@ -96,7 +98,9 @@ export async function createUnit(input: CreateUnitInput): Promise<BookableUnit> 
 	});
 }
 
-export async function updateUnit(input: UpdateUnitInput): Promise<BookableUnit> {
+export async function updateUnit(
+	input: UpdateUnitInput,
+): Promise<BookableUnit> {
 	const { id, ...data } = input;
 	return prisma.bookableUnit.update({
 		where: { id },

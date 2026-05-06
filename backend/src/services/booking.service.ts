@@ -1,12 +1,12 @@
 import type { Booking } from "@prisma/client";
 import { BookingStatus, UnitTypeName } from "@prisma/client";
+import { findActiveAreaById } from "../db/area.repository.js";
 import {
 	cancelBooking as cancelBookingRecord,
 	findBookingById as findBookingByIdRecord,
 	listAllBookings as listAllBookingsRecords,
 	listUserBookings as listUserBookingsRecords,
 } from "../db/booking.repository.js";
-import { findActiveAreaById } from "../db/area.repository.js";
 import {
 	createBookingWithTransaction,
 	findActiveUnitByIdWithRelations,
@@ -91,7 +91,9 @@ function parseUnitType(value: string): UnitTypeName {
 	}
 }
 
-function resolveBookingMode(input: CreateBookingForUserInput):
+function resolveBookingMode(
+	input: CreateBookingForUserInput,
+):
 	| { mode: "DIRECT"; unitId: string }
 	| { mode: "AUTO"; areaId: string; unitType: UnitTypeName } {
 	const unitId = input.unitId?.trim() ?? "";
@@ -120,7 +122,10 @@ function resolveBookingMode(input: CreateBookingForUserInput):
 	}
 
 	if (areaId.length === 0 || unitTypeRaw.length === 0) {
-		throw new AppError(400, "Für Auto-Assign sind areaId und unitType erforderlich");
+		throw new AppError(
+			400,
+			"Für Auto-Assign sind areaId und unitType erforderlich",
+		);
 	}
 
 	const unitType = parseUnitType(unitTypeRaw);
