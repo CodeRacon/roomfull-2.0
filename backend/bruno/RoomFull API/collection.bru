@@ -1,0 +1,42 @@
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  baseUrl: http://localhost:4000
+  userName: Max Mustermann
+  userEmail: max@example.com
+  userPassword: secret123
+  adminEmail: admin@example.com
+  adminPassword: 1q2w3e4r
+  customerToken: SET_BY_AUTH_LOGIN
+  adminToken: SET_BY_ADMIN_LOGIN
+
+  unitTypeId: SET_FROM_UNIT_TYPES_TABLE
+  areaId: OPTIONAL_SET_FROM_AREAS_TABLE
+  unitId: SET_BY_ADMIN_CREATE_UNIT
+
+  unitName: Team Unit Alpha
+  unitDescription: Ruhige buchbare Einheit mit Whiteboard
+  unitCapacity: 6
+  unitDisplayOrder: 10
+
+  updatedUnitName: Team Unit Alpha Updated
+  updatedUnitDescription: Aktualisierte Beschreibung
+  updatedUnitCapacity: 8
+  updatedUnitDisplayOrder: 20
+
+  availabilityStart: 2027-01-15T09:00:00.000Z
+  availabilityEnd: 2027-01-15T11:00:00.000Z
+
+  bookingStart: 2027-01-18T10:00:00.000Z
+  bookingEnd: 2027-01-18T12:00:00.000Z
+  bookingUnitType: HOT_DESK
+  bookingId: SET_BY_CUSTOMER_CREATE_BOOKING
+}
+
+docs {
+  Admin Run: Auth Login (Admin) -> Admin Create Unit -> Admin Update Unit -> Admin Deactivate Unit
+  Customer Run (Direct): Auth Login -> Auth Me -> Customer Create Booking -> Customer My Bookings -> Customer Cancel Booking
+  Customer Run (Auto): Auth Login -> Customer Create Booking (areaId+unitType) -> Customer My Bookings
+}

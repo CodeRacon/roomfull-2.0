@@ -1,0 +1,44 @@
+meta {
+  name: Customer Create Booking
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/bookings
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "unitId": "{{unitId}}",
+    "start": "{{bookingStart}}",
+    "end": "{{bookingEnd}}"
+  }
+}
+
+script:post-response {
+  let json = res.getBody();
+  if (typeof json === "string") {
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      json = null;
+    }
+  }
+
+  if (json && json.booking && json.booking.id) {
+    bru.setVar("bookingId", json.booking.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

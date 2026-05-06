@@ -1,0 +1,46 @@
+meta {
+  name: Admin Create Unit
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/admin/units
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{adminToken}}
+}
+
+body:json {
+  {
+    "name": "{{unitName}}",
+    "description": "{{unitDescription}}",
+    "capacity": {{unitCapacity}},
+    "displayOrder": {{unitDisplayOrder}},
+    "unitTypeId": "{{unitTypeId}}"
+  }
+}
+
+script:post-response {
+  let json = res.getBody();
+  if (typeof json === "string") {
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      json = null;
+    }
+  }
+
+  if (json && json.unit && json.unit.id) {
+    bru.setVar("unitId", json.unit.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

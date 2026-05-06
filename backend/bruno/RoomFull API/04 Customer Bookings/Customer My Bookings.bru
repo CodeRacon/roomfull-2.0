@@ -1,0 +1,20 @@
+meta {
+  name: Customer My Bookings
+  type: http
+  seq: 13
+}
+
+get {
+  url: {{baseUrl}}/api/me/bookings
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

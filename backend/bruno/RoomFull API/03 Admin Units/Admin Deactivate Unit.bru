@@ -1,0 +1,20 @@
+meta {
+  name: Admin Deactivate Unit
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{baseUrl}}/api/admin/units/{{unitId}}/deactivate
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

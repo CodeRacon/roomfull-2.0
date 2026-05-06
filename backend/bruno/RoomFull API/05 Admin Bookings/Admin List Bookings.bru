@@ -1,0 +1,20 @@
+meta {
+  name: Admin List Bookings
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/admin/bookings
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

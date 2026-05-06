@@ -1,15 +1,16 @@
 meta {
-  name: Public Space By Id
+  name: Public Unit By Id
   type: http
   seq: 6
 }
 
 get {
-  url: {{baseUrl}}/api/public/spaces/{{spaceId}}
+  url: {{baseUrl}}/api/public/units/{{unitId}}
   body: none
   auth: inherit
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

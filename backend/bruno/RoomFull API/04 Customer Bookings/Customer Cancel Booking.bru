@@ -1,0 +1,20 @@
+meta {
+  name: Customer Cancel Booking
+  type: http
+  seq: 14
+}
+
+delete {
+  url: {{baseUrl}}/api/bookings/{{bookingId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

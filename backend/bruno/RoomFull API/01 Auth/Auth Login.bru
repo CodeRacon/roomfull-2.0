@@ -21,13 +21,23 @@ body:json {
   }
 }
 
+
 script:post-response {
-  const json = res.getBody();
-  if (json.token) {
-    bru.setVar('token', json.token);
+  let json = res.getBody();
+  if (typeof json === "string") {
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      json = null;
+    }
+  }
+
+  if (json && json.token) {
+    bru.setVar("customerToken", json.token);
   }
 }
 
 settings {
   encodeUrl: true
+  timeout: 0
 }

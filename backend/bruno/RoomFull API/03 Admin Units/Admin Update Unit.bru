@@ -1,0 +1,30 @@
+meta {
+  name: Admin Update Unit
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseUrl}}/api/admin/units/{{unitId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{adminToken}}
+}
+
+body:json {
+  {
+    "name": "{{updatedUnitName}}",
+    "description": "{{updatedUnitDescription}}",
+    "capacity": {{updatedUnitCapacity}},
+    "displayOrder": {{updatedUnitDisplayOrder}}
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
