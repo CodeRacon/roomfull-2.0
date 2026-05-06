@@ -110,11 +110,18 @@ cp backend/.env.example backend/.env
 ```
 
 Wichtig: In `backend/.env` muss `DATABASE_URL` zu deinem lokalen DB-User passen.
+Auf einer Homebrew-PostgreSQL-Installation ist das häufig dein macOS-Username.
 
 Beispiel:
 
 ```env
-DATABASE_URL=postgresql://michaelbuschmann@localhost:5432/roomfull?schema=public
+DATABASE_URL=postgresql://meikl@localhost:5432/roomfull?schema=public
+```
+
+Allgemein:
+
+```env
+DATABASE_URL=postgresql://DEIN_LOKALER_DB_USER@localhost:5432/roomfull?schema=public
 ```
 
 ### 4) Bestehende Prisma-Migrationen anwenden
