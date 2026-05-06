@@ -1,9 +1,22 @@
+docs/
+!backend/docs/
+!backend/docs/**/*.md
 
+.vscode/
 
-backend/node_modules/
-
+SKILL.md
+.agents/
 
 node_modules
 
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/.env.*
+
 .next
 
+out
+.env.local
+.DS_Store
+skills-lock.json
