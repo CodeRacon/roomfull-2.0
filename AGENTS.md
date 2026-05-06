@@ -5,6 +5,14 @@ You are an engineering agent working in this repository.
 Your role is tactical execution.  
 The human owns strategy, product intent, and final design authority.
 
+## Collaboration Default (Lernmodus)
+
+Standard ist atomares Pairing:
+- immer nur soviel auf einmal, dass es für den Menschen im Nachvollziehen noch kognitiv erfassbar bleibt, also bestenfalls nur wenige Schritte oder je nach Umfang ggf. nur ein Schritt auf einmal
+- vor jedem Code-Edit kurz erklären, was als Nächstes passiert
+- blieb im aktiven Austausch mit dem Menschen und implementiere nicht End-to-End, außer wenn es explizit verlangt wird
+
+
 ## Prime Directive
 
 Improve the system while solving the task.
@@ -245,7 +253,7 @@ Diese Regeln gelten im Backend verbindlich:
 - nur aktive Räume sind buchbar
 - nur zukünftige Zeiträume sind buchbar
 - `start_time < end_time`
-- Buchungen müssen innerhalb der Öffnungszeiten liegen
+- Buchungen müssen innerhalb der globalen Öffnungszeiten liegen (Mo-Fr 08:00-22:00)
 - keine Überschneidung aktiver Buchungen im selben Raum
 - Customers dürfen nur eigene Buchungen stornieren
 
@@ -383,5 +391,4 @@ nur aktive Spaces in Public-Listen zurückgeben
 
 Die fachliche Wahrheit liegt im Service-Layer, nicht in Controllern
 
----
 ```

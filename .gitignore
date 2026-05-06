@@ -1,4 +1,6 @@
 docs/
+!backend/docs/
+!backend/docs/**/*.md
 .vscode/
 
 SKILL.md
