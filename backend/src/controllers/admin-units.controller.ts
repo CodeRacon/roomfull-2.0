@@ -1,22 +1,22 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
 import {
-	createNewSpace,
-	deactivateExistingSpace,
-	updateExistingSpace,
-} from "../services/space.service.js";
+	createNewUnit,
+	deactivateExistingUnit,
+	updateExistingUnit,
+} from "../services/unit.service.js";
 
-type CreateSpaceBody = {
+type CreateUnitBody = {
 	name: string;
 	description: string;
 	capacity: number;
 	isActive?: boolean;
-	opensAt: string;
-	closesAt: string;
-	spaceTypeId: string;
+	unitTypeId: string;
+	areaId?: string;
+	displayOrder?: number;
 };
 
-type UpdateSpaceBody = Partial<CreateSpaceBody>;
+type UpdateUnitBody = Partial<CreateUnitBody>;
 const INVALID_BODY_MESSAGE = "Ungültiger Request Body";
 const INVALID_ROUTE_PARAMS_MESSAGE = "Ungültige Route-Parameter";
 
@@ -28,7 +28,7 @@ function fail(next: NextFunction, statusCode: number, message: string): void {
 	next(new AppError(statusCode, message));
 }
 
-function parseCreateSpaceBody(body: unknown): CreateSpaceBody | null {
+function parseCreateUnitBody(body: unknown): CreateUnitBody | null {
 	if (!isRecord(body)) {
 		return null;
 	}
@@ -36,35 +36,38 @@ function parseCreateSpaceBody(body: unknown): CreateSpaceBody | null {
 	if (
 		typeof body.name !== "string" ||
 		typeof body.description !== "string" ||
-		typeof body.opensAt !== "string" ||
-		typeof body.closesAt !== "string" ||
-		typeof body.spaceTypeId !== "string" ||
+		typeof body.unitTypeId !== "string" ||
 		typeof body.capacity !== "number" ||
-		("isActive" in body && typeof body.isActive !== "boolean")
+		("isActive" in body && typeof body.isActive !== "boolean") ||
+		("areaId" in body && typeof body.areaId !== "string") ||
+		("displayOrder" in body && typeof body.displayOrder !== "number")
 	) {
 		return null;
 	}
 
 	const isActive =
 		typeof body.isActive === "boolean" ? body.isActive : undefined;
+	const areaId = typeof body.areaId === "string" ? body.areaId.trim() : undefined;
+	const displayOrder =
+		typeof body.displayOrder === "number" ? body.displayOrder : undefined;
 
 	return {
 		name: body.name.trim(),
 		description: body.description.trim(),
 		capacity: body.capacity,
 		isActive,
-		opensAt: body.opensAt.trim(),
-		closesAt: body.closesAt.trim(),
-		spaceTypeId: body.spaceTypeId.trim(),
+		unitTypeId: body.unitTypeId.trim(),
+		areaId,
+		displayOrder,
 	};
 }
 
-function parseUpdateSpaceBody(body: unknown): UpdateSpaceBody | null {
+function parseUpdateUnitBody(body: unknown): UpdateUnitBody | null {
 	if (!isRecord(body)) {
 		return null;
 	}
 
-	const parsed: UpdateSpaceBody = {};
+	const parsed: UpdateUnitBody = {};
 
 	if ("name" in body) {
 		if (typeof body.name !== "string") {
@@ -94,25 +97,25 @@ function parseUpdateSpaceBody(body: unknown): UpdateSpaceBody | null {
 		parsed.isActive = body.isActive;
 	}
 
-	if ("opensAt" in body) {
-		if (typeof body.opensAt !== "string") {
+	if ("unitTypeId" in body) {
+		if (typeof body.unitTypeId !== "string") {
 			return null;
 		}
-		parsed.opensAt = body.opensAt.trim();
+		parsed.unitTypeId = body.unitTypeId.trim();
 	}
 
-	if ("closesAt" in body) {
-		if (typeof body.closesAt !== "string") {
+	if ("areaId" in body) {
+		if (typeof body.areaId !== "string") {
 			return null;
 		}
-		parsed.closesAt = body.closesAt.trim();
+		parsed.areaId = body.areaId.trim();
 	}
 
-	if ("spaceTypeId" in body) {
-		if (typeof body.spaceTypeId !== "string") {
+	if ("displayOrder" in body) {
+		if (typeof body.displayOrder !== "number") {
 			return null;
 		}
-		parsed.spaceTypeId = body.spaceTypeId.trim();
+		parsed.displayOrder = body.displayOrder;
 	}
 
 	if (Object.keys(parsed).length === 0) {
@@ -122,18 +125,17 @@ function parseUpdateSpaceBody(body: unknown): UpdateSpaceBody | null {
 	return parsed;
 }
 
-function parseSpaceId(params: Request["params"]): string | null {
-	const spaceId =
-		typeof params.spaceId === "string" ? params.spaceId.trim() : "";
-	return spaceId.length > 0 ? spaceId : null;
+function parseUnitId(params: Request["params"]): string | null {
+	const unitId = typeof params.unitId === "string" ? params.unitId.trim() : "";
+	return unitId.length > 0 ? unitId : null;
 }
 
-export async function createAdminSpaceController(
+export async function createAdminUnitController(
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ): Promise<void> {
-	const input = parseCreateSpaceBody(req.body);
+	const input = parseCreateUnitBody(req.body);
 
 	if (!input) {
 		fail(next, 400, INVALID_BODY_MESSAGE);
@@ -141,52 +143,52 @@ export async function createAdminSpaceController(
 	}
 
 	try {
-		const newSpace = await createNewSpace(input);
-		res.status(201).json({ space: newSpace });
+		const newUnit = await createNewUnit(input);
+		res.status(201).json({ unit: newUnit });
 	} catch (error) {
 		next(error);
 	}
 }
 
-export async function updateAdminSpaceController(
+export async function updateAdminUnitController(
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ): Promise<void> {
-	const spaceId = parseSpaceId(req.params);
-	if (!spaceId) {
+	const unitId = parseUnitId(req.params);
+	if (!unitId) {
 		fail(next, 400, INVALID_ROUTE_PARAMS_MESSAGE);
 		return;
 	}
 
-	const input = parseUpdateSpaceBody(req.body);
+	const input = parseUpdateUnitBody(req.body);
 	if (!input) {
 		fail(next, 400, INVALID_BODY_MESSAGE);
 		return;
 	}
 
 	try {
-		const updatedSpace = await updateExistingSpace({ id: spaceId, ...input });
-		res.status(200).json({ space: updatedSpace });
+		const updatedUnit = await updateExistingUnit({ id: unitId, ...input });
+		res.status(200).json({ unit: updatedUnit });
 	} catch (error) {
 		next(error);
 	}
 }
 
-export async function deactivateAdminSpaceController(
+export async function deactivateAdminUnitController(
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ): Promise<void> {
-	const spaceId = parseSpaceId(req.params);
-	if (!spaceId) {
+	const unitId = parseUnitId(req.params);
+	if (!unitId) {
 		fail(next, 400, INVALID_ROUTE_PARAMS_MESSAGE);
 		return;
 	}
 
 	try {
-		const deactivatedSpace = await deactivateExistingSpace(spaceId);
-		res.status(200).json({ space: deactivatedSpace });
+		const deactivatedUnit = await deactivateExistingUnit(unitId);
+		res.status(200).json({ unit: deactivatedUnit });
 	} catch (error) {
 		next(error);
 	}
