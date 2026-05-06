@@ -7,13 +7,21 @@ const unitTypes: {
 	minDurationMinutes: number;
 	maxDurationMinutes: number;
 }[] = [
-	{ name: UnitTypeName.HOT_DESK, minDurationMinutes: 30, maxDurationMinutes: 240 },
+	{
+		name: UnitTypeName.HOT_DESK,
+		minDurationMinutes: 30,
+		maxDurationMinutes: 240,
+	},
 	{ name: UnitTypeName.BOOTH, minDurationMinutes: 60, maxDurationMinutes: 480 },
-	{ name: UnitTypeName.TEAM_ROOM, minDurationMinutes: 60, maxDurationMinutes: 480 },
+	{
+		name: UnitTypeName.TEAM_ROOM,
+		minDurationMinutes: 60,
+		maxDurationMinutes: 480,
+	},
 ];
 
 async function main(): Promise<void> {
-	await prisma.area.upsert({
+	const openWorldArea = await prisma.area.upsert({
 		where: { name: "Open World" },
 		update: {},
 		create: {
@@ -22,7 +30,7 @@ async function main(): Promise<void> {
 		},
 	});
 
-	await Promise.all(
+	const seededUnitTypes = await Promise.all(
 		unitTypes.map((unitType) =>
 			prisma.unitType.upsert({
 				where: { name: unitType.name },
@@ -31,6 +39,82 @@ async function main(): Promise<void> {
 					maxDurationMinutes: unitType.maxDurationMinutes,
 				},
 				create: unitType,
+			}),
+		),
+	);
+
+	const hotDeskType = seededUnitTypes.find(
+		(unitType) => unitType.name === UnitTypeName.HOT_DESK,
+	);
+
+	const boothType = seededUnitTypes.find(
+		(unitType) => unitType.name === UnitTypeName.BOOTH,
+	);
+
+	const teamRoomType = seededUnitTypes.find(
+		(unitType) => unitType.name === UnitTypeName.TEAM_ROOM,
+	);
+
+	if (!hotDeskType || !boothType || !teamRoomType) {
+		throw new Error("UnitTypes fehlen nach Seed");
+	}
+
+	const demoUnits = [
+		{
+			id: "seed-hot-desk-a1",
+			name: "Hot Desk A1",
+			description: "Flexibler Arbeitsplatz im Open-World-Bereich",
+			capacity: 1,
+			displayOrder: 10,
+			unitTypeId: hotDeskType.id,
+			areaId: openWorldArea.id,
+		},
+		{
+			id: "seed-hot-desk-a2",
+			name: "Hot Desk A2",
+			description: "Flexibler Arbeitsplatz im Open-World-Bereich",
+			capacity: 1,
+			displayOrder: 20,
+			unitTypeId: hotDeskType.id,
+			areaId: openWorldArea.id,
+		},
+		{
+			id: "seed-booth-b1",
+			name: "Booth B1",
+			description: "Kompakte Booth für fokussierte Arbeit im kleinen Team",
+			capacity: 4,
+			displayOrder: 30,
+			unitTypeId: boothType.id,
+			areaId: null,
+		},
+		{
+			id: "seed-team-room-c1",
+			name: "Team Room C1",
+			description: "Meetingraum für kleine Teams und Workshops",
+			capacity: 6,
+			displayOrder: 40,
+			unitTypeId: teamRoomType.id,
+			areaId: null,
+		},
+	];
+
+	await Promise.all(
+		demoUnits.map((unit) =>
+			prisma.bookableUnit.upsert({
+				where: { id: unit.id },
+				update: {
+					name: unit.name,
+					description: unit.description,
+					capacity: unit.capacity,
+					displayOrder: unit.displayOrder,
+					unitTypeId: unit.unitTypeId,
+					areaId: unit.areaId,
+					isActive: true,
+				},
+				create: {
+					...unit,
+					isActive: true,
+				},
 			}),
 		),
 	);
