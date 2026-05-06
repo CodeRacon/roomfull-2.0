@@ -1,19 +1,9 @@
-docs/
-!backend/docs/
-!backend/docs/**/*.md
-.vscode/
 
-SKILL.md
-.agents/
 
 backend/node_modules/
-backend/dist/
-backend/.env
-backend/.env.*
+
 
 node_modules
 
 .next
-out
-.env.local
-.DS_Store
+
