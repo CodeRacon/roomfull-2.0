@@ -6,8 +6,8 @@ exports.getPublicUnitById = getPublicUnitById;
 exports.getPublicUnitAvailability = getPublicUnitAvailability;
 exports.updateExistingUnit = updateExistingUnit;
 exports.deactivateExistingUnit = deactivateExistingUnit;
-const booking_repository_js_1 = require("../db/booking.repository.js");
 const area_repository_js_1 = require("../db/area.repository.js");
+const booking_repository_js_1 = require("../db/booking.repository.js");
 const unit_repository_js_1 = require("../db/unit.repository.js");
 const app_error_js_1 = require("../lib/app-error.js");
 const WEEKDAY_START = 1;
@@ -96,8 +96,7 @@ function normalizeUpdateInput(input) {
     }
     if (input.areaId !== undefined) {
         const trimmedAreaId = input.areaId.trim();
-        normalized.areaId =
-            trimmedAreaId.length > 0 ? trimmedAreaId : undefined;
+        normalized.areaId = trimmedAreaId.length > 0 ? trimmedAreaId : undefined;
     }
     if (input.capacity !== undefined) {
         normalized.capacity = input.capacity;
