@@ -31,12 +31,7 @@ SESSION FLOW
 6. Continue based on selected mode.
 
 DEFAULT EXCLUSIONS (when user gave none)
-- `.expo/devices.json`
-- `.gitignore`
-- `AGENTS.md`
-- `codex.md`
-- `index.js`
-- `src/navigation/tab-navigator/YNSPOOL.md`
+- If there are files that shouldn't be tracked via source control, like secrects and alike or just would be unneccessary to commit: tell the user!
 
 MODE: MANUELL
 - Do not execute git commands.
