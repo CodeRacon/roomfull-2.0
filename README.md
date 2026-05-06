@@ -1,6 +1,6 @@
 # RoomFull 2.0
 
-RoomFull 2.0 ist ein kleines MVP zur Buchung von Coworking-Spaces.
+RoomFull 2.0 ist ein kleines MVP zur Buchung von Coworking-Units.
 
 Ziel ist nicht maximaler Feature-Umfang, sondern eine saubere Umsetzung von:
 
@@ -16,8 +16,8 @@ Ziel ist nicht maximaler Feature-Umfang, sondern eine saubere Umsetzung von:
 
 - registrieren
 - einloggen
-- aktive Räume sehen
-- Raumdetails sehen
+- aktive Units sehen
+- Unit-Details sehen
 - Verfügbarkeit prüfen
 - Buchung anlegen
 - eigene Buchungen sehen
@@ -25,9 +25,9 @@ Ziel ist nicht maximaler Feature-Umfang, sondern eine saubere Umsetzung von:
 
 ### Admin
 
-- Räume anlegen
-- Räume bearbeiten
-- Räume deaktivieren
+- Units anlegen
+- Units bearbeiten
+- Units deaktivieren
 - alle Buchungen sehen
 - Buchungen verwalten
 
@@ -47,17 +47,17 @@ Ziel ist nicht maximaler Feature-Umfang, sondern eine saubere Umsetzung von:
 Eine Buchung verbindet:
 
 - `user`
-- `space`
+- `unit`
 - `start_time`
 - `end_time`
 
 Wichtige Regeln:
 
-- nur aktive Räume sind buchbar
+- nur aktive Units sind buchbar
 - nur zukünftige Zeiträume sind buchbar
 - `start_time < end_time`
-- Buchungen müssen innerhalb der Öffnungszeiten liegen
-- keine Überschneidung aktiver Buchungen im selben Raum
+- Buchungen müssen innerhalb der globalen Öffnungszeiten liegen (Mo-Fr 08:00-22:00)
+- keine Überschneidung aktiver Buchungen auf derselben Unit
 - Customers dürfen nur eigene Buchungen stornieren
 
 ## Raumtypen
@@ -65,6 +65,13 @@ Wichtige Regeln:
 - Hot Desk
 - Booth
 - Team Room
+
+## Öffnungszeiten-Entscheidung
+
+- Source of Truth sind globale Öffnungszeiten für das gesamte Angebot
+- Für Version 1: Montag bis Freitag, 08:00 bis 22:00
+- Öffnungszeiten werden nicht pro Area oder UnitType gepflegt
+- Buchungs- und Verfügbarkeitslogik nutzt diese globalen Öffnungszeiten
 
 ## Tech Stack
 
@@ -141,8 +148,8 @@ cd backend
 npx prisma studio
 ```
 
-Beispiel-Check nach dem SpaceType-Seed:
-- Tabelle `SpaceType` öffnen
+Beispiel-Check nach dem UnitType-Seed:
+- Tabelle `UnitType` öffnen
 - prüfen, dass genau diese Einträge vorhanden sind:
   - `Hot Desk`
   - `Booth`
@@ -170,6 +177,7 @@ Die API ist über OpenAPI dokumentiert und per Swagger UI direkt testbar.
 - Swagger UI im laufenden Backend: `http://localhost:4000/docs`
 
 Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
+
 
 ### Lokale Nutzung
 
@@ -217,19 +225,19 @@ Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
 Entities:
 
 - `user`
-- `space`
+- `unit`
 - `booking`
 
 Features:
 
 - `auth/sign-in`
 - `auth/sign-up`
-- `space/check-availability`
+- `unit/check-availability`
 - `booking/create-booking`
 - `booking/cancel-booking`
-- `admin/create-space`
-- `admin/update-space`
-- `admin/deactivate-space`
+- `admin/create-unit`
+- `admin/update-unit`
+- `admin/deactivate-unit`
 
 ## Dokumentation
 
