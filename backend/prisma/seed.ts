@@ -1,20 +1,36 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UnitTypeName } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const spaceTypes: { name: string }[] = [
-	{ name: "Hot Desk" },
-	{ name: "Booth" },
-	{ name: "Team Room" },
+const unitTypes: {
+	name: UnitTypeName;
+	minDurationMinutes: number;
+	maxDurationMinutes: number;
+}[] = [
+	{ name: UnitTypeName.HOT_DESK, minDurationMinutes: 30, maxDurationMinutes: 240 },
+	{ name: UnitTypeName.BOOTH, minDurationMinutes: 60, maxDurationMinutes: 480 },
+	{ name: UnitTypeName.TEAM_ROOM, minDurationMinutes: 60, maxDurationMinutes: 480 },
 ];
 
 async function main(): Promise<void> {
+	await prisma.area.upsert({
+		where: { name: "Open World" },
+		update: {},
+		create: {
+			name: "Open World",
+			description: "Offener Bereich mit mehreren Hot-Desk-Units",
+		},
+	});
+
 	await Promise.all(
-		spaceTypes.map((spaceType) =>
-			prisma.spaceType.upsert({
-				where: { name: spaceType.name },
-				update: {},
-				create: { name: spaceType.name },
+		unitTypes.map((unitType) =>
+			prisma.unitType.upsert({
+				where: { name: unitType.name },
+				update: {
+					minDurationMinutes: unitType.minDurationMinutes,
+					maxDurationMinutes: unitType.maxDurationMinutes,
+				},
+				create: unitType,
 			}),
 		),
 	);

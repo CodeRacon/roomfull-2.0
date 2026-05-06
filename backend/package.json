@@ -12,7 +12,11 @@
 		"format:check": "../node_modules/.bin/biome format .",
 		"prisma:generate": "prisma generate",
 		"prisma:migrate:dev": "prisma migrate dev",
-		"prisma:migrate:deploy": "prisma migrate deploy"
+		"prisma:migrate:deploy": "prisma migrate deploy",
+		"prisma:seed": "prisma db seed"
+	},
+	"prisma": {
+		"seed": "tsx prisma/seed.ts"
 	},
 	"keywords": [],
 	"author": "",
