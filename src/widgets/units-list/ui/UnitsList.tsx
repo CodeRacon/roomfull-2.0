@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Unit } from "@/entities/unit";
 
 type UnitsListProps = {
@@ -20,7 +21,14 @@ export function UnitsList({ units }: UnitsListProps) {
 					key={unit.id}
 					className="rounded-md border border-slate-200 bg-white p-5 shadow-xs"
 				>
-					<h2 className="text-lg font-medium text-slate-950">{unit.name}</h2>
+					<h2 className="text-lg font-medium ">
+						<Link
+							href={`/units/${unit.id}`}
+							className="text-slate-950 hover:text-slate-700 hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+						>
+							{unit.name}
+						</Link>
+					</h2>
 					<p className="mt-2 text-sm leading-6 text-slate-600">
 						{unit.description}
 					</p>
