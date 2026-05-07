@@ -1,2 +1,2 @@
-export { getPublicUnits } from "./api";
-export type { Unit, UnitListResponse } from "./model";
+export { getPublicUnitById, getPublicUnits } from "./api";
+export type { Unit, UnitListResponse, UnitResponse } from "./model";
