@@ -14,3 +14,7 @@ export type Unit = {
 export type UnitListResponse = {
 	units: Unit[];
 };
+
+export type UnitResponse = {
+	unit: Unit;
+};
