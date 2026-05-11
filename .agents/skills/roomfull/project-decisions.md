@@ -38,7 +38,37 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - extern (API): kurze Sprache mit `Unit`/`unitId`
 - Endpunkte:
   - `/public/units`
+  - `/public/booking-options`
   - `/admin/units`
+
+## Public BookingOptions
+
+- Die Homepage zeigt perspektivisch keine einzelnen `BookableUnit`s mehr, sondern `BookingOption`s als Customer-facing Einstieg in den Buchungsflow
+- Eine `BookingOption` entspricht im MVP genau einem bewusst freigegebenen `UnitType`
+- Public BookingOptions kommen aus einer expliziten Backend-Allowlist, nicht automatisch aus allen `UnitType`-Datensätzen
+- Allowlist für V1:
+  - `HOT_DESK`
+  - `BOOTH`
+  - `TEAM_ROOM`
+- `BookingOption.key` entspricht dem jeweiligen `UnitTypeName`
+- Endpoint: `GET /public/booking-options`
+- Der Endpoint beschreibt grundsätzliche Buchungsoptionen ohne Zeitraum
+- Zeitbezogene Verfügbarkeit kommt später in separaten Flow-Schritten
+- `status` beschreibt nur grundsätzliche Verfügbarkeit:
+  - `AVAILABLE`
+  - `UNAVAILABLE`
+- `bookingMode` beschreibt den nächsten Buchungsschritt:
+  - `AUTO_ASSIGN`
+  - `CHOOSE_UNIT`
+- `areaSelection` beschreibt, ob der Customer eine Area wählen muss:
+  - `REQUIRED`
+  - `NOT_APPLICABLE`
+- `HOT_DESK` nutzt `AUTO_ASSIGN` und `areaSelection: REQUIRED`
+- `BOOTH` und `TEAM_ROOM` nutzen `CHOOSE_UNIT` und `areaSelection: NOT_APPLICABLE`
+- `HOT_DESK.areas[]` wird mit buchbaren Areas und deren aktiver Unit-Anzahl befüllt
+- `BOOTH` und `TEAM_ROOM` liefern `areas: []`, auch wenn konkrete Units intern Area-Zuordnungen haben
+- Ein fehlender Allowlist-`UnitType` ist ein System-/Seed-Fehler und soll hart sichtbar werden
+- UI-Labels, Descriptions und Color-Schemes bleiben Frontend-Presentation-Mapping und sind keine Backend-Fachlogik
 
 ## Zeitmodell
 
@@ -64,7 +94,8 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 ## Hot-Desk-Entscheidung
 
 - `Hot Desk` ist ein `UnitType` für einzelne buchbare Plätze
-- `Open World` ist eine `Area`, keine buchbare Einheit
+- `Open World` und `Quiet Space` sind Areas, keine buchbaren Einheiten
+- `HOT_DESK` braucht immer eine `areaId`
 - Auto-Assign-Modus:
   - Request: `areaId + unitType + start + end`
   - in V1 nur für `HOT_DESK`

@@ -9,6 +9,7 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 ## Kernmodule
 
 - `auth`
+- `public booking options`
 - `public units`
 - `bookings`
 - `admin units`
@@ -23,9 +24,32 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 
 ### Public Units
 
+- `GET /public/booking-options`
 - `GET /public/units`
 - `GET /public/units/:unitId`
 - `GET /public/units/:unitId/availability?start=...&end=...`
+
+`GET /public/booking-options` ist perspektivisch der Homepage-Einstieg.
+
+Der Endpoint liefert grundsätzliche Customer-Angebote ohne Zeitraum:
+
+- `HOT_DESK`
+- `BOOTH`
+- `TEAM_ROOM`
+
+Der Contract enthält:
+
+- `key`
+- `unitType`
+- `bookingMode`
+- `areaSelection`
+- `status`
+- `totalActiveUnits`
+- `areas`
+
+`HOT_DESK` liefert Areas mit aktiver Unit-Anzahl. `BOOTH` und `TEAM_ROOM` liefern `areas: []`.
+
+`GET /public/units` bleibt für konkrete Unit-Auswahl und Unit-Details bestehen.
 
 ### Bookings
 
@@ -52,6 +76,11 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 - direkt: `unitId + start + end`
 - auto-assign: `areaId + unitType + start + end` (in V1 nur `HOT_DESK`)
 
+BookingOptions nutzen dieselbe fachliche Unterscheidung:
+
+- `AUTO_ASSIGN` für Hot Desk
+- `CHOOSE_UNIT` für Booth und Team Room
+
 ## Validierung
 
 ### Booking
@@ -69,6 +98,7 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 - Kapazität > 0
 - `unitTypeId` muss existieren
 - `areaId` optional, muss bei Angabe existieren
+- `HOT_DESK` braucht immer eine `areaId`
 
 ## Fehlerbilder
 

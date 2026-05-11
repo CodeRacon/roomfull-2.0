@@ -75,7 +75,8 @@ Wichtige Regeln:
 
 ## Tech Stack
 
-- Frontend: Next.js + TypeScript
+- Frontend: Next.js + TypeScript + Tailwind CSS
+- UI-Helfer: `clsx` für bedingte Klassen und Varianten
 - Backend: Express + TypeScript
 - Datenbank: PostgreSQL
 

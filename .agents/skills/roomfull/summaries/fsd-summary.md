@@ -29,10 +29,13 @@ Verwendete Layer:
 Wichtig ist die saubere Unterscheidung zwischen Fachobjekt und Aktion:
 
 - `unit` ist eine Entity
+- `booking-option` ist eine Entity für den Customer-facing Einstieg in den Buchungsflow
 - `booking` ist eine Entity
 - `create-booking` ist ein Feature
 - `cancel-booking` ist ein Feature
 - `check-unit-availability` ist ein Feature
+
+`booking-option` ist nicht dasselbe wie `unit`: Eine BookingOption beschreibt ein öffentliches Angebot wie `HOT_DESK`, `BOOTH` oder `TEAM_ROOM`; gebucht wird am Ende trotzdem eine konkrete Unit.
 
 Nicht jede kleine Komponente ist eine Feature-Slice. Allgemeine UI-Bausteine gehören nach `shared`.
 

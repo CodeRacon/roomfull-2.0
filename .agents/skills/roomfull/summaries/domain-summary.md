@@ -22,11 +22,25 @@ Admin verwaltet Units, sieht alle Bookings und darf operativ Bookings anlegen.
 
 Gebucht wird immer eine konkrete `BookableUnit`.
 
+## Customer-Einstieg
+
+Die Homepage soll perspektivisch `BookingOption`s anzeigen, nicht einzelne BookableUnits.
+
+Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem bewusst freigegebenen UnitType:
+
+- `HOT_DESK`
+- `BOOTH`
+- `TEAM_ROOM`
+
+`BookingOption.status` beschreibt nur grundsätzliche Verfügbarkeit ohne Zeitraum. Zeitbezogene Verfügbarkeit wird später im Booking-Flow geprüft.
+
 ## Struktur
 
 - `Area` gruppiert mehrere BookableUnits (z. B. Open World)
 - `BookableUnit.areaId` ist optional
 - `BookableUnit` gehört zu genau einem `UnitType`
+- `HOT_DESK` braucht für Public Booking immer eine Area
+- `BOOTH` und `TEAM_ROOM` dürfen optional Areas haben, nutzen Areas im Customer-Flow aber zunächst nicht als Auswahlentscheidung
 
 ## Zustände
 
@@ -59,6 +73,7 @@ Gebucht wird immer eine konkrete `BookableUnit`.
 
 - Request: `areaId + unitType + start + end`
 - in V1 nur `HOT_DESK`
+- Area-Auswahl ist für Hot Desk im Customer-Flow erforderlich
 - freie Unit deterministisch nach `displayOrder`, dann `id`
 - race-sicher über Transaktion/Konflikt-Retry
 

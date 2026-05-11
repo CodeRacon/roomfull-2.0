@@ -39,8 +39,36 @@ Es gibt zwei Rollen:
 - `Area` (z. B. "Open World")
 - `UnitType` (`HOT_DESK`, `BOOTH`, `TEAM_ROOM`)
 - `BookableUnit` (konkretes buchbares Objekt)
+- `BookingOption` (Customer-facing Einstieg in den Buchungsflow)
 
 Gebucht wird immer eine konkrete `BookableUnit`.
+
+## BookingOption-Regeln
+
+Eine BookingOption:
+
+- entspricht im MVP genau einem bewusst freigegebenen UnitType
+- wird über eine explizite Backend-Allowlist veröffentlicht
+- ist der Einstieg auf der Homepage
+- ist kein Ersatz für die konkrete BookableUnit, die am Ende gebucht wird
+
+Allowlist in V1:
+
+- `HOT_DESK`
+- `BOOTH`
+- `TEAM_ROOM`
+
+BookingOptions haben:
+
+- `bookingMode`: `AUTO_ASSIGN` oder `CHOOSE_UNIT`
+- `areaSelection`: `REQUIRED` oder `NOT_APPLICABLE`
+- `status`: `AVAILABLE` oder `UNAVAILABLE`
+- `totalActiveUnits`
+- `areas`
+
+`status` beschreibt nur grundsätzliche Verfügbarkeit ohne Zeitraum. Zeitbezogene Availability wird separat geprüft.
+
+Fehlt ein UnitType aus der Allowlist in der Datenbank, ist das ein System-/Seed-Fehler.
 
 ## Area-Regeln
 
@@ -59,6 +87,13 @@ Eine BookableUnit:
 - hat eine `displayOrder` für deterministische Auswahl
 - kann optional einer Area zugeordnet sein (`areaId` optional)
 - ist aktiv oder deaktiviert
+
+Zusätzliche Area-Regeln:
+
+- `HOT_DESK` braucht immer eine `areaId`
+- `BOOTH` und `TEAM_ROOM` dürfen optional eine Area haben
+- im Public BookingOptions-Contract werden `areas[]` nur für `HOT_DESK` befüllt
+- `BOOTH` und `TEAM_ROOM` liefern im BookingOptions-Contract `areas: []`
 
 ## Booking-Regeln
 
@@ -171,6 +206,7 @@ new_end > existing_start
 - UnitType muss existieren
 - `displayOrder` muss >= 0 sein
 - `areaId` ist optional, muss bei Angabe existieren
+- bei `HOT_DESK` ist `areaId` verpflichtend
 
 ### Booking
 

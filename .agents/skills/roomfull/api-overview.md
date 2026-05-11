@@ -45,6 +45,40 @@ Authorization: Bearer <token>
 
 ## Units
 
+### `GET /public/booking-options`
+
+Liefert die Customer-facing BookingOptions für den Homepage-Einstieg.
+
+Der Endpoint arbeitet ohne Zeitraum und beschreibt nur grundsätzliche Buchbarkeit.
+
+Response-Shape:
+
+```ts
+type BookingMode = "AUTO_ASSIGN" | "CHOOSE_UNIT";
+type AreaSelectionMode = "REQUIRED" | "NOT_APPLICABLE";
+type BookingOptionStatus = "AVAILABLE" | "UNAVAILABLE";
+
+type BookingOption = {
+  key: "HOT_DESK" | "BOOTH" | "TEAM_ROOM";
+  unitType: { id: string; name: "HOT_DESK" | "BOOTH" | "TEAM_ROOM" };
+  bookingMode: BookingMode;
+  areaSelection: AreaSelectionMode;
+  status: BookingOptionStatus;
+  totalActiveUnits: number;
+  areas: Array<{ id: string; name: string; activeUnitCount: number }>;
+};
+```
+
+Regeln:
+
+- Public BookingOptions kommen aus einer expliziten Backend-Allowlist
+- `HOT_DESK` nutzt `AUTO_ASSIGN` und `areaSelection: REQUIRED`
+- `HOT_DESK.areas[]` enthält Areas mit aktiver Hot-Desk-Anzahl
+- `BOOTH` und `TEAM_ROOM` nutzen `CHOOSE_UNIT` und `areaSelection: NOT_APPLICABLE`
+- `BOOTH` und `TEAM_ROOM` liefern `areas: []`
+- `status` ist `AVAILABLE`, wenn `totalActiveUnits > 0`, sonst `UNAVAILABLE`
+- fehlende Allowlist-UnitTypes sind System-/Seed-Fehler
+
 ### `GET /public/units`
 
 Liefert alle aktiven Units.
@@ -141,6 +175,7 @@ Liefert alle Buchungen.
 - Kapazität muss positiv sein
 - `unitTypeId` muss existieren
 - `areaId` ist optional, muss bei Angabe existieren
+- bei `HOT_DESK` ist `areaId` verpflichtend
 
 ## Wichtige Fehlerfälle
 
