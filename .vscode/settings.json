@@ -42,5 +42,8 @@
   },
   "[css]": {
     "editor.defaultFormatter": "biomejs.biome"
-  }
+  },
+  "tailwindCSS.experimental.classRegex": [
+		["clsx\\(([^)]*)\\)", "[\"'`]([^\"'`]*)[\"'`]"]
+	]
 }
