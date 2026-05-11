@@ -1,2 +1,10 @@
 export { getPublicUnitById, getPublicUnits } from "./api";
-export type { Unit, UnitListResponse, UnitResponse } from "./model";
+export { formatUnitTypeName } from "./lib";
+export type {
+	Unit,
+	UnitArea,
+	UnitListResponse,
+	UnitResponse,
+	UnitType,
+	UnitTypeName,
+} from "./model";

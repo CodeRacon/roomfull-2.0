@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { Unit } from "@/entities/unit";
+import { formatUnitTypeName, type Unit } from "@/entities/unit";
+import { Badge, FeedbackBox, Panel } from "@/shared/ui";
 
 type UnitsListProps = {
 	units: Unit[];
@@ -8,34 +9,40 @@ type UnitsListProps = {
 export function UnitsList({ units }: UnitsListProps) {
 	if (units.length === 0) {
 		return (
-			<p className="mt-8 rounded-md border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
+			<FeedbackBox className="mt-8 rounded-md border border-dashed border-border bg-surface px-4 py-6 text-sm text-muted">
 				Keine Units verfügbar.
-			</p>
+			</FeedbackBox>
 		);
 	}
 
 	return (
 		<section className="mt-8 grid gap-4 sm:grid-cols-2">
 			{units.map((unit) => (
-				<article
+				<Panel
+					padding="compact"
 					key={unit.id}
-					className="rounded-md border border-slate-200 bg-white p-5 shadow-xs"
+					className="rounded-md border border-border bg-surface p-5 shadow-xs"
 				>
-					<h2 className="text-lg font-medium ">
-						<Link
-							href={`/units/${unit.id}`}
-							className="text-slate-950 hover:text-slate-700 hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
-						>
-							{unit.name}
-						</Link>
-					</h2>
-					<p className="mt-2 text-sm leading-6 text-slate-600">
+					<div className="flex justify-between">
+						<h1 className="text-lg font-bold">
+							<Link
+								href={`/units/${unit.id}`}
+								className="text-text underline-offset-4 hover:text-primary-hover hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+							>
+								{unit.name}
+							</Link>
+						</h1>
+						<FeedbackBox className="w-fit!">
+							{formatUnitTypeName(unit.unitType.name)}
+						</FeedbackBox>
+					</div>
+					<p className="mt-2 text-sm leading-6 text-muted">
 						{unit.description}
 					</p>
-					<p className="mt-4 text-sm font-medium text-slate-700">
+					<Badge className="mt-4 text-sm font-medium text-text">
 						Kapazität: {unit.capacity}
-					</p>
-				</article>
+					</Badge>
+				</Panel>
 			))}
 		</section>
 	);

@@ -1,1 +1,8 @@
-export type { Unit, UnitListResponse, UnitResponse } from "./types";
+export type {
+	Unit,
+	UnitArea,
+	UnitListResponse,
+	UnitResponse,
+	UnitType,
+	UnitTypeName,
+} from "./types";

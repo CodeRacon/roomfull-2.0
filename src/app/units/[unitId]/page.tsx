@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPublicUnitById } from "@/entities/unit";
+import { Button } from "@/shared/ui";
 
 type UnitDetailsPageProps = {
 	params: Promise<{ unitId: string }>;
@@ -12,24 +13,21 @@ export default async function UnitDetailsPage({
 	const { name, description, capacity } = await getPublicUnitById(unitId);
 
 	return (
-		<main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-950">
+		<main className="min-h-screen bg-background px-6 py-10 text-text">
 			<div className="mx-auto w-full max-w-5xl">
-				<h1 className="text-3xl font-semibold tracking-tight text-slate-950">
+				<h1 className="text-3xl font-semibold tracking-tight text-text">
 					{name}
 				</h1>
 
-				<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+				<p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
 					{description}
 				</p>
-				<p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
+				<p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
 					Kapazität: {capacity}
 				</p>
-				<Link
-					href="/"
-					className="inline-block mt-8 text-sm font-medium text-slate-600 hover:text-slate-950 hover:underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
-				>
-					Zurück zur Übersicht
-				</Link>
+				<Button className="mt-8">
+					<Link href="/">Zurück zur Übersicht</Link>
+				</Button>
 			</div>
 		</main>
 	);
