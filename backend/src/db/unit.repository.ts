@@ -29,6 +29,16 @@ export async function listActiveUnits(): Promise<BookableUnit[]> {
 	});
 }
 
+export async function listActiveUnitsWithRelations(): Promise<
+	UnitWithRelations[]
+> {
+	return prisma.bookableUnit.findMany({
+		where: { isActive: true },
+		orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+		include: { unitType: true, area: true },
+	});
+}
+
 export async function findUnitById(id: string): Promise<BookableUnit | null> {
 	return prisma.bookableUnit.findUnique({
 		where: { id },

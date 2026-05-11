@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.listActiveUnits = listActiveUnits;
+exports.listActiveUnitsWithRelations = listActiveUnitsWithRelations;
 exports.findUnitById = findUnitById;
 exports.findUnitByIdWithRelations = findUnitByIdWithRelations;
 exports.findActiveUnitById = findActiveUnitById;
@@ -18,6 +19,13 @@ async function listActiveUnits() {
     return prisma_js_1.prisma.bookableUnit.findMany({
         where: { isActive: true },
         orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+    });
+}
+async function listActiveUnitsWithRelations() {
+    return prisma_js_1.prisma.bookableUnit.findMany({
+        where: { isActive: true },
+        orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+        include: { unitType: true, area: true },
     });
 }
 async function findUnitById(id) {

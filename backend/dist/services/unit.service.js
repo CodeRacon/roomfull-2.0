@@ -170,14 +170,14 @@ async function createNewUnit(input) {
     return (0, unit_repository_js_1.createUnit)(normalizedInput);
 }
 async function getPublicUnits() {
-    return (0, unit_repository_js_1.listActiveUnits)();
+    return (0, unit_repository_js_1.listActiveUnitsWithRelations)();
 }
 async function getPublicUnitById(unitId) {
     const normalizedUnitId = unitId.trim();
     if (normalizedUnitId.length === 0) {
         throw new app_error_js_1.AppError(400, "Ungültige Route-Parameter");
     }
-    const existingUnit = await (0, unit_repository_js_1.findActiveUnitById)(normalizedUnitId);
+    const existingUnit = await (0, unit_repository_js_1.findActiveUnitByIdWithRelations)(normalizedUnitId);
     if (!existingUnit) {
         throw new app_error_js_1.AppError(404, "Unit wurde nicht gefunden");
     }

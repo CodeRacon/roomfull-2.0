@@ -7,8 +7,10 @@ import {
 	deactivateUnit,
 	doesUnitTypeExist,
 	findActiveUnitById,
+	findActiveUnitByIdWithRelations,
 	findUnitById,
-	listActiveUnits,
+	listActiveUnitsWithRelations,
+	type UnitWithRelations,
 	type UpdateUnitInput,
 	updateUnit,
 } from "../db/unit.repository.js";
@@ -235,18 +237,20 @@ export async function createNewUnit(
 	return createUnit(normalizedInput);
 }
 
-export async function getPublicUnits(): Promise<BookableUnit[]> {
-	return listActiveUnits();
+export async function getPublicUnits(): Promise<UnitWithRelations[]> {
+	return listActiveUnitsWithRelations();
 }
 
-export async function getPublicUnitById(unitId: string): Promise<BookableUnit> {
+export async function getPublicUnitById(
+	unitId: string,
+): Promise<UnitWithRelations> {
 	const normalizedUnitId = unitId.trim();
 
 	if (normalizedUnitId.length === 0) {
 		throw new AppError(400, "Ungültige Route-Parameter");
 	}
 
-	const existingUnit = await findActiveUnitById(normalizedUnitId);
+	const existingUnit = await findActiveUnitByIdWithRelations(normalizedUnitId);
 
 	if (!existingUnit) {
 		throw new AppError(404, "Unit wurde nicht gefunden");
