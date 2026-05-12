@@ -1,6 +1,8 @@
-import { PrismaClient, UnitTypeName } from "@prisma/client";
+import { PrismaClient, UnitTypeName, UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
+const PASSWORD_HASH_ROUNDS = 12;
 
 const unitTypes: {
 	name: UnitTypeName;
@@ -18,9 +20,31 @@ const unitTypes: {
 		minDurationMinutes: 60,
 		maxDurationMinutes: 480,
 	},
+	{
+		name: UnitTypeName.MEETING_ROOM,
+		minDurationMinutes: 60,
+		maxDurationMinutes: 480,
+	},
 ];
 
 async function main(): Promise<void> {
+	const adminPasswordHash = await bcrypt.hash("1q2w3e4r", PASSWORD_HASH_ROUNDS);
+
+	await prisma.user.upsert({
+		where: { email: "admin@example.com" },
+		update: {
+			name: "Admin User",
+			passwordHash: adminPasswordHash,
+			role: UserRole.ADMIN,
+		},
+		create: {
+			name: "Admin User",
+			email: "admin@example.com",
+			passwordHash: adminPasswordHash,
+			role: UserRole.ADMIN,
+		},
+	});
+
 	const openWorldArea = await prisma.area.upsert({
 		where: { name: "Open World" },
 		update: {},
@@ -55,7 +79,11 @@ async function main(): Promise<void> {
 		(unitType) => unitType.name === UnitTypeName.TEAM_ROOM,
 	);
 
-	if (!hotDeskType || !boothType || !teamRoomType) {
+	const meetingRoomType = seededUnitTypes.find(
+		(unitType) => unitType.name === UnitTypeName.MEETING_ROOM,
+	);
+
+	if (!hotDeskType || !boothType || !teamRoomType || !meetingRoomType) {
 		throw new Error("UnitTypes fehlen nach Seed");
 	}
 
@@ -94,6 +122,15 @@ async function main(): Promise<void> {
 			capacity: 6,
 			displayOrder: 40,
 			unitTypeId: teamRoomType.id,
+			areaId: null,
+		},
+		{
+			id: "seed-meeting-room-d1",
+			name: "Meeting Room D1",
+			description: "Großer Meeting Room für Workshops und Abstimmungen",
+			capacity: 16,
+			displayOrder: 50,
+			unitTypeId: meetingRoomType.id,
 			areaId: null,
 		},
 	];

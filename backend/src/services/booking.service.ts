@@ -86,6 +86,8 @@ function parseUnitType(value: string): UnitTypeName {
 			return UnitTypeName.BOOTH;
 		case UnitTypeName.TEAM_ROOM:
 			return UnitTypeName.TEAM_ROOM;
+		case UnitTypeName.MEETING_ROOM:
+			return UnitTypeName.MEETING_ROOM;
 		default:
 			throw new AppError(400, "unitType ist ungültig");
 	}

@@ -1,0 +1,35 @@
+meta {
+  name: Public Booking Options
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/public/booking-options
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  let json = res.getBody();
+  if (typeof json === "string") {
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      json = null;
+    }
+  }
+
+  const hotDeskOption = json?.bookingOptions?.find(
+    (option) => option.key === "HOT_DESK"
+  );
+
+  if (hotDeskOption?.unitType?.id) {
+    bru.setVar("hotDeskUnitTypeId", hotDeskOption.unitType.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

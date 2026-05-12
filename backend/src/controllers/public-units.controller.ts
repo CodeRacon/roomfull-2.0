@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
 import {
+	getPublicBookingOptions,
 	getPublicUnitAvailability,
 	getPublicUnitById,
 	getPublicUnits,
@@ -19,6 +20,19 @@ export async function listPublicUnitsController(
 	try {
 		const units = await getPublicUnits();
 		res.status(200).json({ units });
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function listPublicBookingOptionsController(
+	_req: Request,
+	res: Response,
+	next: NextFunction,
+): Promise<void> {
+	try {
+		const bookingOptions = await getPublicBookingOptions();
+		res.status(200).json({ bookingOptions });
 	} catch (error) {
 		next(error);
 	}

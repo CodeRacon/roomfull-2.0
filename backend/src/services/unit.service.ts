@@ -1,4 +1,4 @@
-import type { BookableUnit } from "@prisma/client";
+import type { BookableUnit, UnitTypeName } from "@prisma/client";
 import { doesAreaExist } from "../db/area.repository.js";
 import { hasOverlappingActiveBookings } from "../db/booking.repository.js";
 import {
@@ -9,7 +9,10 @@ import {
 	findActiveUnitById,
 	findActiveUnitByIdWithRelations,
 	findUnitById,
+	findUnitTypeById,
 	listActiveUnitsWithRelations,
+	listUnitTypesForBookingOptions,
+	type UnitTypeForBookingOption,
 	type UnitWithRelations,
 	type UpdateUnitInput,
 	updateUnit,
@@ -27,6 +30,87 @@ export type UnitAvailability = {
 	endTime: string;
 	isAvailable: boolean;
 };
+
+export type BookingMode = "AUTO_ASSIGN" | "CHOOSE_UNIT";
+export type AreaSelectionMode = "REQUIRED" | "NOT_APPLICABLE";
+export type BookingOptionStatus = "AVAILABLE" | "UNAVAILABLE";
+
+export type BookingOptionArea = {
+	id: string;
+	name: string;
+	activeUnitCount: number;
+};
+
+export type BookingOption = {
+	key: UnitTypeName;
+	unitType: {
+		id: string;
+		name: UnitTypeName;
+	};
+	bookingMode: BookingMode;
+	areaSelection: AreaSelectionMode;
+	status: BookingOptionStatus;
+	totalActiveUnits: number;
+	areas: BookingOptionArea[];
+};
+
+export const BOOKING_OPTION_UNIT_TYPES: UnitTypeName[] = [
+	"HOT_DESK",
+	"BOOTH",
+	"TEAM_ROOM",
+	"MEETING_ROOM",
+];
+
+function getBookingOptionStatus(totalActiveUnits: number): BookingOptionStatus {
+	return totalActiveUnits > 0 ? "AVAILABLE" : "UNAVAILABLE";
+}
+
+function buildHotDeskAreas(
+	unitType: UnitTypeForBookingOption,
+): BookingOptionArea[] {
+	const areaCounts = new Map<string, BookingOptionArea>();
+
+	for (const unit of unitType.units) {
+		const area = unit.area;
+		if (!area) {
+			continue;
+		}
+
+		let existing = areaCounts.get(area.id);
+		if (!existing) {
+			existing = {
+				id: area.id,
+				name: area.name,
+				activeUnitCount: 0,
+			};
+			areaCounts.set(area.id, existing);
+		}
+
+		existing.activeUnitCount += 1;
+	}
+
+	return Array.from(areaCounts.values());
+}
+
+function buildBookingOption(unitType: UnitTypeForBookingOption): BookingOption {
+	const isHotDesk = unitType.name === "HOT_DESK";
+
+	const areas = isHotDesk ? buildHotDeskAreas(unitType) : [];
+
+	const totalActiveUnits = isHotDesk
+		? areas.reduce((sum, area) => sum + area.activeUnitCount, 0)
+		: unitType.units.length;
+
+	return {
+		key: unitType.name,
+		unitType: { id: unitType.id, name: unitType.name },
+		bookingMode: isHotDesk ? "AUTO_ASSIGN" : "CHOOSE_UNIT",
+		areaSelection: isHotDesk ? "REQUIRED" : "NOT_APPLICABLE",
+		status: getBookingOptionStatus(totalActiveUnits),
+		totalActiveUnits,
+		areas,
+	};
+}
 
 function assertNonEmpty(value: string, message: string): void {
 	if (value.trim().length === 0) {
@@ -181,6 +265,21 @@ async function assertAreaExists(areaId: string): Promise<void> {
 	}
 }
 
+async function assertUnitTypeExistsAndHotDeskHasArea(
+	unitTypeId: string,
+	areaId: string | undefined,
+): Promise<void> {
+	const unitType = await findUnitTypeById(unitTypeId);
+
+	if (!unitType) {
+		throw new AppError(404, "UnitType wurde nicht gefunden");
+	}
+
+	if (unitType.name === "HOT_DESK" && !areaId) {
+		throw new AppError(400, "Hot Desk benötigt eine Area");
+	}
+}
+
 function validateCreateInput(input: CreateUnitInput): void {
 	assertNonEmpty(input.name, "Unit-Name darf nicht leer sein");
 	assertNonEmpty(input.description, "Beschreibung darf nicht leer sein");
@@ -228,7 +327,10 @@ export async function createNewUnit(
 	const normalizedInput = normalizeCreateInput(input);
 
 	validateCreateInput(normalizedInput);
-	await assertUnitTypeExists(normalizedInput.unitTypeId);
+	await assertUnitTypeExistsAndHotDeskHasArea(
+		normalizedInput.unitTypeId,
+		normalizedInput.areaId,
+	);
 
 	if (normalizedInput.areaId) {
 		await assertAreaExists(normalizedInput.areaId);
@@ -239,6 +341,25 @@ export async function createNewUnit(
 
 export async function getPublicUnits(): Promise<UnitWithRelations[]> {
 	return listActiveUnitsWithRelations();
+}
+
+export async function getPublicBookingOptions(): Promise<BookingOption[]> {
+	const unitTypes = await listUnitTypesForBookingOptions(
+		BOOKING_OPTION_UNIT_TYPES,
+	);
+	const unitTypesByName = new Map(
+		unitTypes.map((unitType) => [unitType.name, unitType]),
+	);
+
+	return BOOKING_OPTION_UNIT_TYPES.map((unitTypeName) => {
+		const unitType = unitTypesByName.get(unitTypeName);
+
+		if (!unitType) {
+			throw new AppError(500, "BookingOption UnitType fehlt");
+		}
+
+		return buildBookingOption(unitType);
+	});
 }
 
 export async function getPublicUnitById(
@@ -308,13 +429,19 @@ export async function updateExistingUnit(
 	input: UpdateUnitInput,
 ): Promise<BookableUnit> {
 	const normalizedInput = normalizeUpdateInput(input);
-	await assertUnitExists(normalizedInput.id);
+	const existingUnit = await assertUnitExists(normalizedInput.id);
 
 	validateUpdateInput(normalizedInput);
 
-	if (normalizedInput.unitTypeId !== undefined) {
-		await assertUnitTypeExists(normalizedInput.unitTypeId);
-	}
+	const effectiveUnitTypeId =
+		normalizedInput.unitTypeId ?? existingUnit.unitTypeId;
+	const effectiveAreaId =
+		normalizedInput.areaId ?? existingUnit.areaId ?? undefined;
+
+	await assertUnitTypeExistsAndHotDeskHasArea(
+		effectiveUnitTypeId,
+		effectiveAreaId,
+	);
 
 	if (normalizedInput.areaId !== undefined) {
 		await assertAreaExists(normalizedInput.areaId);

@@ -1,0 +1,27 @@
+meta {
+  name: Admin Update Unit To Hot Desk Without Area
+  type: http
+  seq: 12
+}
+
+put {
+  url: {{baseUrl}}/api/admin/units/seed-booth-b1
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{adminToken}}
+}
+
+body:json {
+  {
+    "unitTypeId": "{{hotDeskUnitTypeId}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

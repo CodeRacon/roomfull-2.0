@@ -18,8 +18,23 @@ export type CreateUnitInput = {
 
 export type UpdateUnitInput = { id: string } & Partial<CreateUnitInput>;
 
+export type UnitTypeIdentity = {
+	id: string;
+	name: UnitTypeName;
+};
+
 export type UnitWithRelations = Prisma.BookableUnitGetPayload<{
 	include: { unitType: true; area: true };
+}>;
+
+export type UnitTypeForBookingOption = Prisma.UnitTypeGetPayload<{
+	include: {
+		units: {
+			where: { isActive: true };
+			include: { area: true };
+			orderBy: [{ displayOrder: "asc" }, { id: "asc" }];
+		};
+	};
 }>;
 
 export async function listActiveUnits(): Promise<BookableUnit[]> {
@@ -89,6 +104,15 @@ export async function doesUnitTypeExist(id: string): Promise<boolean> {
 export async function findUnitTypeByName(name: UnitTypeName) {
 	return prisma.unitType.findUnique({
 		where: { name },
+	});
+}
+
+export async function findUnitTypeById(
+	id: string,
+): Promise<UnitTypeIdentity | null> {
+	return prisma.unitType.findUnique({
+		where: { id },
+		select: { id: true, name: true },
 	});
 }
 
@@ -185,5 +209,21 @@ export async function createBookingWithTransaction(input: {
 
 			throw error;
 		}
+	});
+}
+
+export async function listUnitTypesForBookingOptions(
+	unitTypeNames: UnitTypeName[],
+): Promise<UnitTypeForBookingOption[]> {
+	return prisma.unitType.findMany({
+		where: { name: { in: unitTypeNames } },
+		orderBy: { name: "asc" },
+		include: {
+			units: {
+				where: { isActive: true },
+				include: { area: true },
+				orderBy: [{ displayOrder: "asc" }, { id: "asc" }],
+			},
+		},
 	});
 }

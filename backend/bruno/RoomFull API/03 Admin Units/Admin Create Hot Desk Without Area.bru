@@ -1,0 +1,31 @@
+meta {
+  name: Admin Create Hot Desk Without Area
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{baseUrl}}/api/admin/units
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{adminToken}}
+}
+
+body:json {
+  {
+    "name": "Invalid Hot Desk Without Area",
+    "description": "Dieser Request muss fehlschlagen, weil HOT_DESK eine Area benötigt",
+    "capacity": 1,
+    "displayOrder": 99,
+    "unitTypeId": "{{hotDeskUnitTypeId}}"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -25,6 +25,7 @@ enum UnitTypeName {
   HOT_DESK
   BOOTH
   TEAM_ROOM
+  MEETING_ROOM
 }
 
 model User {

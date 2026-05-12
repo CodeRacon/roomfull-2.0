@@ -111,6 +111,23 @@
 				}
 			}
 		},
+		"/public/booking-options": {
+			"get": {
+				"tags": ["Public Units"],
+				"summary": "Public BookingOptions laden",
+				"description": "Liefert die Customer-facing BookingOptions für den Homepage-Einstieg. Der Endpoint arbeitet ohne Zeitraum und beschreibt grundsätzliche Buchbarkeit.",
+				"responses": {
+					"200": {
+						"description": "Liste öffentlicher BookingOptions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/BookingOptionListResponse" }
+							}
+						}
+					}
+				}
+			}
+		},
 		"/public/units/{unitId}": {
 			"get": {
 				"tags": ["Public Units"],
@@ -472,6 +489,72 @@
 					}
 				},
 				"required": ["units"]
+			},
+			"BookingOptionArea": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string" },
+					"activeUnitCount": { "type": "integer", "minimum": 0 }
+				},
+				"required": ["id", "name", "activeUnitCount"]
+			},
+			"BookingOptionUnitType": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": {
+						"type": "string",
+						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+					}
+				},
+				"required": ["id", "name"]
+			},
+			"BookingOption": {
+				"type": "object",
+				"properties": {
+					"key": {
+						"type": "string",
+						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+					},
+					"unitType": { "$ref": "#/components/schemas/BookingOptionUnitType" },
+					"bookingMode": {
+						"type": "string",
+						"enum": ["AUTO_ASSIGN", "CHOOSE_UNIT"]
+					},
+					"areaSelection": {
+						"type": "string",
+						"enum": ["REQUIRED", "NOT_APPLICABLE"]
+					},
+					"status": {
+						"type": "string",
+						"enum": ["AVAILABLE", "UNAVAILABLE"]
+					},
+					"totalActiveUnits": { "type": "integer", "minimum": 0 },
+					"areas": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/BookingOptionArea" }
+					}
+				},
+				"required": [
+					"key",
+					"unitType",
+					"bookingMode",
+					"areaSelection",
+					"status",
+					"totalActiveUnits",
+					"areas"
+				]
+			},
+			"BookingOptionListResponse": {
+				"type": "object",
+				"properties": {
+					"bookingOptions": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/BookingOption" }
+					}
+				},
+				"required": ["bookingOptions"]
 			},
 			"UnitAvailability": {
 				"type": "object",
