@@ -16,7 +16,7 @@ Admin verwaltet Units, sieht alle Bookings und darf operativ Bookings anlegen.
 
 - `User`
 - `Area`
-- `UnitType` (`HOT_DESK`, `BOOTH`, `TEAM_ROOM`)
+- `UnitType` (`HOT_DESK`, `BOOTH`, `TEAM_ROOM`, `MEETING_ROOM`)
 - `BookableUnit`
 - `Booking`
 
@@ -31,6 +31,7 @@ Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem
 - `HOT_DESK`
 - `BOOTH`
 - `TEAM_ROOM`
+- `MEETING_ROOM`
 
 `BookingOption.status` beschreibt nur grundsätzliche Verfügbarkeit ohne Zeitraum. Zeitbezogene Verfügbarkeit wird später im Booking-Flow geprüft.
 
@@ -40,7 +41,7 @@ Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem
 - `BookableUnit.areaId` ist optional
 - `BookableUnit` gehört zu genau einem `UnitType`
 - `HOT_DESK` braucht für Public Booking immer eine Area
-- `BOOTH` und `TEAM_ROOM` dürfen optional Areas haben, nutzen Areas im Customer-Flow aber zunächst nicht als Auswahlentscheidung
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` dürfen optional Areas haben, nutzen Areas im Customer-Flow aber zunächst nicht als Auswahlentscheidung
 
 ## Zustände
 
@@ -68,6 +69,7 @@ Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem
 - `HOT_DESK`: min 30, max 240 Minuten
 - `BOOTH`: min 60, max 480 Minuten
 - `TEAM_ROOM`: min 60, max 480 Minuten
+- `MEETING_ROOM`: min 60, max 480 Minuten
 
 ## Hot-Desk-Auto-Assign
 

@@ -18,7 +18,7 @@ Version 1 konzentriert sich auf den Buchungskern:
 - Units administrativ anlegen, bearbeiten und deaktivieren
 - Buchungen administrativ einsehen und verwalten
 
-Die Homepage soll perspektivisch nicht das interne Unit-Inventar zeigen, sondern buchbare Bedarfskategorien wie `HOT_DESK`, `BOOTH` und `TEAM_ROOM`.
+Die Homepage soll perspektivisch nicht das interne Unit-Inventar zeigen, sondern buchbare Bedarfskategorien wie `HOT_DESK`, `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM`.
 
 ## Nicht Teil von Version 1
 

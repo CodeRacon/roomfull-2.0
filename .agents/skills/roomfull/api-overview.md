@@ -59,8 +59,8 @@ type AreaSelectionMode = "REQUIRED" | "NOT_APPLICABLE";
 type BookingOptionStatus = "AVAILABLE" | "UNAVAILABLE";
 
 type BookingOption = {
-  key: "HOT_DESK" | "BOOTH" | "TEAM_ROOM";
-  unitType: { id: string; name: "HOT_DESK" | "BOOTH" | "TEAM_ROOM" };
+  key: "HOT_DESK" | "BOOTH" | "TEAM_ROOM" | "MEETING_ROOM";
+  unitType: { id: string; name: "HOT_DESK" | "BOOTH" | "TEAM_ROOM" | "MEETING_ROOM" };
   bookingMode: BookingMode;
   areaSelection: AreaSelectionMode;
   status: BookingOptionStatus;
@@ -74,8 +74,8 @@ Regeln:
 - Public BookingOptions kommen aus einer expliziten Backend-Allowlist
 - `HOT_DESK` nutzt `AUTO_ASSIGN` und `areaSelection: REQUIRED`
 - `HOT_DESK.areas[]` enthält Areas mit aktiver Hot-Desk-Anzahl
-- `BOOTH` und `TEAM_ROOM` nutzen `CHOOSE_UNIT` und `areaSelection: NOT_APPLICABLE`
-- `BOOTH` und `TEAM_ROOM` liefern `areas: []`
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` nutzen `CHOOSE_UNIT` und `areaSelection: NOT_APPLICABLE`
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`
 - `status` ist `AVAILABLE`, wenn `totalActiveUnits > 0`, sonst `UNAVAILABLE`
 - fehlende Allowlist-UnitTypes sind System-/Seed-Fehler
 
@@ -163,7 +163,7 @@ Liefert alle Buchungen.
 - nur zukünftige Zeiträume
 - nur Montag bis Freitag
 - nur innerhalb globaler Öffnungszeiten (08:00-22:00)
-- Dauerregel pro UnitType (`HOT_DESK` 30-240, `BOOTH` 60-480, `TEAM_ROOM` 60-480)
+- Dauerregel pro UnitType (`HOT_DESK` 30-240, `BOOTH` 60-480, `TEAM_ROOM` 60-480, `MEETING_ROOM` 60-480)
 - direkte Buchung: `unitId` muss aktiv existieren
 - auto-assign: `areaId + unitType` erforderlich, in V1 nur `HOT_DESK`
 - keine Überschneidung mit aktiver Buchung

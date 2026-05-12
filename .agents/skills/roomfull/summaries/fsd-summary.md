@@ -35,7 +35,7 @@ Wichtig ist die saubere Unterscheidung zwischen Fachobjekt und Aktion:
 - `cancel-booking` ist ein Feature
 - `check-unit-availability` ist ein Feature
 
-`booking-option` ist nicht dasselbe wie `unit`: Eine BookingOption beschreibt ein öffentliches Angebot wie `HOT_DESK`, `BOOTH` oder `TEAM_ROOM`; gebucht wird am Ende trotzdem eine konkrete Unit.
+`booking-option` ist nicht dasselbe wie `unit`: Eine BookingOption beschreibt ein öffentliches Angebot wie `HOT_DESK`, `BOOTH`, `TEAM_ROOM` oder `MEETING_ROOM`; gebucht wird am Ende trotzdem eine konkrete Unit.
 
 Nicht jede kleine Komponente ist eine Feature-Slice. Allgemeine UI-Bausteine gehören nach `shared`.
 

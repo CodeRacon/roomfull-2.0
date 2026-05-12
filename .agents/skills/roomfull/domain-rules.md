@@ -37,7 +37,7 @@ Es gibt zwei Rollen:
 ## Kernbegriffe
 
 - `Area` (z. B. "Open World")
-- `UnitType` (`HOT_DESK`, `BOOTH`, `TEAM_ROOM`)
+- `UnitType` (`HOT_DESK`, `BOOTH`, `TEAM_ROOM`, `MEETING_ROOM`)
 - `BookableUnit` (konkretes buchbares Objekt)
 - `BookingOption` (Customer-facing Einstieg in den Buchungsflow)
 
@@ -57,6 +57,7 @@ Allowlist in V1:
 - `HOT_DESK`
 - `BOOTH`
 - `TEAM_ROOM`
+- `MEETING_ROOM`
 
 BookingOptions haben:
 
@@ -91,9 +92,9 @@ Eine BookableUnit:
 Zusätzliche Area-Regeln:
 
 - `HOT_DESK` braucht immer eine `areaId`
-- `BOOTH` und `TEAM_ROOM` dürfen optional eine Area haben
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` dürfen optional eine Area haben
 - im Public BookingOptions-Contract werden `areas[]` nur für `HOT_DESK` befüllt
-- `BOOTH` und `TEAM_ROOM` liefern im BookingOptions-Contract `areas: []`
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern im BookingOptions-Contract `areas: []`
 
 ## Booking-Regeln
 
@@ -136,6 +137,7 @@ Für Version 1 gelten globale Öffnungszeiten:
 - `HOT_DESK`: min 30 Minuten, max 240 Minuten
 - `BOOTH`: min 60 Minuten, max 480 Minuten
 - `TEAM_ROOM`: min 60 Minuten, max 480 Minuten
+- `MEETING_ROOM`: min 60 Minuten, max 480 Minuten
 
 ## Booking-Request-Modi
 

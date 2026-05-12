@@ -50,6 +50,7 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
   - `HOT_DESK`
   - `BOOTH`
   - `TEAM_ROOM`
+  - `MEETING_ROOM`
 - `BookingOption.key` entspricht dem jeweiligen `UnitTypeName`
 - Endpoint: `GET /public/booking-options`
 - Der Endpoint beschreibt grundsätzliche Buchungsoptionen ohne Zeitraum
@@ -64,9 +65,9 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
   - `REQUIRED`
   - `NOT_APPLICABLE`
 - `HOT_DESK` nutzt `AUTO_ASSIGN` und `areaSelection: REQUIRED`
-- `BOOTH` und `TEAM_ROOM` nutzen `CHOOSE_UNIT` und `areaSelection: NOT_APPLICABLE`
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` nutzen `CHOOSE_UNIT` und `areaSelection: NOT_APPLICABLE`
 - `HOT_DESK.areas[]` wird mit buchbaren Areas und deren aktiver Unit-Anzahl befüllt
-- `BOOTH` und `TEAM_ROOM` liefern `areas: []`, auch wenn konkrete Units intern Area-Zuordnungen haben
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`, auch wenn konkrete Units intern Area-Zuordnungen haben
 - Ein fehlender Allowlist-`UnitType` ist ein System-/Seed-Fehler und soll hart sichtbar werden
 - UI-Labels, Descriptions und Color-Schemes bleiben Frontend-Presentation-Mapping und sind keine Backend-Fachlogik
 
@@ -90,6 +91,7 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
   - `HOT_DESK`: min 30, max 240 Minuten
   - `BOOTH`: min 60, max 480 Minuten
   - `TEAM_ROOM`: min 60, max 480 Minuten
+  - `MEETING_ROOM`: min 60, max 480 Minuten
 
 ## Hot-Desk-Entscheidung
 

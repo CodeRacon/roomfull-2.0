@@ -36,6 +36,7 @@ Der Endpoint liefert grundsätzliche Customer-Angebote ohne Zeitraum:
 - `HOT_DESK`
 - `BOOTH`
 - `TEAM_ROOM`
+- `MEETING_ROOM`
 
 Der Contract enthält:
 
@@ -47,7 +48,7 @@ Der Contract enthält:
 - `totalActiveUnits`
 - `areas`
 
-`HOT_DESK` liefert Areas mit aktiver Unit-Anzahl. `BOOTH` und `TEAM_ROOM` liefern `areas: []`.
+`HOT_DESK` liefert Areas mit aktiver Unit-Anzahl. `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`.
 
 `GET /public/units` bleibt für konkrete Unit-Auswahl und Unit-Details bestehen.
 
