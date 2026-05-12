@@ -18,5 +18,5 @@ backend/.env.*
 
 out
 .env.local
-.DS_Store
+**/.DS_Store
 skills-lock.json
