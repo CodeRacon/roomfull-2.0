@@ -1,32 +1,64 @@
 @import "tailwindcss";
 
 @theme {
-	--color-background: #f3f7f5;
+	--color-background: #f0e2db;
 
 	--color-surface: #ffffff;
-	--color-surface-muted: #e8edea;
+	--color-surface-muted: #ead8cf;
 
-	--color-border: #d8e2dc;
-	--color-text: #232635;
-	--color-muted: #6d6875;
+	--color-border: #d9c4ba;
+	--color-text: #172331;
+	--color-muted: #6d597a;
 
-	--color-primary: #809bce;
-	--color-primary-hover: #6f8dc2;
-	--color-primary-soft: #e8eef8;
+	--color-primary: #6d597a;
+	--color-primary-hover: #5c4869;
+	--color-primary-soft: #e7dce8;
 
-	--color-accent: #b8e0d2;
-	--color-accent-soft: #eff8f4;
+	--color-secondary: #355070;
+	--color-secondary-soft: #dce4ed;
 
-	--color-success-bg: #eaf7f1;
-	--color-success-text: #276653;
+	--color-tertiary: #b56576;
+	--color-tertiary-soft: #f0d8dd;
+
+	--color-accent-one: #e56b6f;
+	--color-accent-one-soft: #f8d5d7;
+
+	--color-accent-two: #eaac8b;
+	--color-accent-two-soft: #f8dfd0;
+
+	--color-accent: #eaac8b;
+	--color-accent-soft: #f8dfd0;
+
+	--color-success-bg: #e7efe5;
+	--color-success-text: #355f45;
 
 	--color-warning-bg: #fff2d8;
 	--color-warning-text: #805a13;
 
-	--color-danger-bg: #fbecef;
+	--color-danger-bg: #f8d5d7;
 	--color-danger-text: #8a2636;
 
-	--color-focus: #809bce;
+	--color-focus: #355070;
+
+	--color-room-desk: #355070;
+	--color-room-desk-soft: #dce4ed;
+	--color-room-desk-muted: #eef3f8;
+	--color-room-desk-strong: #293f59;
+
+	--color-room-booth: #6d597a;
+	--color-room-booth-soft: #e7dce8;
+	--color-room-booth-muted: #f5eef6;
+	--color-room-booth-strong: #5c4869;
+
+	--color-room-team: #4f7469;
+	--color-room-team-soft: #dfeae5;
+	--color-room-team-muted: #f0f7f4;
+	--color-room-team-strong: #31554c;
+
+	--color-room-meeting: #eaac8b;
+	--color-room-meeting-soft: #f8dfd0;
+	--color-room-meeting-muted: #fff1e8;
+	--color-room-meeting-strong: #8a5634;
 }
 
 :root {

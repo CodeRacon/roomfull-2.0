@@ -15,7 +15,7 @@ export function Badge({
 	variant = "neutral",
 }: BadgeProps) {
 	const badgeClassName = clsx(
-		"inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-medium",
+		"inline-flex w-fit items-center rounded-full px-2.5 py-1 text-xs font-medium shadow-xs",
 		variant === "neutral" && "bg-primary-soft text-text",
 		variant === "success" && "bg-success-bg text-success-text",
 		variant === "warning" && "bg-warning-bg text-warning-text",

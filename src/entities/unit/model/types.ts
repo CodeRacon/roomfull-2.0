@@ -1,4 +1,8 @@
-export type UnitTypeName = "HOT_DESK" | "BOOTH" | "TEAM_ROOM";
+export type UnitTypeName =
+	| "HOT_DESK"
+	| "BOOTH"
+	| "TEAM_ROOM"
+	| "MEETING_ROOM";
 
 export type UnitType = { id: string; name: UnitTypeName };
 export type UnitArea = { id: string; name: string };
