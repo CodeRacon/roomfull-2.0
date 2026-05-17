@@ -20,7 +20,7 @@ export function Panel({
 	const panelClassName = clsx(
 		"rounded-md border border-border shadow-xs",
 		variant === "default" && "bg-surface",
-		variant === "muted" && "bg-surface-muted",
+		variant === "muted" && "bg-surface-muted border-border-muted opacity-70",
 		padding === "normal" && "p-6",
 		padding === "compact" && "p-4",
 		className,

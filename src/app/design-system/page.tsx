@@ -1,9 +1,11 @@
 import {
+	Anchor,
 	Badge,
 	Button,
 	FeedbackBox,
 	Field,
 	Panel,
+	PasswordInput,
 	TextInput,
 } from "@/shared/ui";
 
@@ -33,12 +35,49 @@ export default function DesignSystemPage() {
 					</div>
 				</section>
 
+				<section className="mt-10 rounded-md border border-border bg-surface p-6 shadow-xs">
+					<h2 className="text-lg font-medium text-text">Anchor</h2>
+					<div className="mt-5 flex flex-wrap gap-3">
+						<Anchor variant="primary" href="/">
+							Primary
+						</Anchor>
+						<Anchor variant="secondary" href="/">
+							Secondary
+						</Anchor>
+					</div>
+				</section>
+
+				<section className="mt-6 rounded-md border border-border bg-surface p-6 shadow-xs">
+					<h2 className="text-lg font-medium text-text">Auth Pages</h2>
+					<p className="mt-2 text-sm leading-6 text-muted">
+						Test login and register with a safe booking redirect target.
+					</p>
+					<div className="mt-5 flex flex-wrap gap-3">
+						<Anchor href="/login?next=/bookings/new?unitId=demo-unit">
+							Login testen
+						</Anchor>
+						<Anchor
+							variant="secondary"
+							href="/register?next=/bookings/new?unitId=demo-unit"
+						>
+							Register testen
+						</Anchor>
+					</div>
+				</section>
+
 				<section className="mt-6 rounded-md border border-border bg-surface p-6 shadow-xs">
 					<h2 className="text-lg font-medium text-text">TextInput</h2>
 					<div className="mt-5 grid gap-4 sm:grid-cols-3">
 						<TextInput placeholder="Normal input" />
 						<TextInput invalid placeholder="Invalid input" />
 						<TextInput disabled placeholder="Disabled input" />
+					</div>
+				</section>
+
+				<section className="mt-6 rounded-md border border-border bg-surface p-6 shadow-xs">
+					<h2 className="text-lg font-medium text-text">PasswordInput</h2>
+					<div className="mt-5 grid gap-4 sm:grid-cols-3">
+						<PasswordInput placeholder="your password..." />
 					</div>
 				</section>
 

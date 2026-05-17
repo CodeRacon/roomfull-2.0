@@ -20,7 +20,7 @@ export function TextInput({
 		invalid &&
 			"border-danger-text focus-visible:outline-danger-text bg-danger-bg!",
 		disabled &&
-			"disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70",
+			"border-border-muted disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70",
 		className,
 	);
 

@@ -1,6 +1,8 @@
+export { Anchor } from "./anchor";
 export { Badge } from "./badge";
 export { Button } from "./button";
 export { FeedbackBox } from "./feedback-box";
 export { Field } from "./field";
 export { Panel } from "./panel";
+export { PasswordInput } from "./password-input";
 export { TextInput } from "./text-input";

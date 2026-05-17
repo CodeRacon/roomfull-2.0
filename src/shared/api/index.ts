@@ -1,1 +1,7 @@
-export { apiGet, buildApiUrl, getApiBaseUrl } from "./api-client";
+export {
+	ApiRequestError,
+	apiGet,
+	apiPost,
+	buildApiUrl,
+	getApiBaseUrl,
+} from "./api-client";
