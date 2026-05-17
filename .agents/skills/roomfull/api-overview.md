@@ -60,7 +60,12 @@ type BookingOptionStatus = "AVAILABLE" | "UNAVAILABLE";
 
 type BookingOption = {
   key: "HOT_DESK" | "BOOTH" | "TEAM_ROOM" | "MEETING_ROOM";
-  unitType: { id: string; name: "HOT_DESK" | "BOOTH" | "TEAM_ROOM" | "MEETING_ROOM" };
+  unitType: {
+    id: string;
+    name: "HOT_DESK" | "BOOTH" | "TEAM_ROOM" | "MEETING_ROOM";
+    minDurationMinutes: number;
+    maxDurationMinutes: number;
+  };
   bookingMode: BookingMode;
   areaSelection: AreaSelectionMode;
   status: BookingOptionStatus;
@@ -82,6 +87,22 @@ Regeln:
 ### `GET /public/units`
 
 Liefert alle aktiven Units.
+`unitType` enthält `id`, `name`, `minDurationMinutes` und `maxDurationMinutes`.
+
+Optional filterbar nach `unitType`:
+
+```txt
+GET /public/units?unitType=BOOTH
+```
+
+Erlaubte Werte:
+
+- `HOT_DESK`
+- `BOOTH`
+- `TEAM_ROOM`
+- `MEETING_ROOM`
+
+Ungueltige Werte liefern `400 Bad Request`.
 
 ### `GET /public/units/:unitId`
 
@@ -106,6 +127,28 @@ Direkter Modus:
   "end": "2026-04-15T12:00:00.000Z"
 }
 ```
+
+### `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
+
+Liefert auth-required die aktiven blockierenden Intervalle einer Unit fuer einen Berliner Kalendertag.
+
+Response:
+
+```ts
+type UnitDayBookings = {
+  date: string;
+  unitId: string;
+  bookedIntervals: Array<{ start: string; end: string }>;
+};
+```
+
+Regeln:
+
+- Customer und Admin duerfen den Endpoint nutzen
+- nur aktive Bookings werden beruecksichtigt
+- keine Owner-/User-Daten werden ausgeliefert
+- vergangene Tage und Wochenenden liefern `400`
+- unbekannte oder inaktive Unit liefert `404`
 
 Auto-Assign (nur `HOT_DESK`):
 
@@ -160,10 +203,11 @@ Liefert alle Buchungen.
 ### Booking
 
 - `start < end`
+- Start und Ende am selben Kalendertag
 - nur zukünftige Zeiträume
 - nur Montag bis Freitag
 - nur innerhalb globaler Öffnungszeiten (08:00-22:00)
-- Dauerregel pro UnitType (`HOT_DESK` 30-240, `BOOTH` 60-480, `TEAM_ROOM` 60-480, `MEETING_ROOM` 60-480)
+- Dauerregel pro UnitType (`HOT_DESK` 30-240, `BOOTH` 60-240, `TEAM_ROOM` 60-480, `MEETING_ROOM` 60-480)
 - direkte Buchung: `unitId` muss aktiv existieren
 - auto-assign: `areaId + unitType` erforderlich, in V1 nur `HOT_DESK`
 - keine Überschneidung mit aktiver Buchung

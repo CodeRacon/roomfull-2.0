@@ -41,7 +41,7 @@ Der Endpoint liefert grundsätzliche Customer-Angebote ohne Zeitraum:
 Der Contract enthält:
 
 - `key`
-- `unitType`
+- `unitType` mit `id`, `name`, `minDurationMinutes`, `maxDurationMinutes`
 - `bookingMode`
 - `areaSelection`
 - `status`
@@ -51,11 +51,15 @@ Der Contract enthält:
 `HOT_DESK` liefert Areas mit aktiver Unit-Anzahl. `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`.
 
 `GET /public/units` bleibt für konkrete Unit-Auswahl und Unit-Details bestehen.
+`Unit.unitType` enthält ebenfalls `minDurationMinutes` und `maxDurationMinutes`.
+Der Endpoint ist optional nach `unitType` filterbar, z. B. `GET /public/units?unitType=BOOTH`.
+Ungültige `unitType`-Werte liefern `400 Bad Request`.
 
 ### Bookings
 
 - `POST /bookings`
 - `GET /me/bookings`
+- `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
 - `DELETE /bookings/:bookingId`
 
 ### Admin
@@ -80,18 +84,28 @@ Der Contract enthält:
 BookingOptions nutzen dieselbe fachliche Unterscheidung:
 
 - `AUTO_ASSIGN` für Hot Desk
-- `CHOOSE_UNIT` für Booth und Team Room
+- `CHOOSE_UNIT` für Booth, Team Room und Meeting Room
 
 ## Validierung
 
 ### Booking
 
 - `start < end`
+- Start und Ende am selben Kalendertag
 - nur zukünftige Zeiträume
 - nur Mo-Fr und innerhalb 08:00-22:00
 - Dauer nach UnitType-Policy
 - keine Überschneidung aktiver Bookings auf derselben Unit
 - Auto-Assign ist race-sicher (Transaktion/Konflikt-Retry)
+
+### Unit Day Bookings
+
+- auth-required
+- Customer und Admin erlaubt
+- liefert nur aktive blockierende Intervalle
+- keine User-/Owner-Daten
+- `date` muss `YYYY-MM-DD`, heute oder zukünftig und ein Werktag sein
+- unbekannte/inaktive Unit liefert `404`
 
 ### Unit Management
 

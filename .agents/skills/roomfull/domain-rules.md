@@ -135,7 +135,7 @@ Für Version 1 gelten globale Öffnungszeiten:
 ## Dauerregeln pro UnitType
 
 - `HOT_DESK`: min 30 Minuten, max 240 Minuten
-- `BOOTH`: min 60 Minuten, max 480 Minuten
+- `BOOTH`: min 60 Minuten, max 240 Minuten
 - `TEAM_ROOM`: min 60 Minuten, max 480 Minuten
 - `MEETING_ROOM`: min 60 Minuten, max 480 Minuten
 
@@ -159,6 +159,7 @@ Für Version 1 gelten globale Öffnungszeiten:
 - nur aktive Units sind buchbar
 - nur zukünftige Zeiträume sind buchbar
 - `start_time < end_time`
+- Start und Ende müssen am selben Kalendertag liegen
 - Booking muss innerhalb globaler Öffnungszeiten liegen
 - Dauer muss zur UnitType-Policy passen
 - keine Überschneidung aktiver Bookings auf derselben Unit

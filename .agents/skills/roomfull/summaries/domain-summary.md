@@ -63,11 +63,12 @@ Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem
 - globale Öffnungszeiten: Mo-Fr, 08:00-22:00
 - nur zukünftige Zeiträume
 - `start_time < end_time`
+- Start und Ende am selben Kalendertag
 
 ## Dauerregeln pro UnitType
 
 - `HOT_DESK`: min 30, max 240 Minuten
-- `BOOTH`: min 60, max 480 Minuten
+- `BOOTH`: min 60, max 240 Minuten
 - `TEAM_ROOM`: min 60, max 480 Minuten
 - `MEETING_ROOM`: min 60, max 480 Minuten
 

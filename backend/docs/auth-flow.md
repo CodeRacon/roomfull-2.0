@@ -1,3 +1,13 @@
+## Frontend Auth Redirect
+
+- Login und Register duerfen einen `next`-Query-Parameter nutzen.
+- `next` muss ein interner relativer Pfad sein, z. B. `/bookings/new?unitId=...`.
+- Externe URLs, protocol-relative URLs wie `//example.com`, kaputte Werte und Auth-Loops werden auf `/` zurueckgefuehrt.
+- Nach erfolgreichem Login/Register speichert das Frontend den Access Token clientseitig und navigiert zu `next`.
+- Der eigentliche BookingFlow bleibt zusaetzlich auth-required und darf sich nicht nur auf diesen Redirect verlassen.
+
+---
+
 ## Login Flow `POST /api/auth/login`
 
 ### Request

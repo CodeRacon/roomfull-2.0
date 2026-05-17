@@ -1,3 +1,81 @@
+## Customer BookingFlow Entscheidungen
+
+Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Einzelne technische Slices werden danach separat umgesetzt.
+
+### Einstieg und Angebotsauswahl
+
+- Homepage zeigt `BookingOption`s, nicht einzelne Units.
+- BookingOptions verlinken auf oeffentliche Angebotsuebersichten:
+  - `/booking-options/hot-desk`
+  - `/booking-options/booth`
+  - `/booking-options/team-room`
+  - `/booking-options/meeting-room`
+- Angebotsuebersichten sind public und enthalten noch keine zeitbezogene Verfuegbarkeit.
+- Gueltiger UnitType ohne aktive Angebote zeigt einen Empty State.
+- Ungueltiger Slug/UnitType fuehrt zu `404`.
+
+### Auswahlmodell je UnitType
+
+- `HOT_DESK`: User waehlt eine Area, z. B. `Open World` oder `Quiet Place`.
+- `HOT_DESK`: User sieht und waehlt keinen konkreten Einzelplatz.
+- `HOT_DESK`: Backend weist per Auto-Assign eine freie konkrete Unit zu.
+- `BOOTH`, `TEAM_ROOM`, `MEETING_ROOM`: User waehlt eine konkrete Unit.
+- Areas sind im Customer-Flow ausschliesslich fuer `HOT_DESK` relevant.
+
+### Auth-Gate und Routen
+
+- Angebotsuebersicht bleibt public.
+- Eigentliche Buchung ist auth-required.
+- Auth-Gate kommt bei "Angebot buchen", nicht schon beim Homepage-Klick.
+- Login und Register sollen einen sicheren internen `next`-Parameter nutzen.
+- Frontend-Routen `/login` und `/register` bereinigen `next` vor dem Redirect.
+- Gemeinsamer BookingFlow:
+  - `/bookings/new?unitId=...`
+  - `/bookings/new?unitType=HOT_DESK&areaId=...`
+- `/bookings/new` ohne gueltigen Kontext wird nicht als sinnvoller Einstieg behandelt.
+
+### Zeit- und Verfuegbarkeitsmodell
+
+- User waehlt konkrete Von-bis-Zeitraeume.
+- UI nutzt ein 30-Minuten-Raster.
+- Fachliche Coworking-Zeit ist `Europe/Berlin`.
+- Backend-Zeitvalidierung laeuft zentral ueber `booking-time-policy.ts`.
+- Backend bleibt Source of Truth fuer Zeitregeln und Konflikte.
+- Bookings starten und enden am selben Kalendertag.
+- Kein Hold/5-Minuten-Timer im MVP.
+- Race-Conflicts werden ueber `409 Conflict` behandelt.
+
+### Tagesbelegung fuer konkrete Units
+
+- Fuer `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` soll der BookingFlow nach Datumsauswahl belegte Intervalle anzeigen.
+- Tagesbelegung ist auth-required.
+- Endpoint: `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
+- Response enthaelt nur aktive blockierende Intervalle, keine Owner-/User-Daten.
+- Vergangene Tage und Wochenenden sind fuer diesen Flow ungueltig.
+- `HOT_DESK` bekommt im MVP keine Area-Kapazitaetsvorschau.
+
+### Abschluss und Fehlerverhalten
+
+- Erfolgreiche Buchung fuehrt zu `Meine Buchungen` mit Success-Hinweis.
+- Bestehende Buchungen koennen im MVP nicht geaendert werden.
+- Aenderung bedeutet: stornieren und neu buchen.
+- Storno ist nur fuer eigene zukuenftige Buchungen erlaubt.
+- `400`: Eingaben korrigieren.
+- `401`: Login mit `next`.
+- `404`: Unit/Area nicht mehr verfuegbar, zur Angebotsuebersicht zurueck.
+- `409`: Zeitraum inzwischen belegt, im Flow bleiben und neu waehlen.
+- Netzwerkfehler: Retry anbieten.
+
+### Dauerregeln Zielbild
+
+- `HOT_DESK`: min 30, max 240 Minuten
+- `BOOTH`: min 60, max 240 Minuten
+- `TEAM_ROOM`: min 60, max 480 Minuten
+- `MEETING_ROOM`: min 60, max 480 Minuten
+- Public Contracts liefern diese Werte ueber `unitType.minDurationMinutes` und `unitType.maxDurationMinutes`.
+
+---
+
 ## Customer Create Booking Flow `POST /api/bookings`
 
 ### Request
@@ -26,7 +104,7 @@
 - Datei: [booking.service.ts](../src/services/booking.service.ts)
 - Funktion: `createBookingForUser`
 - Aufgabe:
-  - Zeitvalidierung (`start < end`, Zukunft, Mo-Fr, `08:00-22:00`)
+  - Zeitvalidierung (`start < end`, gleicher Kalendertag, Zukunft, Mo-Fr, `08:00-22:00`)
   - Modus auflösen (direkt vs auto-assign)
   - Dauerregel aus UnitType-Policy prüfen
   - Overlap-freie Booking erstellen
@@ -121,18 +199,20 @@ flowchart TD
   A[start/end parsebar?] -->|nein| E400a[400]
   A -->|ja| B[start < end?]
   B -->|nein| E400b[400]
-  B -->|ja| C[in Zukunft?]
+  B -->|ja| C[gleicher Kalendertag?]
   C -->|nein| E400c[400]
-  C -->|ja| D[Mo-Fr + 08:00-22:00?]
+  C -->|ja| D[in Zukunft?]
   D -->|nein| E400d[400]
-  D -->|ja| E[Request-Modus korrekt?]
+  D -->|ja| E[Mo-Fr + 08:00-22:00?]
   E -->|nein| E400e[400]
-  E -->|ja| F[Dauerregel pro UnitType ok?]
+  E -->|ja| F[Request-Modus korrekt?]
   F -->|nein| E400f[400]
-  F -->|ja| G[Direkt oder Auto-Assign]
-  G -->|nichts frei/kollision| E409[409]
-  G -->|Ziel gültig| H[Booking erstellen]
-  H --> S201[201]
+  F -->|ja| G[Dauerregel pro UnitType ok?]
+  G -->|nein| E400g[400]
+  G -->|ja| H[Direkt oder Auto-Assign]
+  H -->|nichts frei/kollision| E409[409]
+  H -->|Ziel gültig| I[Booking erstellen]
+  I --> S201[201]
 ```
 
 ### Error-Matrix

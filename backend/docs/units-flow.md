@@ -3,6 +3,14 @@
 ### Request
 
 - Client sendet `GET /api/public/units`
+- Response-Units enthalten `unitType.minDurationMinutes` und `unitType.maxDurationMinutes`
+- Optionaler Query-Parameter: `unitType`
+- Erlaubte Werte:
+  - `HOT_DESK`
+  - `BOOTH`
+  - `TEAM_ROOM`
+  - `MEETING_ROOM`
+- Beispiel: `GET /api/public/units?unitType=BOOTH`
 
 ### Route
 
@@ -13,19 +21,21 @@
 
 - Datei: [public-units.controller.ts](../src/controllers/public-units.controller.ts)
 - Funktion: `listPublicUnitsController`
-- Aufgabe: `getPublicUnits(...)` aufrufen und Ergebnis als `{ units }` zurückgeben
+- Aufgabe: optionalen `unitType`-Query lesen, `getPublicUnits(...)` aufrufen und Ergebnis als `{ units }` zurückgeben
 
 ### Service
 
 - Datei: [unit.service.ts](../src/services/unit.service.ts)
 - Funktion: `getPublicUnits`
-- Aufgabe: nur aktive Units laden lassen
+- Aufgabe: optionalen `unitType` validieren und nur aktive Units laden lassen
 
 ### Repository
 
 - Datei: [unit.repository.ts](../src/db/unit.repository.ts)
-- Funktion: `listActiveUnits`
-- Aufgabe: DB-Query mit `where: { isActive: true }`
+- Funktionen:
+  - `listActiveUnitsWithRelations`
+  - `listActiveUnitsWithRelationsByUnitType`
+- Aufgabe: DB-Query mit `where: { isActive: true }`, optional gefiltert nach `unitType.name`
 
 ### Mermaid (Happy Path)
 
@@ -38,16 +48,23 @@ sequenceDiagram
   participant UR as unit.repository
   participant DB as PostgreSQL
 
-  C->>R: GET /api/public/units
+  C->>R: GET /api/public/units?unitType=BOOTH
   R->>CT: listPublicUnitsController
-  CT->>S: getPublicUnits()
-  S->>UR: listActiveUnits()
-  UR->>DB: SELECT units WHERE is_active=true
+  CT->>S: getPublicUnits({unitType})
+  S->>S: unitType validieren
+  S->>UR: listActiveUnitsWithRelationsByUnitType(BOOTH)
+  UR->>DB: SELECT units WHERE is_active=true AND unit_type=BOOTH
   DB-->>UR: units
   UR-->>S: units
   S-->>CT: units
   CT-->>C: 200 OK { units }
 ```
+
+### Error-Matrix
+
+| Fehlerfall | HTTP |
+|---|---|
+| Ungültiger `unitType`-Query | `400` |
 
 ---
 

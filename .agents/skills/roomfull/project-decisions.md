@@ -89,7 +89,7 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - Dauerregeln sind datengetrieben über `unit_types`
 - Startwerte:
   - `HOT_DESK`: min 30, max 240 Minuten
-  - `BOOTH`: min 60, max 480 Minuten
+  - `BOOTH`: min 60, max 240 Minuten
   - `TEAM_ROOM`: min 60, max 480 Minuten
   - `MEETING_ROOM`: min 60, max 480 Minuten
 
@@ -112,6 +112,7 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - stornierte Bookings bleiben historisch erhalten
 - stornierte Bookings blockieren keine Verfügbarkeit mehr
 - `start_time < end_time`
+- Start und Ende liegen am selben Kalendertag
 - nur zukünftige Zeiträume
 - nur Montag bis Freitag
 - nur innerhalb globaler Öffnungszeiten (08:00-22:00)

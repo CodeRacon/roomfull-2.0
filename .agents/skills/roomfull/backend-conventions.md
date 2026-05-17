@@ -70,6 +70,7 @@ Wichtige Regeln wie diese werden dort geprüft:
 - nur aktive Units sind buchbar
 - nur zukünftige Zeiträume sind buchbar
 - `start_time < end_time`
+- Start und Ende müssen am selben Kalendertag liegen
 - Buchungen müssen innerhalb der globalen Öffnungszeiten liegen
 - keine Überschneidung aktiver Buchungen auf derselben Unit
 - Customers dürfen nur eigene Buchungen stornieren
