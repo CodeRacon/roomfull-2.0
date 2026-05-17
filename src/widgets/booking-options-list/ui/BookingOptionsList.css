@@ -1,16 +1,8 @@
 .room-card {
 	position: relative;
 	overflow: hidden;
-	border-color: color-mix(
-		in srgb,
-		var(--room-card-accent) 18%,
-		var(--color-border)
-	);
-	background: color-mix(
-		in srgb,
-		var(--color-surface) 92%,
-		var(--room-card-soft)
-	);
+	border-color: var(--room-card-accent);
+	background: linear-gradient(135deg, white, var(--room-card-muted));
 }
 
 .room-card::before {
@@ -62,17 +54,20 @@
 	color: var(--room-card-strong);
 }
 
-.room-card__icon,
+.room-card__icon {
+	color: var(--room-card-strong);
+	background: var(--room-card-muted);
+}
 .room-card__badge,
 .room-card__arrow {
 	color: var(--room-card-strong);
-	background: var(--room-card-muted);
+	background: var(--room-card-soft);
 }
 
 .room-card__icon-svg {
 	display: block;
-	width: 3.5rem;
-	height: 3.5rem;
+	width: 4rem;
+	height: 4rem;
 	color: var(--room-card-strong);
 }
 

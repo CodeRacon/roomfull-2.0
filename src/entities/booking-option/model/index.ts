@@ -5,5 +5,6 @@ export type {
 	BookingOptionArea,
 	BookingOptionKey,
 	BookingOptionListResponse,
+	BookingOptionSlug,
 	BookingOptionStatus,
 } from "./types";

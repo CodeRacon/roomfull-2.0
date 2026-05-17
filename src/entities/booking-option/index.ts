@@ -2,6 +2,8 @@ export { getPublicBookingOptions } from "./api";
 export {
 	formatBookingOptionStatus,
 	getBookingOptionDescription,
+	getBookingOptionHref,
+	parseBookingOptionSlug,
 } from "./lib";
 export type {
 	AreaSelectionMode,
@@ -10,5 +12,6 @@ export type {
 	BookingOptionArea,
 	BookingOptionKey,
 	BookingOptionListResponse,
+	BookingOptionSlug,
 	BookingOptionStatus,
 } from "./model";

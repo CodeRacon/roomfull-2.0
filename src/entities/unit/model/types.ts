@@ -1,11 +1,13 @@
-export type UnitTypeName =
-	| "HOT_DESK"
-	| "BOOTH"
-	| "TEAM_ROOM"
-	| "MEETING_ROOM";
+export type UnitTypeName = "HOT_DESK" | "BOOTH" | "TEAM_ROOM" | "MEETING_ROOM";
 
-export type UnitType = { id: string; name: UnitTypeName };
-export type UnitArea = { id: string; name: string };
+export type UnitType = {
+	id: string;
+	name: UnitTypeName;
+	minDurationMinutes: number;
+	maxDurationMinutes: number;
+	capacity: Unit["capacity"];
+};
+export type UnitArea = { id: string; name: string; description: string | null };
 
 export type Unit = {
 	id: string;

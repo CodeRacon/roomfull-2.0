@@ -18,12 +18,24 @@ export type BookingOptionArea = {
 
 export type BookingOption = {
 	key: BookingOptionKey;
-	unitType: { id: string; name: BookingOptionKey };
+	unitType: {
+		id: string;
+		name: BookingOptionKey;
+		minDurationMinutes: number;
+		maxDurationMinutes: number;
+	};
 	bookingMode: BookingMode;
 	areaSelection: AreaSelectionMode;
 	status: BookingOptionStatus;
 	totalActiveUnits: number;
+	maxCapacity: number;
 	areas: BookingOptionArea[];
 };
 
 export type BookingOptionListResponse = { bookingOptions: BookingOption[] };
+
+export type BookingOptionSlug =
+	| "hot-desk"
+	| "booth"
+	| "team-room"
+	| "meeting-room";

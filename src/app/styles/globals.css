@@ -4,11 +4,12 @@
 	--color-background: #f0e2db;
 
 	--color-surface: #ffffff;
-	--color-surface-muted: #ead8cf;
+	--color-surface-muted: #f3f3f3f3;
 
-	--color-border: #d9c4ba;
+	--color-border: #b1a6b9;
+	--color-border-muted: #c3c3c3;
 	--color-text: #172331;
-	--color-muted: #6d597a;
+	--color-muted: #b1a6b9;
 
 	--color-primary: #6d597a;
 	--color-primary-hover: #5c4869;
@@ -25,9 +26,6 @@
 
 	--color-accent-two: #eaac8b;
 	--color-accent-two-soft: #f8dfd0;
-
-	--color-accent: #eaac8b;
-	--color-accent-soft: #f8dfd0;
 
 	--color-success-bg: #e7efe5;
 	--color-success-text: #355f45;
@@ -65,7 +63,7 @@
 	color-scheme: light;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	line-height: 1.5;
-	/* color: #e8edea; */
+	/* color: #b1a6b9; */
 }
 
 * {
