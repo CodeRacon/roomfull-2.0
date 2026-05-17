@@ -4,6 +4,7 @@ import {
 	cancelBookingForUser,
 	createBookingForUser,
 	listAllBookingsForAdmin,
+	listUnitDayBookings,
 	listUserBookings,
 } from "../services/booking.service.js";
 
@@ -114,11 +115,22 @@ export async function listMyBookingsController(
 }
 
 type BookingParams = { bookingId: string };
+type UnitParams = { unitId: string };
 
 function parseBookingId(params: Request["params"]): string | null {
 	const bookingId =
 		typeof params.bookingId === "string" ? params.bookingId.trim() : "";
 	return bookingId.length > 0 ? bookingId : null;
+}
+
+function parseUnitId(params: Request["params"]): string | null {
+	const unitId = typeof params.unitId === "string" ? params.unitId.trim() : "";
+	return unitId.length > 0 ? unitId : null;
+}
+
+function parseDateQuery(query: Request["query"]): string | null {
+	const date = typeof query.date === "string" ? query.date.trim() : "";
+	return date.length > 0 ? date : null;
 }
 
 export async function cancelBookingController(
@@ -154,6 +166,33 @@ export async function listAdminBookingsController(
 	try {
 		const bookings = await listAllBookingsForAdmin();
 		res.status(200).json({ bookings });
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function listUnitDayBookingsController(
+	req: Request<UnitParams>,
+	res: Response,
+	next: NextFunction,
+): Promise<void> {
+	const unitId = parseUnitId(req.params);
+
+	if (!unitId) {
+		fail(next, 400, "Ungültige Route-Parameter");
+		return;
+	}
+
+	const date = parseDateQuery(req.query);
+
+	if (!date) {
+		fail(next, 400, "date Query-Parameter ist erforderlich");
+		return;
+	}
+
+	try {
+		const dayBookings = await listUnitDayBookings({ unitId, date });
+		res.status(200).json({ dayBookings });
 	} catch (error) {
 		next(error);
 	}

@@ -13,12 +13,17 @@ function parseUnitId(params: Request["params"]): string | null {
 }
 
 export async function listPublicUnitsController(
-	_req: Request,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ): Promise<void> {
+	const unitType =
+		typeof req.query.unitType === "string"
+			? req.query.unitType.trim()
+			: undefined;
+
 	try {
-		const units = await getPublicUnits();
+		const units = await getPublicUnits({ unitType });
 		res.status(200).json({ units });
 	} catch (error) {
 		next(error);

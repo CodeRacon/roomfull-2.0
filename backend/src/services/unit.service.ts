@@ -5,12 +5,12 @@ import {
 	type CreateUnitInput,
 	createUnit,
 	deactivateUnit,
-	doesUnitTypeExist,
 	findActiveUnitById,
 	findActiveUnitByIdWithRelations,
 	findUnitById,
 	findUnitTypeById,
 	listActiveUnitsWithRelations,
+	listActiveUnitsWithRelationsByUnitType,
 	listUnitTypesForBookingOptions,
 	type UnitTypeForBookingOption,
 	type UnitWithRelations,
@@ -18,11 +18,10 @@ import {
 	updateUnit,
 } from "../db/unit.repository.js";
 import { AppError } from "../lib/app-error.js";
-
-const WEEKDAY_START = 1;
-const WEEKDAY_END = 5;
-const OPENING_MINUTES = 8 * 60;
-const CLOSING_MINUTES = 22 * 60;
+import {
+	assertBookableDateTimeRange,
+	parseDateTime,
+} from "./booking-time-policy.js";
 
 export type UnitAvailability = {
 	unitId: string;
@@ -46,11 +45,14 @@ export type BookingOption = {
 	unitType: {
 		id: string;
 		name: UnitTypeName;
+		minDurationMinutes: number;
+		maxDurationMinutes: number;
 	};
 	bookingMode: BookingMode;
 	areaSelection: AreaSelectionMode;
 	status: BookingOptionStatus;
 	totalActiveUnits: number;
+	maxCapacity: number;
 	areas: BookingOptionArea[];
 };
 
@@ -60,6 +62,27 @@ export const BOOKING_OPTION_UNIT_TYPES: UnitTypeName[] = [
 	"TEAM_ROOM",
 	"MEETING_ROOM",
 ];
+
+function parseOptionalUnitType(value?: string): UnitTypeName | undefined {
+	const normalized = value?.trim().toUpperCase();
+
+	if (!normalized) {
+		return undefined;
+	}
+
+	switch (normalized) {
+		case "HOT_DESK":
+			return "HOT_DESK";
+		case "BOOTH":
+			return "BOOTH";
+		case "TEAM_ROOM":
+			return "TEAM_ROOM";
+		case "MEETING_ROOM":
+			return "MEETING_ROOM";
+		default:
+			throw new AppError(400, "unitType ist ungültig");
+	}
+}
 
 function getBookingOptionStatus(totalActiveUnits: number): BookingOptionStatus {
 	return totalActiveUnits > 0 ? "AVAILABLE" : "UNAVAILABLE";
@@ -101,13 +124,24 @@ function buildBookingOption(unitType: UnitTypeForBookingOption): BookingOption {
 		? areas.reduce((sum, area) => sum + area.activeUnitCount, 0)
 		: unitType.units.length;
 
+	const maxCapacity = unitType.units.reduce(
+		(max, unit) => Math.max(max, unit.capacity),
+		0,
+	);
+
 	return {
 		key: unitType.name,
-		unitType: { id: unitType.id, name: unitType.name },
+		unitType: {
+			id: unitType.id,
+			name: unitType.name,
+			minDurationMinutes: unitType.minDurationMinutes,
+			maxDurationMinutes: unitType.maxDurationMinutes,
+		},
 		bookingMode: isHotDesk ? "AUTO_ASSIGN" : "CHOOSE_UNIT",
 		areaSelection: isHotDesk ? "REQUIRED" : "NOT_APPLICABLE",
 		status: getBookingOptionStatus(totalActiveUnits),
 		totalActiveUnits,
+		maxCapacity,
 		areas,
 	};
 }
@@ -128,64 +162,6 @@ function assertNonNegativeInteger(value: number, message: string): void {
 	if (!Number.isInteger(value) || value < 0) {
 		throw new AppError(400, message);
 	}
-}
-
-function assertStartBeforeEnd(startTime: Date, endTime: Date): void {
-	if (startTime.getTime() >= endTime.getTime()) {
-		throw new AppError(400, "Startzeit muss vor Endzeit liegen");
-	}
-}
-
-function assertFutureRange(startTime: Date): void {
-	if (startTime.getTime() <= Date.now()) {
-		throw new AppError(400, "Nur zukünftige Zeiträume sind erlaubt");
-	}
-}
-
-function assertSameCalendarDay(startTime: Date, endTime: Date): void {
-	const isSameDate =
-		startTime.getFullYear() === endTime.getFullYear() &&
-		startTime.getMonth() === endTime.getMonth() &&
-		startTime.getDate() === endTime.getDate();
-
-	if (!isSameDate) {
-		throw new AppError(
-			400,
-			"Start und Ende müssen am selben Kalendertag liegen",
-		);
-	}
-}
-
-function assertWeekday(date: Date): void {
-	const day = date.getDay();
-	if (day < WEEKDAY_START || day > WEEKDAY_END) {
-		throw new AppError(400, "Zeitraum muss an einem Werktag liegen (Mo-Fr)");
-	}
-}
-
-function toMinutesOfDay(date: Date): number {
-	return date.getHours() * 60 + date.getMinutes();
-}
-
-function assertWithinOpeningHours(startTime: Date, endTime: Date): void {
-	const startMinutes = toMinutesOfDay(startTime);
-	const endMinutes = toMinutesOfDay(endTime);
-
-	if (startMinutes < OPENING_MINUTES || endMinutes > CLOSING_MINUTES) {
-		throw new AppError(
-			400,
-			"Zeitraum muss innerhalb der Öffnungszeiten (08:00-22:00) liegen",
-		);
-	}
-}
-
-function parseDateTime(value: string, fieldName: "start" | "end"): Date {
-	const parsed = new Date(value);
-	if (Number.isNaN(parsed.getTime())) {
-		throw new AppError(400, `Ungültiger ${fieldName}-Zeitpunkt`);
-	}
-
-	return parsed;
 }
 
 function normalizeCreateInput(input: CreateUnitInput): CreateUnitInput {
@@ -247,14 +223,6 @@ async function assertUnitExists(unitId: string): Promise<BookableUnit> {
 	}
 
 	return existingUnit;
-}
-
-async function assertUnitTypeExists(unitTypeId: string): Promise<void> {
-	const existingUnitType = await doesUnitTypeExist(unitTypeId);
-
-	if (!existingUnitType) {
-		throw new AppError(404, "UnitType wurde nicht gefunden");
-	}
 }
 
 async function assertAreaExists(areaId: string): Promise<void> {
@@ -339,7 +307,15 @@ export async function createNewUnit(
 	return createUnit(normalizedInput);
 }
 
-export async function getPublicUnits(): Promise<UnitWithRelations[]> {
+export async function getPublicUnits(input?: {
+	unitType?: string;
+}): Promise<UnitWithRelations[]> {
+	const unitType = parseOptionalUnitType(input?.unitType);
+
+	if (unitType) {
+		return listActiveUnitsWithRelationsByUnitType(unitType);
+	}
+
 	return listActiveUnitsWithRelations();
 }
 
@@ -400,11 +376,7 @@ export async function getPublicUnitAvailability(input: {
 	const startTime = parseDateTime(start, "start");
 	const endTime = parseDateTime(end, "end");
 
-	assertStartBeforeEnd(startTime, endTime);
-	assertFutureRange(startTime);
-	assertSameCalendarDay(startTime, endTime);
-	assertWeekday(startTime);
-	assertWithinOpeningHours(startTime, endTime);
+	assertBookableDateTimeRange(startTime, endTime);
 
 	const existingUnit = await findActiveUnitById(unitId);
 	if (!existingUnit) {

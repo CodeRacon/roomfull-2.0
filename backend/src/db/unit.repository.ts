@@ -54,6 +54,19 @@ export async function listActiveUnitsWithRelations(): Promise<
 	});
 }
 
+export async function listActiveUnitsWithRelationsByUnitType(
+	unitType: UnitTypeName,
+): Promise<UnitWithRelations[]> {
+	return prisma.bookableUnit.findMany({
+		where: {
+			isActive: true,
+			unitType: { name: unitType },
+		},
+		orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+		include: { unitType: true, area: true },
+	});
+}
+
 export async function findUnitById(id: string): Promise<BookableUnit | null> {
 	return prisma.bookableUnit.findUnique({
 		where: { id },
@@ -90,15 +103,6 @@ export async function findActiveUnitByIdWithRelations(
 		},
 		include: { unitType: true, area: true },
 	});
-}
-
-export async function doesUnitTypeExist(id: string): Promise<boolean> {
-	const unitType = await prisma.unitType.findUnique({
-		where: { id },
-		select: { id: true },
-	});
-
-	return unitType !== null;
 }
 
 export async function findUnitTypeByName(name: UnitTypeName) {

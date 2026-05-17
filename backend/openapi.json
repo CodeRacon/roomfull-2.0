@@ -99,6 +99,18 @@
 			"get": {
 				"tags": ["Public Units"],
 				"summary": "Aktive Units laden",
+				"parameters": [
+					{
+						"name": "unitType",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						},
+						"description": "Optionaler Filter nach UnitType"
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "Liste aktiver Units",
@@ -107,7 +119,8 @@
 								"schema": { "$ref": "#/components/schemas/UnitListResponse" }
 							}
 						}
-					}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" }
 				}
 			}
 		},
@@ -340,6 +353,45 @@
 				}
 			}
 		},
+		"/units/{unitId}/day-bookings": {
+			"get": {
+				"tags": ["Customer Bookings"],
+				"summary": "Belegte Intervalle einer Unit für einen Tag laden",
+				"description": "Auth-required Endpoint für den BookingFlow. Liefert nur aktive blockierende Intervalle, keine User-/Owner-Daten.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "unitId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					},
+					{
+						"name": "date",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"example": "2027-01-18"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Belegte Intervalle für den Tag",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/UnitDayBookingsResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
 		"/bookings/{bookingId}": {
 			"delete": {
 				"tags": ["Customer Bookings"],
@@ -458,6 +510,13 @@
 					"displayOrder": { "type": "integer", "minimum": 0 },
 					"unitTypeId": { "type": "string" },
 					"areaId": { "type": "string", "nullable": true },
+					"unitType": { "$ref": "#/components/schemas/UnitType" },
+					"area": {
+						"oneOf": [
+							{ "$ref": "#/components/schemas/UnitArea" },
+							{ "type": "null" }
+						]
+					},
 					"createdAt": { "type": "string", "format": "date-time" },
 					"updatedAt": { "type": "string", "format": "date-time" }
 				},
@@ -469,9 +528,37 @@
 					"isActive",
 					"displayOrder",
 					"unitTypeId",
+					"unitType",
+					"area",
 					"createdAt",
 					"updatedAt"
 				]
+			},
+			"UnitType": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": {
+						"type": "string",
+						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+					},
+					"minDurationMinutes": { "type": "integer", "minimum": 1 },
+					"maxDurationMinutes": { "type": "integer", "minimum": 1 }
+				},
+				"required": [
+					"id",
+					"name",
+					"minDurationMinutes",
+					"maxDurationMinutes"
+				]
+			},
+			"UnitArea": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string" }
+				},
+				"required": ["id", "name"]
 			},
 			"UnitResponse": {
 				"type": "object",
@@ -506,9 +593,16 @@
 					"name": {
 						"type": "string",
 						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
-					}
+					},
+					"minDurationMinutes": { "type": "integer", "minimum": 1 },
+					"maxDurationMinutes": { "type": "integer", "minimum": 1 }
 				},
-				"required": ["id", "name"]
+				"required": [
+					"id",
+					"name",
+					"minDurationMinutes",
+					"maxDurationMinutes"
+				]
 			},
 			"BookingOption": {
 				"type": "object",
@@ -653,6 +747,33 @@
 					}
 				},
 				"required": ["bookings"]
+			},
+			"BookedInterval": {
+				"type": "object",
+				"properties": {
+					"start": { "type": "string", "format": "date-time" },
+					"end": { "type": "string", "format": "date-time" }
+				},
+				"required": ["start", "end"]
+			},
+			"UnitDayBookings": {
+				"type": "object",
+				"properties": {
+					"date": { "type": "string", "format": "date" },
+					"unitId": { "type": "string" },
+					"bookedIntervals": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/BookedInterval" }
+					}
+				},
+				"required": ["date", "unitId", "bookedIntervals"]
+			},
+			"UnitDayBookingsResponse": {
+				"type": "object",
+				"properties": {
+					"dayBookings": { "$ref": "#/components/schemas/UnitDayBookings" }
+				},
+				"required": ["dayBookings"]
 			},
 			"ApiError": {
 				"type": "object",

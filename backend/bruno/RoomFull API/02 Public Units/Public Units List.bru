@@ -10,6 +10,22 @@ get {
   auth: inherit
 }
 
+tests {
+  test("units expose unit type duration limits", function () {
+    expect(res.getStatus()).to.equal(200);
+
+    const json = res.getBody();
+    const units = json && json.units ? json.units : [];
+
+    expect(
+      units.every(
+        (unit) =>
+          typeof unit.unitType.minDurationMinutes === "number" &&
+          typeof unit.unitType.maxDurationMinutes === "number"
+      )
+    ).to.equal(true);
+  });
+}
 
 settings {
   encodeUrl: true

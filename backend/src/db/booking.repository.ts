@@ -21,6 +21,11 @@ type CancelBookingInput = {
 	bookingId: string;
 };
 
+export type BookedInterval = {
+	startTime: Date;
+	endTime: Date;
+};
+
 export async function hasOverlappingActiveBookings(input: {
 	unitId: string;
 	startTime: Date;
@@ -37,6 +42,26 @@ export async function hasOverlappingActiveBookings(input: {
 	});
 
 	return booking !== null;
+}
+
+export async function listActiveBookingIntervalsForUnitInRange(input: {
+	unitId: string;
+	startTime: Date;
+	endTime: Date;
+}): Promise<BookedInterval[]> {
+	return prisma.booking.findMany({
+		where: {
+			unitId: input.unitId,
+			status: BookingStatus.ACTIVE,
+			startTime: { lt: input.endTime },
+			endTime: { gt: input.startTime },
+		},
+		select: {
+			startTime: true,
+			endTime: true,
+		},
+		orderBy: { startTime: "asc" },
+	});
 }
 
 export async function createBooking(

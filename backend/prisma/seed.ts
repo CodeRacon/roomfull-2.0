@@ -14,7 +14,7 @@ const unitTypes: {
 		minDurationMinutes: 30,
 		maxDurationMinutes: 240,
 	},
-	{ name: UnitTypeName.BOOTH, minDurationMinutes: 60, maxDurationMinutes: 480 },
+	{ name: UnitTypeName.BOOTH, minDurationMinutes: 60, maxDurationMinutes: 240 },
 	{
 		name: UnitTypeName.TEAM_ROOM,
 		minDurationMinutes: 60,
@@ -47,10 +47,25 @@ async function main(): Promise<void> {
 
 	const openWorldArea = await prisma.area.upsert({
 		where: { name: "Open World" },
-		update: {},
+		update: {
+			description: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
+			isActive: true,
+		},
 		create: {
 			name: "Open World",
-			description: "Offener Bereich mit mehreren Hot-Desk-Units",
+			description: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
+		},
+	});
+
+	const quietPlaceArea = await prisma.area.upsert({
+		where: { name: "Quiet Place" },
+		update: {
+			description: "Ruhiger Bereich für konzentriertes Arbeiten",
+			isActive: true,
+		},
+		create: {
+			name: "Quiet Place",
+			description: "Ruhiger Bereich für konzentriertes Arbeiten",
 		},
 	});
 
@@ -87,25 +102,29 @@ async function main(): Promise<void> {
 		throw new Error("UnitTypes fehlen nach Seed");
 	}
 
+	const hotDeskUnits = [
+		...Array.from({ length: 16 }, (_, index) => ({
+			id: `seed-hot-desk-open-world-${index + 1}`,
+			name: `Open World Desk ${index + 1}`,
+			description: "Flexibler Einzelplatz im Open-World-Bereich",
+			capacity: 1,
+			displayOrder: 10 + index,
+			unitTypeId: hotDeskType.id,
+			areaId: openWorldArea.id,
+		})),
+		...Array.from({ length: 12 }, (_, index) => ({
+			id: `seed-hot-desk-quiet-place-${index + 1}`,
+			name: `Quiet Place Desk ${index + 1}`,
+			description: "Ruhiger Einzelplatz im Quiet-Place-Bereich",
+			capacity: 1,
+			displayOrder: 100 + index,
+			unitTypeId: hotDeskType.id,
+			areaId: quietPlaceArea.id,
+		})),
+	];
+
 	const demoUnits = [
-		{
-			id: "seed-hot-desk-a1",
-			name: "Hot Desk A1",
-			description: "Flexibler Arbeitsplatz im Open-World-Bereich",
-			capacity: 1,
-			displayOrder: 10,
-			unitTypeId: hotDeskType.id,
-			areaId: openWorldArea.id,
-		},
-		{
-			id: "seed-hot-desk-a2",
-			name: "Hot Desk A2",
-			description: "Flexibler Arbeitsplatz im Open-World-Bereich",
-			capacity: 1,
-			displayOrder: 20,
-			unitTypeId: hotDeskType.id,
-			areaId: openWorldArea.id,
-		},
+		...hotDeskUnits,
 		{
 			id: "seed-booth-b1",
 			name: "Booth B1",

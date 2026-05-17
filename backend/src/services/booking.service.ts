@@ -4,16 +4,23 @@ import { findActiveAreaById } from "../db/area.repository.js";
 import {
 	cancelBooking as cancelBookingRecord,
 	findBookingById as findBookingByIdRecord,
+	listActiveBookingIntervalsForUnitInRange,
 	listAllBookings as listAllBookingsRecords,
 	listUserBookings as listUserBookingsRecords,
 } from "../db/booking.repository.js";
 import {
 	createBookingWithTransaction,
+	findActiveUnitById,
 	findActiveUnitByIdWithRelations,
 	findUnitTypeByName,
 	listAvailableUnitsForAllocation,
 } from "../db/unit.repository.js";
 import { AppError } from "../lib/app-error.js";
+import {
+	assertBookableDateTimeRange,
+	getBookableBerlinDayRange,
+	parseDateTime,
+} from "./booking-time-policy.js";
 
 type CreateBookingForUserInput = {
 	userId: string;
@@ -33,48 +40,19 @@ type CancelBookingForUserInput = {
 	userId: string;
 };
 
-const OPENING_MINUTES = 8 * 60;
-const CLOSING_MINUTES = 22 * 60;
+type ListUnitDayBookingsInput = {
+	unitId: string;
+	date: string;
+};
 
-export function parseDateTime(value: string, fieldName: "start" | "end"): Date {
-	const trimmed = value.trim();
-
-	if (trimmed === "") {
-		throw new AppError(400, `${fieldName} ist erforderlich`);
-	}
-
-	const date = new Date(trimmed);
-
-	if (Number.isNaN(date.getTime())) {
-		throw new AppError(400, `${fieldName} muss ein gültiges ISO-Datum sein`);
-	}
-	return date;
-}
-
-function assertFutureWorkingRange(startTime: Date, endTime: Date): void {
-	if (startTime.getTime() >= endTime.getTime()) {
-		throw new AppError(400, "Startzeit muss vor Endzeit liegen");
-	}
-
-	if (startTime.getTime() <= Date.now()) {
-		throw new AppError(400, "Nur zukünftige Zeiträume sind erlaubt");
-	}
-
-	const day = startTime.getDay();
-	if (day < 1 || day > 5) {
-		throw new AppError(400, "Zeitraum muss an einem Werktag liegen (Mo-Fr)");
-	}
-
-	const startMinutes = startTime.getHours() * 60 + startTime.getMinutes();
-	const endMinutes = endTime.getHours() * 60 + endTime.getMinutes();
-
-	if (startMinutes < OPENING_MINUTES || endMinutes > CLOSING_MINUTES) {
-		throw new AppError(
-			400,
-			"Zeitraum muss innerhalb der Öffnungszeiten liegen (Mo-Fr 08:00-22:00)",
-		);
-	}
-}
+export type UnitDayBookings = {
+	date: string;
+	unitId: string;
+	bookedIntervals: {
+		start: string;
+		end: string;
+	}[];
+};
 
 function parseUnitType(value: string): UnitTypeName {
 	const normalized = value.trim().toUpperCase();
@@ -243,7 +221,7 @@ export async function createBookingForUser(
 ): Promise<Booking> {
 	const startTime = parseDateTime(input.start, "start");
 	const endTime = parseDateTime(input.end, "end");
-	assertFutureWorkingRange(startTime, endTime);
+	assertBookableDateTimeRange(startTime, endTime);
 
 	const userId = input.userId.trim();
 	if (userId === "") {
@@ -316,4 +294,40 @@ export async function cancelBookingForUser(
 
 export async function listAllBookingsForAdmin(): Promise<Booking[]> {
 	return listAllBookingsRecords();
+}
+
+export async function listUnitDayBookings(
+	input: ListUnitDayBookingsInput,
+): Promise<UnitDayBookings> {
+	const unitId = input.unitId.trim();
+
+	if (unitId === "") {
+		throw new AppError(400, "unitId ist erforderlich");
+	}
+
+	const dayRange = getBookableBerlinDayRange(input.date);
+	const unit = await findActiveUnitById(unitId);
+
+	if (!unit) {
+		throw new AppError(404, "Unit wurde nicht gefunden");
+	}
+
+	const intervals = await listActiveBookingIntervalsForUnitInRange({
+		unitId,
+		startTime: dayRange.startTime,
+		endTime: dayRange.endTime,
+	});
+
+	return {
+		date: dayRange.date,
+		unitId,
+		bookedIntervals: intervals.map((interval) => ({
+			start: new Date(
+				Math.max(interval.startTime.getTime(), dayRange.startTime.getTime()),
+			).toISOString(),
+			end: new Date(
+				Math.min(interval.endTime.getTime(), dayRange.endTime.getTime()),
+			).toISOString(),
+		})),
+	};
 }

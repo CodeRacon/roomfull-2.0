@@ -10,6 +10,18 @@ get {
   auth: inherit
 }
 
+tests {
+  test("unit detail exposes unit type duration limits", function () {
+    expect(res.getStatus()).to.equal(200);
+
+    const json = res.getBody();
+    const unitType = json?.unit?.unitType;
+
+    expect(typeof unitType?.minDurationMinutes).to.equal("number");
+    expect(typeof unitType?.maxDurationMinutes).to.equal("number");
+  });
+}
+
 settings {
   encodeUrl: true
   timeout: 0

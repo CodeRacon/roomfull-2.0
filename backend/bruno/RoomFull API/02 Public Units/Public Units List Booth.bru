@@ -1,0 +1,27 @@
+meta {
+  name: Public Units List Booth
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/api/public/units?unitType=BOOTH
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("returns only booth units", function () {
+    expect(res.getStatus()).to.equal(200);
+
+    const json = res.getBody();
+    const units = json && json.units ? json.units : [];
+
+    expect(units.every((unit) => unit.unitType.name === "BOOTH")).to.equal(true);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

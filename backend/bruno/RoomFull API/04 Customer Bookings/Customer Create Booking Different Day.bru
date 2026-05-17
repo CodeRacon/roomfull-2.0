@@ -1,0 +1,35 @@
+meta {
+  name: Customer Create Booking Different Day
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{baseUrl}}/api/bookings
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "unitId": "{{unitId}}",
+    "start": "2027-01-18T21:00:00.000Z",
+    "end": "2027-01-19T10:00:00.000Z"
+  }
+}
+
+tests {
+  test("rejects bookings across calendar days", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

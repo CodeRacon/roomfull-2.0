@@ -1,0 +1,26 @@
+meta {
+  name: Customer Unit Day Bookings Invalid Date
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/api/units/{{unitId}}/day-bookings?date=not-a-date
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+tests {
+  test("rejects invalid date query", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

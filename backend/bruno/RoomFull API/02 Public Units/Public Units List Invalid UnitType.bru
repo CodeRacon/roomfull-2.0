@@ -1,0 +1,22 @@
+meta {
+  name: Public Units List Invalid UnitType
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/public/units?unitType=NOT_A_UNIT_TYPE
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("rejects invalid unitType query", function () {
+    expect(res.getStatus()).to.equal(400);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
