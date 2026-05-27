@@ -1,1 +1,1 @@
-export { clearAuthToken, getAuthToken, saveAuthToken } from "./model";
+export { SessionProvider, useSession } from "./model";

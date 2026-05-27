@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./styles/globals.css";
+import { Header } from "@/widgets/header";
+import { AppProviders } from "./providers";
 
 export const metadata: Metadata = {
 	title: "RoomFull 2.0",
@@ -14,7 +16,12 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
 	return (
 		<html lang="de">
-			<body>{children}</body>
+			<body>
+				<AppProviders>
+					<Header />
+					{children}
+				</AppProviders>
+			</body>
 		</html>
 	);
 }

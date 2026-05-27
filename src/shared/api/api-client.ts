@@ -17,20 +17,6 @@ export function buildApiUrl(path: string): string {
 	return `${normalizedBaseUrl}${normalizedPath}`;
 }
 
-export async function apiGet<TResponse>(
-	path: string,
-	init?: RequestInit,
-): Promise<TResponse> {
-	const response = await fetch(buildApiUrl(path), init);
-
-	if (!response.ok) {
-		throw new Error(`API request failed with status ${response.status}`);
-	}
-
-	const data = (await response.json()) as TResponse;
-	return data;
-}
-
 export class ApiRequestError extends Error {
 	constructor(
 		message: string,
@@ -39,6 +25,70 @@ export class ApiRequestError extends Error {
 		super(message);
 		this.name = "ApiRequestError";
 	}
+}
+
+type AuthTokenResolver = () => string | null;
+
+let authTokenResolver: AuthTokenResolver | null = null;
+
+export function setApiAuthTokenResolver(resolver: AuthTokenResolver): void {
+	authTokenResolver = resolver;
+}
+
+function getAuthHeaders(): HeadersInit {
+	const token = authTokenResolver?.() ?? null;
+
+	if (!token) {
+		throw new ApiRequestError("Bitte melde dich erneut an.", 401);
+	}
+
+	return {
+		Authorization: `Bearer ${token}`,
+	};
+}
+
+async function readApiErrorMessage(
+	response: Response,
+	fallback: string,
+): Promise<string> {
+	try {
+		const data = (await response.json()) as { error?: { message?: string } };
+		return data.error?.message ?? fallback;
+	} catch {
+		return fallback;
+	}
+}
+
+export async function apiGet<TResponse>(
+	path: string,
+	init?: RequestInit,
+): Promise<TResponse> {
+	const response = await fetch(buildApiUrl(path), init);
+
+	if (!response.ok) {
+		const message = await readApiErrorMessage(
+			response,
+			`API request failed with status ${response.status}`,
+		);
+
+		throw new ApiRequestError(message, response.status);
+	}
+
+	const data = (await response.json()) as TResponse;
+	return data;
+}
+
+export async function apiGetAuthenticated<TResponse>(
+	path: string,
+	init?: RequestInit,
+): Promise<TResponse> {
+	return apiGet<TResponse>(path, {
+		...init,
+		headers: {
+			...getAuthHeaders(),
+			...init?.headers,
+		},
+	});
 }
 
 export async function apiPost<TResponse>(
@@ -57,18 +107,63 @@ export async function apiPost<TResponse>(
 	});
 
 	if (!response.ok) {
-		let message = `API request failed with status ${response.status}`;
-
-		try {
-			const data = (await response.json()) as { error?: { message?: string } };
-			message = data.error?.message ?? message;
-		} catch {
-			// Keep generic fallback when the API does not return JSON.
-		}
+		const message = await readApiErrorMessage(
+			response,
+			`API request failed with status ${response.status}`,
+		);
 
 		throw new ApiRequestError(message, response.status);
 	}
 
 	const data = (await response.json()) as TResponse;
 	return data;
+}
+
+export async function apiPostAuthenticated<TResponse>(
+	path: string,
+	body: unknown,
+	init?: RequestInit,
+): Promise<TResponse> {
+	return apiPost<TResponse>(path, body, {
+		...init,
+		headers: {
+			...getAuthHeaders(),
+			...init?.headers,
+		},
+	});
+}
+
+export async function apiDelete<TResponse>(
+	path: string,
+	init?: RequestInit,
+): Promise<TResponse> {
+	const response = await fetch(buildApiUrl(path), {
+		...init,
+		method: "DELETE",
+	});
+
+	if (!response.ok) {
+		const message = await readApiErrorMessage(
+			response,
+			`API request failed with status ${response.status}`,
+		);
+
+		throw new ApiRequestError(message, response.status);
+	}
+
+	const data = (await response.json()) as TResponse;
+	return data;
+}
+
+export async function apiDeleteAuthenticated<TResponse>(
+	path: string,
+	init?: RequestInit,
+): Promise<TResponse> {
+	return apiDelete<TResponse>(path, {
+		...init,
+		headers: {
+			...getAuthHeaders(),
+			...init?.headers,
+		},
+	});
 }

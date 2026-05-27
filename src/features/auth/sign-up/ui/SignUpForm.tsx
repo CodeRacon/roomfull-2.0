@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type ComponentPropsWithoutRef, useState } from "react";
-import { saveAuthToken } from "@/entities/session";
+import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
 import { getSafeNextPath } from "@/shared/lib";
 import {
@@ -26,6 +26,9 @@ type FormSubmitHandler = NonNullable<
 
 export function SignUpForm({ nextPath }: SignUpFormProps) {
 	const router = useRouter();
+
+	const { startSession } = useSession();
+
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -39,7 +42,7 @@ export function SignUpForm({ nextPath }: SignUpFormProps) {
 
 		try {
 			const authResponse = await signUp({ name, email, password });
-			saveAuthToken(authResponse.token);
+			startSession(authResponse);
 			router.replace(getSafeNextPath(nextPath));
 		} catch (error) {
 			if (error instanceof ApiRequestError) {
