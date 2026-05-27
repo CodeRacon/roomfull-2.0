@@ -61,7 +61,7 @@ export function BookingOptionsList({
 }: BookingOptionsListProps) {
 	if (bookingOptions.length === 0) {
 		return (
-			<FeedbackBox className="mt-8 rounded-md border border-dashed border-border bg-surface px-4 py-6 text-sm text-muted">
+			<FeedbackBox variant="empty" className="mt-8">
 				Keine Buchungsoptionen verfügbar.
 			</FeedbackBox>
 		);
@@ -103,9 +103,7 @@ export function BookingOptionsList({
 										{getBookingOptionDescription(option.key)}
 									</p>
 
-									<span
-										className="room-card__arrow mt-4 flex w-fit shrink-0 items-center gap-2 rounded-full px-3 py-2 text-sm font-medium shadow-xs"
-									>
+									<span className="room-card__arrow mt-4 flex w-fit shrink-0 items-center gap-2 rounded-full px-3 py-2 text-sm font-medium shadow-xs">
 										{getBookingOptionCtaLabel(option.key)}
 										<ChevronRightIcon
 											className="room-card__arrow-svg"

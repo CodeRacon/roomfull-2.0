@@ -9,7 +9,7 @@ type UnitsListProps = {
 export function UnitsList({ units }: UnitsListProps) {
 	if (units.length === 0) {
 		return (
-			<FeedbackBox className="mt-8 rounded-md border border-dashed border-border bg-surface px-4 py-6 text-sm text-muted">
+			<FeedbackBox variant="empty" className="mt-8">
 				Keine Units verfügbar.
 			</FeedbackBox>
 		);
