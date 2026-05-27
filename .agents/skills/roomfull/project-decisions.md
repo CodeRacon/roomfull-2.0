@@ -131,6 +131,12 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - Frontend nutzt pragmatisches Feature-Sliced Design
 - keine globale `components`-Mischstruktur
 - klare Trennung von `entities`, `features`, `widgets`, `pages`, `shared`
+- `entities/session` ist die zentrale Auth-Quelle im Frontend
+- Token Storage ist ein Implementierungsdetail der Session-Entity
+- Header, Login/Register, Logout und geschützte Pages konsumieren dieselbe Session API
+- bestehende Sessions werden über `GET /auth/me` validiert
+- auth-required UI-Flows nutzen eine Protected Route Boundary statt eigener Page-Tokenchecks
+- Authorization Header für fachliche API-Aufrufe werden über authenticated API-Funktionen in `shared/api` ergänzt
 
 ## Backend-Architektur
 

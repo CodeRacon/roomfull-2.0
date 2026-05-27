@@ -46,6 +46,7 @@ Der Contract enthält:
 - `areaSelection`
 - `status`
 - `totalActiveUnits`
+- `maxCapacity`
 - `areas`
 
 `HOT_DESK` liefert Areas mit aktiver Unit-Anzahl. `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`.
@@ -57,10 +58,13 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 
 ### Bookings
 
+- `GET /bookings/context`
 - `POST /bookings`
 - `GET /me/bookings`
 - `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
 - `DELETE /bookings/:bookingId`
+
+`GET /me/bookings` liefert eigene Bookings inklusive minimaler Unit-Anzeigedaten (`unit.id`, `unit.name`, `unit.unitType.name`), damit die UI Buchungen typgerecht darstellen kann.
 
 ### Admin
 
@@ -80,6 +84,13 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 
 - direkt: `unitId + start + end`
 - auto-assign: `areaId + unitType + start + end` (in V1 nur `HOT_DESK`)
+
+`GET /bookings/context` ist auth-required und validiert den Einstiegskontext fuer `/bookings/new`:
+
+- direkt: `unitId`
+- auto-assign: `unitType=HOT_DESK + areaId`
+
+Der Endpoint liefert Anzeige- und Dauerregel-Kontext, aber keine zeitbezogene Verfügbarkeit.
 
 BookingOptions nutzen dieselbe fachliche Unterscheidung:
 

@@ -89,6 +89,36 @@ Form-State und Interaktionslogik gehören in die passende Feature-Slice, nicht g
 
 API-Funktionen gehören in die passende Slice oder in shared/api, wenn sie wirklich allgemein sind.
 
+Auth-required API-Aufrufe nutzen zentrale authenticated API-Client-Funktionen aus `shared/api`.
+
+Nicht erlaubt:
+
+- `authToken` durch Pages, Widgets, Features oder fachliche Entity-API-Funktionen reichen
+- `localStorage` außerhalb der Session-Entity lesen
+- Header oder geschützte Pages als eigene Auth-Quelle behandeln
+
+## Session Boundary
+
+Die Frontend Session liegt in `entities/session`.
+
+Sie kapselt:
+
+- Token Storage
+- aktuellen Session User
+- Ladezustand
+- Login-Session starten
+- Logout-Session beenden
+- bestehende Session über `GET /auth/me` validieren
+
+Konsumierende Bereiche nutzen nur `useSession()`.
+
+Beispiele:
+
+- Header liest `status` und `user` aus `useSession()`
+- Login/Register rufen `startSession(authResponse)` auf
+- Logout ruft `endSession()` auf
+- geschützte UI-Flows nutzen `RequireAuth`
+
 ## Shared-Regel
 
 shared bleibt fachlich neutral.

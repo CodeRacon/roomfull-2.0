@@ -70,6 +70,7 @@ type BookingOption = {
   areaSelection: AreaSelectionMode;
   status: BookingOptionStatus;
   totalActiveUnits: number;
+  maxCapacity: number;
   areas: Array<{ id: string; name: string; activeUnitCount: number }>;
 };
 ```
@@ -113,6 +114,55 @@ Liefert Details zu einer Unit.
 Prüft, ob eine Unit im Zeitraum verfügbar ist.
 
 ## Bookings
+
+### `GET /bookings/context`
+
+Liefert auth-required den Backend-validierten Booking Context fuer `/bookings/new`.
+
+Direkter Modus:
+
+```txt
+GET /bookings/context?unitId=cmxxxxx
+```
+
+Auto-Assign-Modus:
+
+```txt
+GET /bookings/context?unitType=HOT_DESK&areaId=cmyyyyy
+```
+
+Response:
+
+```ts
+type BookingContext =
+  | {
+      mode: "DIRECT";
+      unit: {
+        id: string;
+        name: string;
+        description: string;
+        capacity: number;
+        unitType: BookingContextUnitType;
+      };
+    }
+  | {
+      mode: "AUTO_ASSIGN";
+      unitType: BookingContextUnitType;
+      area: {
+        id: string;
+        name: string;
+        description: string | null;
+        seatCount: number;
+      };
+    };
+```
+
+Regeln:
+
+- akzeptiert entweder `unitId` oder `unitType=HOT_DESK&areaId=...`
+- gemischte oder unvollständige Query-Kontexte liefern `400`
+- unbekannte oder nicht buchbare Unit/Area liefert `404`
+- liefert keine zeitbezogene Verfügbarkeit und keinen `409`
 
 ### `POST /bookings`
 
