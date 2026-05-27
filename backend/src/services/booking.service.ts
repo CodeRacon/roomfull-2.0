@@ -7,8 +7,10 @@ import {
 	listActiveBookingIntervalsForUnitInRange,
 	listAllBookings as listAllBookingsRecords,
 	listUserBookings as listUserBookingsRecords,
+	type UserBookingRecord,
 } from "../db/booking.repository.js";
 import {
+	countActiveUnitCapacityByAreaAndUnitType,
 	createBookingWithTransaction,
 	findActiveUnitById,
 	findActiveUnitByIdWithRelations,
@@ -45,6 +47,23 @@ type ListUnitDayBookingsInput = {
 	date: string;
 };
 
+type GetBookingContextInput = {
+	unitId?: string;
+	areaId?: string;
+	unitType?: string;
+};
+
+type BookingContextEntry =
+	| {
+			mode: "DIRECT";
+			unitId: string;
+	  }
+	| {
+			mode: "AUTO_ASSIGN";
+			areaId: string;
+			unitType: UnitTypeName;
+	  };
+
 export type UnitDayBookings = {
 	date: string;
 	unitId: string;
@@ -53,6 +72,38 @@ export type UnitDayBookings = {
 		end: string;
 	}[];
 };
+
+export type BookingContextMode = "DIRECT" | "AUTO_ASSIGN";
+
+export type BookingContextUnitType = {
+	name: UnitTypeName;
+	minDurationMinutes: number;
+	maxDurationMinutes: number;
+};
+
+export type DirectBookingContext = {
+	mode: "DIRECT";
+	unit: {
+		id: string;
+		name: string;
+		description: string;
+		capacity: number;
+		unitType: BookingContextUnitType;
+	};
+};
+
+export type AutoAssignBookingContext = {
+	mode: "AUTO_ASSIGN";
+	unitType: BookingContextUnitType;
+	area: {
+		id: string;
+		name: string;
+		description: string | null;
+		seatCount: number;
+	};
+};
+
+export type BookingContext = DirectBookingContext | AutoAssignBookingContext;
 
 function parseUnitType(value: string): UnitTypeName {
 	const normalized = value.trim().toUpperCase();
@@ -69,6 +120,50 @@ function parseUnitType(value: string): UnitTypeName {
 		default:
 			throw new AppError(400, "unitType ist ungültig");
 	}
+}
+
+function resolveBookingContextEntry(
+	input: GetBookingContextInput,
+): BookingContextEntry {
+	const unitId = input.unitId?.trim() ?? "";
+	const areaId = input.areaId?.trim() ?? "";
+	const unitTypeRaw = input.unitType?.trim() ?? "";
+
+	const directSelected = unitId.length > 0;
+	const autoSelected = areaId.length > 0 || unitTypeRaw.length > 0;
+
+	if (directSelected && autoSelected) {
+		throw new AppError(
+			400,
+			"Entweder unitId ODER areaId+unitType senden, nicht beides",
+		);
+	}
+
+	if (!directSelected && !autoSelected) {
+		throw new AppError(
+			400,
+			"Entweder unitId oder areaId+unitType ist erforderlich",
+		);
+	}
+
+	if (directSelected) {
+		return { mode: "DIRECT", unitId };
+	}
+
+	if (areaId.length === 0 || unitTypeRaw.length === 0) {
+		throw new AppError(
+			400,
+			"Für Auto-Assign sind areaId und unitType erforderlich",
+		);
+	}
+
+	const unitType = parseUnitType(unitTypeRaw);
+
+	if (unitType !== UnitTypeName.HOT_DESK) {
+		throw new AppError(400, "Auto-Assign ist in V1 nur für HOT_DESK erlaubt");
+	}
+
+	return { mode: "AUTO_ASSIGN", areaId, unitType };
 }
 
 function resolveBookingMode(
@@ -117,6 +212,14 @@ function resolveBookingMode(
 	return { mode: "AUTO", areaId, unitType };
 }
 
+function mapUnitTypePolicy(
+	name: UnitTypeName,
+	minDurationMinutes: number,
+	maxDurationMinutes: number,
+): BookingContextUnitType {
+	return { name, minDurationMinutes, maxDurationMinutes };
+}
+
 function assertDurationForType(
 	startTime: Date,
 	endTime: Date,
@@ -133,6 +236,87 @@ function assertDurationForType(
 			`Buchungsdauer muss zwischen ${minDurationMinutes} und ${maxDurationMinutes} Minuten liegen`,
 		);
 	}
+}
+
+async function getDirectBookingContext(
+	unitId: string,
+): Promise<DirectBookingContext> {
+	const unit = await findActiveUnitByIdWithRelations(unitId);
+
+	if (!unit) {
+		throw new AppError(404, "Unit wurde nicht gefunden");
+	}
+
+	return {
+		mode: "DIRECT",
+		unit: {
+			id: unit.id,
+			name: unit.name,
+			description: unit.description,
+			capacity: unit.capacity,
+			unitType: mapUnitTypePolicy(
+				unit.unitType.name,
+				unit.unitType.minDurationMinutes,
+				unit.unitType.maxDurationMinutes,
+			),
+		},
+	};
+}
+
+async function getAutoAssignBookingContext(input: {
+	areaId: string;
+	unitType: UnitTypeName;
+}): Promise<AutoAssignBookingContext> {
+	const area = await findActiveAreaById(input.areaId);
+
+	if (!area) {
+		throw new AppError(404, "Area wurde nicht gefunden");
+	}
+
+	const unitType = await findUnitTypeByName(input.unitType);
+
+	if (!unitType) {
+		throw new AppError(404, "UnitType wurde nicht gefunden");
+	}
+
+	const seatCount = await countActiveUnitCapacityByAreaAndUnitType({
+		areaId: area.id,
+		unitTypeId: unitType.id,
+	});
+
+	if (seatCount === 0) {
+		throw new AppError(404, "Kein Hot Desk in dieser Area verfügbar");
+	}
+
+	return {
+		mode: "AUTO_ASSIGN",
+		unitType: mapUnitTypePolicy(
+			unitType.name,
+			unitType.minDurationMinutes,
+			unitType.maxDurationMinutes,
+		),
+		area: {
+			id: area.id,
+			name: area.name,
+			description: area.description,
+			seatCount,
+		},
+	};
+}
+
+export async function getBookingContext(
+	input: GetBookingContextInput,
+): Promise<BookingContext> {
+	const entry = resolveBookingContextEntry(input);
+
+	if (entry.mode === "DIRECT") {
+		return getDirectBookingContext(entry.unitId);
+	}
+
+	return getAutoAssignBookingContext({
+		areaId: entry.areaId,
+		unitType: entry.unitType,
+	});
 }
 
 async function createDirectBooking(input: {
@@ -250,7 +434,7 @@ export async function createBookingForUser(
 
 export async function listUserBookings(
 	input: ListUserBookingsInput,
-): Promise<Booking[]> {
+): Promise<UserBookingRecord[]> {
 	const userId = input.userId.trim();
 
 	if (userId === "") {

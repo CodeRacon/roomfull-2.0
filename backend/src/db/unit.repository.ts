@@ -231,3 +231,19 @@ export async function listUnitTypesForBookingOptions(
 		},
 	});
 }
+
+export async function countActiveUnitCapacityByAreaAndUnitType(input: {
+	areaId: string;
+	unitTypeId: string;
+}): Promise<number> {
+	const result = await prisma.bookableUnit.aggregate({
+		where: {
+			isActive: true,
+			areaId: input.areaId,
+			unitTypeId: input.unitTypeId,
+		},
+		_sum: { capacity: true },
+	});
+
+	return result._sum.capacity ?? 0;
+}

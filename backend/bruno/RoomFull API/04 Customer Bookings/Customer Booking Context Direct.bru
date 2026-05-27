@@ -1,0 +1,32 @@
+meta {
+  name: Customer Booking Context Direct
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{baseUrl}}/api/bookings/context?unitId={{unitId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+tests {
+  test("returns direct booking context", function () {
+    expect(res.getStatus()).to.equal(200);
+
+    const json = res.getBody();
+    const bookingContext = json && json.bookingContext ? json.bookingContext : null;
+
+    expect(bookingContext.mode).to.equal("DIRECT");
+    expect(bookingContext.unit.id).to.equal(bru.getVar("unitId"));
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -306,6 +306,50 @@
 				}
 			}
 		},
+		"/bookings/context": {
+			"get": {
+				"tags": ["Customer Bookings"],
+				"summary": "Booking Context für Create Booking Page laden",
+				"description": "Auth-required Endpoint für `/bookings/new`. Akzeptiert entweder `unitId` für Direktbuchung oder `unitType=HOT_DESK&areaId=...` für Hot-Desk-Auto-Assign.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "unitId",
+						"in": "query",
+						"required": false,
+						"schema": { "type": "string" },
+						"description": "Konkrete Unit für Direct Booking"
+					},
+					{
+						"name": "unitType",
+						"in": "query",
+						"required": false,
+						"schema": { "type": "string", "enum": ["HOT_DESK"] },
+						"description": "UnitType für Auto-Assign; in V1 nur HOT_DESK"
+					},
+					{
+						"name": "areaId",
+						"in": "query",
+						"required": false,
+						"schema": { "type": "string" },
+						"description": "Area für Hot-Desk-Auto-Assign"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Booking Context",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/BookingContextResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
 		"/bookings": {
 			"post": {
 				"tags": ["Customer Bookings"],
@@ -556,9 +600,10 @@
 				"type": "object",
 				"properties": {
 					"id": { "type": "string" },
-					"name": { "type": "string" }
+					"name": { "type": "string" },
+					"description": { "type": "string", "nullable": true }
 				},
-				"required": ["id", "name"]
+				"required": ["id", "name", "description"]
 			},
 			"UnitResponse": {
 				"type": "object",
@@ -625,6 +670,7 @@
 						"enum": ["AVAILABLE", "UNAVAILABLE"]
 					},
 					"totalActiveUnits": { "type": "integer", "minimum": 0 },
+					"maxCapacity": { "type": "integer", "minimum": 0 },
 					"areas": {
 						"type": "array",
 						"items": { "$ref": "#/components/schemas/BookingOptionArea" }
@@ -637,6 +683,7 @@
 					"areaSelection",
 					"status",
 					"totalActiveUnits",
+					"maxCapacity",
 					"areas"
 				]
 			},
@@ -708,6 +755,72 @@
 					}
 				]
 			},
+			"BookingContextUnitType": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+					},
+					"minDurationMinutes": { "type": "integer", "minimum": 1 },
+					"maxDurationMinutes": { "type": "integer", "minimum": 1 }
+				},
+				"required": ["name", "minDurationMinutes", "maxDurationMinutes"]
+			},
+			"DirectBookingContext": {
+				"type": "object",
+				"properties": {
+					"mode": { "type": "string", "enum": ["DIRECT"] },
+					"unit": {
+						"type": "object",
+						"properties": {
+							"id": { "type": "string" },
+							"name": { "type": "string" },
+							"description": { "type": "string" },
+							"capacity": { "type": "integer", "minimum": 1 },
+							"unitType": { "$ref": "#/components/schemas/BookingContextUnitType" }
+						},
+						"required": [
+							"id",
+							"name",
+							"description",
+							"capacity",
+							"unitType"
+						]
+					}
+				},
+				"required": ["mode", "unit"]
+			},
+			"AutoAssignBookingContext": {
+				"type": "object",
+				"properties": {
+					"mode": { "type": "string", "enum": ["AUTO_ASSIGN"] },
+					"unitType": { "$ref": "#/components/schemas/BookingContextUnitType" },
+					"area": {
+						"type": "object",
+						"properties": {
+							"id": { "type": "string" },
+							"name": { "type": "string" },
+							"description": { "type": "string", "nullable": true },
+							"seatCount": { "type": "integer", "minimum": 1 }
+						},
+						"required": ["id", "name", "description", "seatCount"]
+					}
+				},
+				"required": ["mode", "unitType", "area"]
+			},
+			"BookingContextResponse": {
+				"type": "object",
+				"properties": {
+					"bookingContext": {
+						"oneOf": [
+							{ "$ref": "#/components/schemas/DirectBookingContext" },
+							{ "$ref": "#/components/schemas/AutoAssignBookingContext" }
+						]
+					}
+				},
+				"required": ["bookingContext"]
+			},
 			"Booking": {
 				"type": "object",
 				"properties": {
@@ -738,12 +851,46 @@
 				},
 				"required": ["booking"]
 			},
+			"MyBooking": {
+				"allOf": [
+					{ "$ref": "#/components/schemas/Booking" },
+					{
+						"type": "object",
+						"properties": {
+							"unit": {
+								"type": "object",
+								"properties": {
+									"id": { "type": "string" },
+									"name": { "type": "string" },
+									"unitType": {
+										"type": "object",
+										"properties": {
+											"name": {
+												"type": "string",
+												"enum": [
+													"HOT_DESK",
+													"BOOTH",
+													"TEAM_ROOM",
+													"MEETING_ROOM"
+												]
+											}
+										},
+										"required": ["name"]
+									}
+								},
+								"required": ["id", "name", "unitType"]
+							}
+						},
+						"required": ["unit"]
+					}
+				]
+			},
 			"BookingListResponse": {
 				"type": "object",
 				"properties": {
 					"bookings": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/Booking" }
+						"items": { "$ref": "#/components/schemas/MyBooking" }
 					}
 				},
 				"required": ["bookings"]

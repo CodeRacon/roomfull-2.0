@@ -3,6 +3,7 @@ import { AppError } from "../lib/app-error.js";
 import {
 	cancelBookingForUser,
 	createBookingForUser,
+	getBookingContext,
 	listAllBookingsForAdmin,
 	listUnitDayBookings,
 	listUserBookings,
@@ -20,6 +21,10 @@ type CreateBookingBody = {
 	unitType?: string;
 };
 
+function fail(next: NextFunction, statusCode: number, message: string): void {
+	next(new AppError(statusCode, message));
+}
+
 function parseAuthUserId(auth: Request["auth"]): string | null {
 	const userId = auth?.userId?.trim() ?? "";
 	return userId.length > 0 ? userId : null;
@@ -32,10 +37,13 @@ function parseCreateBookingBody(body: unknown): CreateBookingBody | null {
 
 	const start = typeof body.start === "string" ? body.start.trim() : "";
 	const end = typeof body.end === "string" ? body.end.trim() : "";
+
 	const unitId =
 		typeof body.unitId === "string" ? body.unitId.trim() : undefined;
+
 	const areaId =
 		typeof body.areaId === "string" ? body.areaId.trim() : undefined;
+
 	const unitType =
 		typeof body.unitType === "string" ? body.unitType.trim() : undefined;
 
@@ -52,8 +60,53 @@ function parseCreateBookingBody(body: unknown): CreateBookingBody | null {
 	};
 }
 
-function fail(next: NextFunction, statusCode: number, message: string): void {
-	next(new AppError(statusCode, message));
+function parseBookingContextQuery(query: Request["query"]): {
+	unitId?: string;
+	areaId?: string;
+	unitType?: string;
+} {
+	function readStringQuery(value: unknown): string | undefined {
+		let trimmed = "";
+		if (typeof value !== "string") {
+			return undefined;
+		}
+
+		trimmed = value.trim();
+
+		if (trimmed.length === 0) {
+			return undefined;
+		}
+
+		return trimmed;
+	}
+
+	const unitId = readStringQuery(query.unitId);
+	const areaId = readStringQuery(query.areaId);
+	const unitType = readStringQuery(query.unitType);
+
+	return { unitId, areaId, unitType };
+}
+
+export async function getBookingContextController(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+): Promise<void> {
+	const userId = parseAuthUserId(req.auth);
+
+	if (!userId) {
+		fail(next, 401, "Nicht eingeloggt");
+		return;
+	}
+
+	const input = parseBookingContextQuery(req.query);
+
+	try {
+		const bookingContext = await getBookingContext(input);
+		res.status(200).json({ bookingContext });
+	} catch (error) {
+		next(error);
+	}
 }
 
 export async function createBookingController(

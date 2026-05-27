@@ -37,7 +37,10 @@ Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Ein
 ### Zeit- und Verfuegbarkeitsmodell
 
 - User waehlt konkrete Von-bis-Zeitraeume.
-- UI nutzt ein 30-Minuten-Raster.
+- UI nutzt ein 30-Minuten-Raster als Auswahlhilfe, kein fachlich gespeichertes Slot-Modell.
+- User waehlt Datum, dann Startzeit, dann eine erlaubte Endzeit.
+- Startzeiten orientieren sich an den globalen Oeffnungszeiten `08:00-22:00`.
+- Endzeiten werden aus Startzeit, UnitType-Dauerregel, Oeffnungsende und bei Direct Mode aus blockierenden Intervallen gefiltert.
 - Fachliche Coworking-Zeit ist `Europe/Berlin`.
 - Backend-Zeitvalidierung laeuft zentral ueber `booking-time-policy.ts`.
 - Backend bleibt Source of Truth fuer Zeitregeln und Konflikte.
@@ -48,11 +51,12 @@ Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Ein
 ### Tagesbelegung fuer konkrete Units
 
 - Fuer `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` soll der BookingFlow nach Datumsauswahl belegte Intervalle anzeigen.
+- Die UI zeigt bei Direct Mode alle Rasterpunkte und markiert belegte Zeiten sichtbar als blockiert.
 - Tagesbelegung ist auth-required.
 - Endpoint: `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
 - Response enthaelt nur aktive blockierende Intervalle, keine Owner-/User-Daten.
 - Vergangene Tage und Wochenenden sind fuer diesen Flow ungueltig.
-- `HOT_DESK` bekommt im MVP keine Area-Kapazitaetsvorschau.
+- `HOT_DESK` bekommt im MVP keine Area-Availability-Preview; Verfuegbarkeit wird beim Submit final per Auto-Assign geprueft.
 
 ### Abschluss und Fehlerverhalten
 
@@ -73,6 +77,69 @@ Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Ein
 - `TEAM_ROOM`: min 60, max 480 Minuten
 - `MEETING_ROOM`: min 60, max 480 Minuten
 - Public Contracts liefern diese Werte ueber `unitType.minDurationMinutes` und `unitType.maxDurationMinutes`.
+
+---
+
+## Customer Booking Context Flow `GET /api/bookings/context`
+
+### Request
+
+- Client sendet `GET /api/bookings/context`
+- Header enthält `Authorization: Bearer <token>`
+- Query nutzt genau einen von zwei Einstiegskontexten:
+  - direkt: `unitId=...`
+  - auto-assign: `unitType=HOT_DESK&areaId=...`
+
+### Ziel
+
+- Backend validiert den Entry Context fuer `/bookings/new`.
+- Response liefert Anzeige- und Dauerregel-Kontext.
+- Response liefert keine zeitbezogene Verfuegbarkeit.
+- Hot Desk liefert keine konkrete Unit, sondern Area-Kontext und `seatCount`.
+
+### Route
+
+- Datei: [bookings.routes.ts](../src/routes/bookings.routes.ts)
+- Mapping:
+  - `bookingsRouter.use(requireAuth)`
+  - `bookingsRouter.route("/bookings/context").get(getBookingContextController)`
+
+### Controller
+
+- Datei: [bookings.controller.ts](../src/controllers/bookings.controller.ts)
+- Funktion: `getBookingContextController`
+- Aufgabe: Auth-User pruefen, Query technisch parsen, Service aufrufen
+
+### Service
+
+- Datei: [booking.service.ts](../src/services/booking.service.ts)
+- Funktion: `getBookingContext`
+- Aufgabe:
+  - Entry Context aufloesen
+  - `DIRECT` ueber aktive Unit + UnitType-Policy bauen
+  - `AUTO_ASSIGN` nur fuer `HOT_DESK` erlauben
+  - aktive Area + Hot-Desk-SeatCount + UnitType-Policy bauen
+
+### Response
+
+```txt
+200 { bookingContext }
+```
+
+Modi:
+
+- `DIRECT`: konkrete Unit mit `id`, `name`, `description`, `capacity`, `unitType`
+- `AUTO_ASSIGN`: `unitType` + `area` mit `id`, `name`, `description`, `seatCount`
+
+### Error-Matrix
+
+| Fehlerfall | HTTP |
+|---|---|
+| Ungueltiger oder gemischter Query-Kontext | `400` |
+| Nicht eingeloggt | `401` |
+| Unit/Area/UnitType nicht gefunden oder nicht buchbar | `404` |
+
+`409` wird hier nicht verwendet, weil ohne Datum/Zeitfenster kein Buchungskonflikt bewertet wird.
 
 ---
 

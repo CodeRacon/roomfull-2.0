@@ -1,4 +1,4 @@
-import type { Booking } from "@prisma/client";
+import type { Booking, Prisma } from "@prisma/client";
 import { BookingStatus } from "@prisma/client";
 import { prisma } from "./prisma.js";
 
@@ -25,6 +25,22 @@ export type BookedInterval = {
 	startTime: Date;
 	endTime: Date;
 };
+
+export type UserBookingRecord = Prisma.BookingGetPayload<{
+	include: {
+		unit: {
+			select: {
+				id: true;
+				name: true;
+				unitType: {
+					select: {
+						name: true;
+					};
+				};
+			};
+		};
+	};
+}>;
 
 export async function hasOverlappingActiveBookings(input: {
 	unitId: string;
@@ -79,9 +95,22 @@ export async function createBooking(
 
 export async function listUserBookings(
 	input: ListUserBookingsInput,
-): Promise<Booking[]> {
+): Promise<UserBookingRecord[]> {
 	return prisma.booking.findMany({
 		where: { userId: input.userId },
+		include: {
+			unit: {
+				select: {
+					id: true,
+					name: true,
+					unitType: {
+						select: {
+							name: true,
+						},
+					},
+				},
+			},
+		},
 		orderBy: { createdAt: "desc" },
 	});
 }
