@@ -117,10 +117,11 @@ export default function DesignSystemPage() {
 				<section className="mt-6 rounded-md border border-border bg-surface p-6 shadow-xs">
 					<h2 className="text-lg font-medium text-text">FeedbackBox</h2>
 
-					<div className="mt-5 grid gap-4 sm:grid-cols-4">
+					<div className="mt-5 grid gap-4 sm:grid-cols-5">
 						<FeedbackBox title="This is an Info:">
 							This is a text providing more context to the Info
 						</FeedbackBox>
+						<FeedbackBox variant="empty">Empty State</FeedbackBox>
 						<FeedbackBox variant="success">Success</FeedbackBox>
 						<FeedbackBox title="This is a warning:" variant="warning">
 							This is a text providing more context to the Warning

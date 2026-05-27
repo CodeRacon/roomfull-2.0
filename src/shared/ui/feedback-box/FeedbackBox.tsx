@@ -1,7 +1,7 @@
 import { clsx } from "clsx";
 import type { ReactNode } from "react";
 
-type FeedbackBoxVariant = "info" | "success" | "warning" | "error";
+type FeedbackBoxVariant = "info" | "empty" | "success" | "warning" | "error";
 
 type FeedbackBoxProps = {
 	title?: ReactNode;
@@ -20,6 +20,7 @@ export function FeedbackBox({
 		"w-full rounded-md border px-3 py-1 text-sm leading-6",
 		!title && "h-fit leading-4",
 		variant === "info" && "border-primary bg-primary-soft text-text",
+		variant === "empty" && "border-dashed border-border px-4 py-2 text-muted",
 		variant === "success" &&
 			"border-success-text/20 bg-success-bg text-success-text",
 		variant === "warning" &&
