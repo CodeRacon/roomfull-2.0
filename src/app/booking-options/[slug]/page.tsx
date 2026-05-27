@@ -29,6 +29,19 @@ function getBookingOptionCardClassName(key: BookingOptionKey) {
 	}
 }
 
+function getBookingCtaLabel(key: BookingOptionKey) {
+	switch (key) {
+		case "HOT_DESK":
+			return "Hot Desk buchen";
+		case "BOOTH":
+			return "Booth buchen";
+		case "TEAM_ROOM":
+			return "Team Room buchen";
+		case "MEETING_ROOM":
+			return "Meeting Room buchen";
+	}
+}
+
 export default async function BookingOptionPage({
 	params,
 }: BookingOptionPageProps) {
@@ -95,7 +108,12 @@ export default async function BookingOptionPage({
 								<p className="room-card__text mt-2 text-sm leading-6">
 									{unit.description}
 								</p>
-								<Badge className="room-card__badge mt-4">{`Kapazität: ${unit.capacity} Personen`}</Badge>
+								<div className="mt-4 flex flex-wrap items-center gap-3">
+									<Badge className="room-card__badge">{`Kapazität: ${unit.capacity} Personen`}</Badge>
+									<Anchor href={`/bookings/new?unitId=${unit.id}`}>
+										{getBookingCtaLabel(bookingOptionKey)}
+									</Anchor>
+								</div>
 							</Panel>
 						))}
 					</section>
@@ -115,11 +133,9 @@ export default async function BookingOptionPage({
 								<div className="mt-4 flex flex-wrap items-center gap-3">
 									<Badge className="room-card__badge">{`${area.seatCount} Einzelplätze`}</Badge>
 									<Anchor
-										href={`/login?next=${encodeURIComponent(
-											`/bookings/new?unitType=HOT_DESK&areaId=${area.id}`,
-										)}`}
+										href={`/bookings/new?unitType=HOT_DESK&areaId=${area.id}`}
 									>
-										Hot Desk buchen
+										{getBookingCtaLabel(bookingOptionKey)}
 									</Anchor>
 								</div>
 							</Panel>
