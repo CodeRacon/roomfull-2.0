@@ -133,6 +133,90 @@ export async function apiPostAuthenticated<TResponse>(
 	});
 }
 
+export async function apiPut<TResponse>(
+	path: string,
+	body: unknown,
+	init?: RequestInit,
+): Promise<TResponse> {
+	const response = await fetch(buildApiUrl(path), {
+		...init,
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+			...init?.headers,
+		},
+		body: JSON.stringify(body),
+	});
+
+	if (!response.ok) {
+		const message = await readApiErrorMessage(
+			response,
+			`API request failed with status ${response.status}`,
+		);
+
+		throw new ApiRequestError(message, response.status);
+	}
+
+	const data = (await response.json()) as TResponse;
+	return data;
+}
+
+export async function apiPutAuthenticated<TResponse>(
+	path: string,
+	body: unknown,
+	init?: RequestInit,
+): Promise<TResponse> {
+	return apiPut<TResponse>(path, body, {
+		...init,
+		headers: {
+			...getAuthHeaders(),
+			...init?.headers,
+		},
+	});
+}
+
+export async function apiPatch<TResponse>(
+	path: string,
+	body: unknown,
+	init?: RequestInit,
+): Promise<TResponse> {
+	const response = await fetch(buildApiUrl(path), {
+		...init,
+		method: "PATCH",
+		headers: {
+			"Content-Type": "application/json",
+			...init?.headers,
+		},
+		body: JSON.stringify(body),
+	});
+
+	if (!response.ok) {
+		const message = await readApiErrorMessage(
+			response,
+			`API request failed with status ${response.status}`,
+		);
+
+		throw new ApiRequestError(message, response.status);
+	}
+
+	const data = (await response.json()) as TResponse;
+	return data;
+}
+
+export async function apiPatchAuthenticated<TResponse>(
+	path: string,
+	body: unknown,
+	init?: RequestInit,
+): Promise<TResponse> {
+	return apiPatch<TResponse>(path, body, {
+		...init,
+		headers: {
+			...getAuthHeaders(),
+			...init?.headers,
+		},
+	});
+}
+
 export async function apiDelete<TResponse>(
 	path: string,
 	init?: RequestInit,

@@ -38,6 +38,36 @@ export type GetBookingContextInput =
 	| { unitId: string; unitType?: never; areaId?: never }
 	| { unitType: "HOT_DESK"; areaId: string; unitId?: never };
 
+export type AvailabilitySlot = {
+	start: string;
+	end: string;
+	availableUnitCount: number;
+};
+
+export type BlockedInterval = {
+	start: string;
+	end: string;
+};
+
+export type BookingAvailability = {
+	blockedIntervals: BlockedInterval[];
+	date: string;
+	openingHours: {
+		start: string;
+		end: string;
+	};
+	slots: AvailabilitySlot[];
+	timeGridMinutes: number;
+};
+
+export type BookingAvailabilityResponse = {
+	availability: BookingAvailability;
+};
+
+export type GetBookingAvailabilityInput =
+	| { date: string; unitId: string; areaId?: never; unitType?: never }
+	| { date: string; areaId: string; unitType: "HOT_DESK"; unitId?: never };
+
 export type BookedInterval = { start: string; end: string };
 
 export type UnitDayBookings = {
@@ -71,6 +101,29 @@ export type MyBooking = Booking & {
 	};
 };
 
+export type AdminBooking = MyBooking & {
+	user: {
+		id: string;
+		name: string;
+		email: string;
+		role: "CUSTOMER" | "ADMIN";
+	};
+};
+
+export type AdminBookingViewStatus =
+	| "upcoming"
+	| "today"
+	| "completed"
+	| "cancelled"
+	| "all";
+
+export type ListAdminBookingsInput = {
+	from?: string;
+	limit?: number;
+	status?: AdminBookingViewStatus;
+	to?: string;
+};
+
 export type BookingResponse = { booking: Booking };
 
 export type CreateDirectBookingInput = {
@@ -94,3 +147,5 @@ export type CreateBookingInput =
 	| CreateAutoAssignBookingInput;
 
 export type BookingListResponse = { bookings: MyBooking[] };
+
+export type AdminBookingListResponse = { bookings: AdminBooking[] };

@@ -7,6 +7,7 @@ export type SessionUser = {
 	name: string;
 	email: string;
 	role: SessionUserRole;
+	createdAt: string;
 };
 
 export type StartSessionInput = {

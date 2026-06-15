@@ -31,3 +31,44 @@ export type UnitListResponse = {
 export type UnitResponse = {
 	unit: Unit;
 };
+
+export type AdminUnitStatusFilter = "active" | "deactivated" | "all";
+
+export type ListAdminUnitsInput = {
+	status?: AdminUnitStatusFilter;
+	unitType?: UnitTypeName;
+	search?: string;
+};
+
+export type AdminUnitContextUnitType = {
+	id: string;
+	name: UnitTypeName;
+};
+
+export type AdminUnitContextArea = {
+	id: string;
+	name: string;
+	description: string | null;
+	isActive: boolean;
+};
+
+export type AdminUnitContext = {
+	unitTypes: AdminUnitContextUnitType[];
+	areas: AdminUnitContextArea[];
+};
+
+export type CreateAdminUnitInput = {
+	name: string;
+	description: string;
+	capacity: number;
+	isActive?: boolean;
+	unitTypeId: string;
+	areaId?: string;
+	displayOrder?: number;
+};
+
+export type UpdateAdminUnitInput = Partial<
+	Omit<CreateAdminUnitInput, "areaId">
+> & {
+	areaId?: string | null;
+};

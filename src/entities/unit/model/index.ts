@@ -1,8 +1,15 @@
 export type {
+	AdminUnitContext,
+	AdminUnitContextArea,
+	AdminUnitContextUnitType,
+	AdminUnitStatusFilter,
+	CreateAdminUnitInput,
+	ListAdminUnitsInput,
 	Unit,
 	UnitArea,
 	UnitListResponse,
 	UnitResponse,
 	UnitType,
 	UnitTypeName,
+	UpdateAdminUnitInput,
 } from "./types";
