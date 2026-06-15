@@ -1,0 +1,36 @@
+meta {
+  name: Customer Booking Availability Direct
+  type: http
+  seq: 16
+}
+
+get {
+  url: {{baseUrl}}/api/bookings/availability?date=2027-01-18&unitId={{unitId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+tests {
+  test("returns direct booking availability", function () {
+    expect(res.getStatus()).to.equal(200);
+
+    const json = res.getBody();
+    const availability = json && json.availability ? json.availability : null;
+
+    expect(availability.date).to.equal("2027-01-18");
+    expect(availability.timeGridMinutes).to.equal(15);
+    expect(availability.openingHours.start).to.equal("08:00");
+    expect(availability.openingHours.end).to.equal("22:00");
+    expect(Array.isArray(availability.slots)).to.equal(true);
+    expect(Array.isArray(availability.blockedIntervals)).to.equal(true);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,38 @@
+meta {
+  name: Customer Booking Availability Hot Desk
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseUrl}}/api/bookings/availability?date=2027-01-18&unitType={{bookingUnitType}}&areaId={{areaId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+tests {
+  test("returns hot desk booking availability without unit ids", function () {
+    expect(res.getStatus()).to.equal(200);
+
+    const json = res.getBody();
+    const availability = json && json.availability ? json.availability : null;
+
+    expect(availability.date).to.equal("2027-01-18");
+    expect(availability.timeGridMinutes).to.equal(15);
+    expect(Array.isArray(availability.slots)).to.equal(true);
+
+    if (availability.slots.length > 0) {
+      expect(availability.slots[0].availableUnitCount).to.be.greaterThan(0);
+      expect(availability.slots[0].unitId).to.equal(undefined);
+    }
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

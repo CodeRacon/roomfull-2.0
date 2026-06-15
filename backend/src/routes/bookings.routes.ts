@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
 	cancelBookingController,
 	createBookingController,
+	getBookingAvailabilityController,
 	getBookingContextController,
 	listAdminBookingsController,
 	listMyBookingsController,
@@ -14,6 +15,10 @@ export const bookingsRouter = Router();
 bookingsRouter.use(requireAuth);
 
 bookingsRouter.route("/bookings/context").get(getBookingContextController);
+
+bookingsRouter
+	.route("/bookings/availability")
+	.get(getBookingAvailabilityController);
 
 bookingsRouter.route("/bookings").post(createBookingController);
 

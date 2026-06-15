@@ -2,6 +2,7 @@ import type { Booking } from "@prisma/client";
 import { BookingStatus, UnitTypeName } from "@prisma/client";
 import { findActiveAreaById } from "../db/area.repository.js";
 import {
+	type AdminBookingRecord,
 	cancelBooking as cancelBookingRecord,
 	findBookingById as findBookingByIdRecord,
 	listActiveBookingIntervalsForUnitInRange,
@@ -19,7 +20,10 @@ import {
 } from "../db/unit.repository.js";
 import { AppError } from "../lib/app-error.js";
 import {
+	addBerlinCalendarDays,
 	assertBookableDateTimeRange,
+	getBerlinCalendarDayRange,
+	getBerlinTodayDate,
 	getBookableBerlinDayRange,
 	parseDateTime,
 } from "./booking-time-policy.js";
@@ -45,6 +49,20 @@ type CancelBookingForUserInput = {
 type ListUnitDayBookingsInput = {
 	unitId: string;
 	date: string;
+};
+
+export type AdminBookingViewStatus =
+	| "upcoming"
+	| "today"
+	| "completed"
+	| "cancelled"
+	| "all";
+
+type ListAllBookingsForAdminInput = {
+	from?: string;
+	limit?: string;
+	status?: string;
+	to?: string;
 };
 
 type GetBookingContextInput = {
@@ -476,8 +494,143 @@ export async function cancelBookingForUser(
 	return cancelBookingRecord({ bookingId });
 }
 
-export async function listAllBookingsForAdmin(): Promise<Booking[]> {
-	return listAllBookingsRecords();
+function parseAdminBookingViewStatus(status?: string): AdminBookingViewStatus {
+	const normalizedStatus = status?.trim() ?? "";
+
+	if (normalizedStatus === "") {
+		return "upcoming";
+	}
+
+	switch (normalizedStatus) {
+		case "upcoming":
+		case "today":
+		case "completed":
+		case "cancelled":
+		case "all":
+			return normalizedStatus;
+		default:
+			throw new AppError(400, "status ist ungültig");
+	}
+}
+
+function parseAdminBookingLimit(limit?: string): number {
+	const normalizedLimit = limit?.trim() ?? "";
+
+	if (normalizedLimit === "") {
+		return 100;
+	}
+
+	const parsedLimit = Number(normalizedLimit);
+
+	if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 500) {
+		throw new AppError(400, "limit muss zwischen 1 und 500 liegen");
+	}
+
+	return parsedLimit;
+}
+
+function getDefaultAdminBookingDateRange(status: AdminBookingViewStatus): {
+	from: string;
+	to: string;
+} {
+	const today = getBerlinTodayDate();
+
+	if (status === "upcoming" || status === "today") {
+		return {
+			from: today,
+			to: status === "today" ? today : addBerlinCalendarDays(today, 30),
+		};
+	}
+
+	if (status === "all") {
+		return {
+			from: addBerlinCalendarDays(today, -30),
+			to: addBerlinCalendarDays(today, 30),
+		};
+	}
+
+	return {
+		from: addBerlinCalendarDays(today, -30),
+		to: today,
+	};
+}
+
+function resolveAdminBookingDateRange(input: {
+	from?: string;
+	status: AdminBookingViewStatus;
+	to?: string;
+}): { fromStart: Date; toEnd: Date } {
+	const defaultRange = getDefaultAdminBookingDateRange(input.status);
+	const from = input.from?.trim() || defaultRange.from;
+	const to = input.to?.trim() || defaultRange.to;
+
+	if (from > to) {
+		throw new AppError(400, "from darf nicht nach to liegen");
+	}
+
+	return {
+		fromStart: getBerlinCalendarDayRange(from).startTime,
+		toEnd: getBerlinCalendarDayRange(to).endTime,
+	};
+}
+
+export async function listAllBookingsForAdmin(
+	input: ListAllBookingsForAdminInput = {},
+): Promise<AdminBookingRecord[]> {
+	const status = parseAdminBookingViewStatus(input.status);
+	const limit = parseAdminBookingLimit(input.limit);
+	const dateRange = resolveAdminBookingDateRange({
+		from: input.from,
+		status,
+		to: input.to,
+	});
+	const now = new Date();
+
+	switch (status) {
+		case "upcoming":
+			return listAllBookingsRecords({
+				limit,
+				orderBy: { startTime: "asc" },
+				status: BookingStatus.ACTIVE,
+				startBefore: dateRange.toEnd,
+				endAfter:
+					now.getTime() > dateRange.fromStart.getTime()
+						? now
+						: dateRange.fromStart,
+			});
+		case "today":
+			return listAllBookingsRecords({
+				limit,
+				orderBy: { startTime: "asc" },
+				status: BookingStatus.ACTIVE,
+				startBefore: dateRange.toEnd,
+				endAfter: dateRange.fromStart,
+			});
+		case "completed":
+			return listAllBookingsRecords({
+				limit,
+				orderBy: { endTime: "desc" },
+				status: BookingStatus.ACTIVE,
+				startBefore: dateRange.toEnd,
+				endAfter: dateRange.fromStart,
+				endBefore: now,
+			});
+		case "cancelled":
+			return listAllBookingsRecords({
+				limit,
+				orderBy: { updatedAt: "desc" },
+				status: BookingStatus.CANCELLED,
+				startBefore: dateRange.toEnd,
+				endAfter: dateRange.fromStart,
+			});
+		case "all":
+			return listAllBookingsRecords({
+				limit,
+				orderBy: { startTime: "asc" },
+				startBefore: dateRange.toEnd,
+				endAfter: dateRange.fromStart,
+			});
+	}
 }
 
 export async function listUnitDayBookings(

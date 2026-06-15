@@ -8,6 +8,7 @@
 		"build": "tsc -p tsconfig.json",
 		"start": "node dist/server.js",
 		"lint": "../node_modules/.bin/biome check .",
+		"test": "node --import tsx --test tests/*.test.ts",
 		"format": "../node_modules/.bin/biome format . --write",
 		"format:check": "../node_modules/.bin/biome format .",
 		"prisma:generate": "prisma generate",

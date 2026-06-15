@@ -8,6 +8,7 @@ import {
 	listUnitDayBookings,
 	listUserBookings,
 } from "../services/booking.service.js";
+import { getBookingAvailability } from "../services/booking-availability.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
@@ -60,31 +61,40 @@ function parseCreateBookingBody(body: unknown): CreateBookingBody | null {
 	};
 }
 
+function readStringQuery(value: unknown): string | undefined {
+	if (typeof value !== "string") {
+		return undefined;
+	}
+
+	const trimmed = value.trim();
+
+	return trimmed.length > 0 ? trimmed : undefined;
+}
+
 function parseBookingContextQuery(query: Request["query"]): {
 	unitId?: string;
 	areaId?: string;
 	unitType?: string;
 } {
-	function readStringQuery(value: unknown): string | undefined {
-		let trimmed = "";
-		if (typeof value !== "string") {
-			return undefined;
-		}
-
-		trimmed = value.trim();
-
-		if (trimmed.length === 0) {
-			return undefined;
-		}
-
-		return trimmed;
-	}
-
 	const unitId = readStringQuery(query.unitId);
 	const areaId = readStringQuery(query.areaId);
 	const unitType = readStringQuery(query.unitType);
 
 	return { unitId, areaId, unitType };
+}
+
+function parseBookingAvailabilityQuery(query: Request["query"]): {
+	areaId?: string;
+	date?: string;
+	unitId?: string;
+	unitType?: string;
+} {
+	return {
+		areaId: readStringQuery(query.areaId),
+		date: readStringQuery(query.date),
+		unitId: readStringQuery(query.unitId),
+		unitType: readStringQuery(query.unitType),
+	};
 }
 
 export async function getBookingContextController(
@@ -144,6 +154,28 @@ export async function createBookingController(
 	}
 }
 
+export async function getBookingAvailabilityController(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+): Promise<void> {
+	const userId = parseAuthUserId(req.auth);
+
+	if (!userId) {
+		fail(next, 401, "Nicht eingeloggt");
+		return;
+	}
+
+	try {
+		const availability = await getBookingAvailability(
+			parseBookingAvailabilityQuery(req.query),
+		);
+		res.status(200).json({ availability });
+	} catch (error) {
+		next(error);
+	}
+}
+
 export async function listMyBookingsController(
 	req: Request,
 	res: Response,
@@ -186,6 +218,20 @@ function parseDateQuery(query: Request["query"]): string | null {
 	return date.length > 0 ? date : null;
 }
 
+function parseAdminBookingsQuery(query: Request["query"]): {
+	from?: string;
+	limit?: string;
+	status?: string;
+	to?: string;
+} {
+	return {
+		from: readStringQuery(query.from),
+		limit: readStringQuery(query.limit),
+		status: readStringQuery(query.status),
+		to: readStringQuery(query.to),
+	};
+}
+
 export async function cancelBookingController(
 	req: Request<BookingParams>,
 	res: Response,
@@ -212,12 +258,14 @@ export async function cancelBookingController(
 }
 
 export async function listAdminBookingsController(
-	_req: Request,
+	req: Request,
 	res: Response,
 	next: NextFunction,
 ): Promise<void> {
 	try {
-		const bookings = await listAllBookingsForAdmin();
+		const bookings = await listAllBookingsForAdmin(
+			parseAdminBookingsQuery(req.query),
+		);
 		res.status(200).json({ bookings });
 	} catch (error) {
 		next(error);

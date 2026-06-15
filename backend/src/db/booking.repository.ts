@@ -21,6 +21,17 @@ type CancelBookingInput = {
 	bookingId: string;
 };
 
+type ListAllBookingsInput = {
+	limit: number;
+	orderBy: Prisma.BookingOrderByWithRelationInput;
+	status?: BookingStatus;
+	startBefore?: Date;
+	endAfter?: Date;
+	endBefore?: Date;
+	updatedAtFrom?: Date;
+	updatedAtTo?: Date;
+};
+
 export type BookedInterval = {
 	startTime: Date;
 	endTime: Date;
@@ -28,6 +39,30 @@ export type BookedInterval = {
 
 export type UserBookingRecord = Prisma.BookingGetPayload<{
 	include: {
+		unit: {
+			select: {
+				id: true;
+				name: true;
+				unitType: {
+					select: {
+						name: true;
+					};
+				};
+			};
+		};
+	};
+}>;
+
+export type AdminBookingRecord = Prisma.BookingGetPayload<{
+	include: {
+		user: {
+			select: {
+				id: true;
+				name: true;
+				email: true;
+				role: true;
+			};
+		};
 		unit: {
 			select: {
 				id: true;
@@ -134,8 +169,49 @@ export async function cancelBooking(
 	});
 }
 
-export async function listAllBookings(): Promise<Booking[]> {
+export async function listAllBookings(
+	input: ListAllBookingsInput,
+): Promise<AdminBookingRecord[]> {
+	const where: Prisma.BookingWhereInput = {
+		status: input.status,
+		startTime: input.startBefore ? { lt: input.startBefore } : undefined,
+		endTime: {
+			...(input.endAfter ? { gt: input.endAfter } : {}),
+			...(input.endBefore ? { lt: input.endBefore } : {}),
+		},
+		updatedAt:
+			input.updatedAtFrom || input.updatedAtTo
+				? {
+						...(input.updatedAtFrom ? { gte: input.updatedAtFrom } : {}),
+						...(input.updatedAtTo ? { lt: input.updatedAtTo } : {}),
+					}
+				: undefined,
+	};
+
 	return prisma.booking.findMany({
-		orderBy: { createdAt: "desc" },
+		where,
+		include: {
+			user: {
+				select: {
+					id: true,
+					name: true,
+					email: true,
+					role: true,
+				},
+			},
+			unit: {
+				select: {
+					id: true,
+					name: true,
+					unitType: {
+						select: {
+							name: true,
+						},
+					},
+				},
+			},
+		},
+		orderBy: input.orderBy,
+		take: input.limit,
 	});
 }
