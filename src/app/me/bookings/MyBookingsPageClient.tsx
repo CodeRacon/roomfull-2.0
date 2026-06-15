@@ -11,13 +11,28 @@ import { useSession } from "@/entities/session";
 import { RequireAuth } from "@/features/auth/require-auth";
 import { ApiRequestError } from "@/shared/api";
 import { FeedbackBox, Panel } from "@/shared/ui";
-import { MyBookingsList } from "@/widgets/my-bookings-list";
+import {
+	MyBookingsList,
+	type MyBookingsViewMode,
+} from "@/widgets/my-bookings-list";
+
+function parseMyBookingsViewMode(value: string | null): MyBookingsViewMode {
+	if (value === "list" || value === "calendar") {
+		return value;
+	}
+
+	return "cards";
+}
 
 export function MyBookingsPageClient() {
 	const router = useRouter();
 	const { status, endSession } = useSession();
 	const searchParams = useSearchParams();
+	const searchParamsString = searchParams.toString();
 	const shouldShowCreatedSuccess = searchParams.get("created") === "1";
+	const highlightedBookingId =
+		searchParams.get("highlightBookingId")?.trim() || null;
+	const viewMode = parseMyBookingsViewMode(searchParams.get("view"));
 	const [bookings, setBookings] = useState<MyBooking[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -78,11 +93,16 @@ export function MyBookingsPageClient() {
 
 		const timeoutId = window.setTimeout(() => {
 			setIsCreatedSuccessVisible(false);
-			router.replace("/me/bookings", { scroll: false });
+			const nextParams = new URLSearchParams(searchParamsString);
+			nextParams.delete("created");
+			const nextQuery = nextParams.toString();
+			router.replace(`/me/bookings${nextQuery ? `?${nextQuery}` : ""}`, {
+				scroll: false,
+			});
 		}, 3500);
 
 		return () => window.clearTimeout(timeoutId);
-	}, [router, shouldShowCreatedSuccess]);
+	}, [router, searchParamsString, shouldShowCreatedSuccess]);
 
 	useEffect(() => {
 		if (!bookingActionSuccess) {
@@ -115,6 +135,21 @@ export function MyBookingsPageClient() {
 					: booking,
 			),
 		);
+	}
+
+	function handleViewModeChange(nextViewMode: MyBookingsViewMode): void {
+		const nextParams = new URLSearchParams(searchParamsString);
+
+		if (nextViewMode === "cards") {
+			nextParams.delete("view");
+		} else {
+			nextParams.set("view", nextViewMode);
+		}
+
+		const nextQuery = nextParams.toString();
+		router.replace(`/me/bookings${nextQuery ? `?${nextQuery}` : ""}`, {
+			scroll: false,
+		});
 	}
 
 	return (
@@ -154,11 +189,14 @@ export function MyBookingsPageClient() {
 					)}
 					<MyBookingsList
 						bookings={bookings}
+						highlightedBookingId={highlightedBookingId}
+						onViewModeChange={handleViewModeChange}
 						onBookingCancelled={handleBookingCancelled}
 						onBookingCancelError={(message) => {
 							setBookingActionSuccess(null);
 							setBookingActionError(message);
 						}}
+						viewMode={viewMode}
 					/>
 				</>
 			)}

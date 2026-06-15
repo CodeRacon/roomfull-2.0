@@ -42,7 +42,12 @@ export function SignInForm({ nextPath }: SignInFormProps) {
 		try {
 			const authResponse = await signIn({ email, password });
 			startSession(authResponse);
-			router.replace(getSafeNextPath(nextPath));
+			const safeNextPath = getSafeNextPath(nextPath);
+			router.replace(
+				authResponse.user.role === "ADMIN" && safeNextPath === "/"
+					? "/admin"
+					: safeNextPath,
+			);
 		} catch (error) {
 			if (error instanceof ApiRequestError) {
 				setErrorMessage(error.message);

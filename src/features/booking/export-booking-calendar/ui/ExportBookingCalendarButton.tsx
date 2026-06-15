@@ -32,7 +32,12 @@ export function ExportBookingCalendarButton({
 	}
 
 	return (
-		<button type="button" onClick={handleClick} className={className}>
+		<button
+			type="button"
+			onClick={handleClick}
+			className={className}
+			aria-label="Buchung als ICS herunterladen"
+		>
 			<DownloadIcs className="size-4" />
 		</button>
 	);

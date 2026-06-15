@@ -3,13 +3,18 @@
 import { clsx } from "clsx";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type ReactElement, useState } from "react";
+import {
+	type ReactElement,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { useSession } from "@/entities/session";
 import {
 	Button,
 	Menu,
 	MenuButtonItem,
-	MenuDisabledItem,
 	MenuHeader,
 	MenuLinkItem,
 } from "@/shared/ui";
@@ -17,15 +22,19 @@ import {
 export function Header(): ReactElement {
 	const router = useRouter();
 	const { status, user, endSession } = useSession();
+	const headerRef = useRef<HTMLElement>(null);
 	const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 	const isAuthenticated = status === "authenticated";
+	const isAnonymous = status === "anonymous";
+	const isAdmin = user?.role === "ADMIN";
+	const isCustomer = user?.role === "CUSTOMER";
 
-	function closeMenus(): void {
+	const closeMenus = useCallback((): void => {
 		setIsProfileMenuOpen(false);
 		setIsMobileMenuOpen(false);
-	}
+	}, []);
 
 	function handleLogout(): void {
 		endSession();
@@ -33,11 +42,45 @@ export function Header(): ReactElement {
 		router.replace("/");
 	}
 
+	useEffect(() => {
+		if (!isProfileMenuOpen && !isMobileMenuOpen) {
+			return;
+		}
+
+		function handleKeyDown(event: KeyboardEvent): void {
+			if (event.key === "Escape") {
+				closeMenus();
+			}
+		}
+
+		function handlePointerDown(event: PointerEvent): void {
+			const eventTarget = event.target;
+
+			if (
+				eventTarget instanceof Node &&
+				!headerRef.current?.contains(eventTarget)
+			) {
+				closeMenus();
+			}
+		}
+
+		document.addEventListener("keydown", handleKeyDown);
+		document.addEventListener("pointerdown", handlePointerDown);
+
+		return () => {
+			document.removeEventListener("keydown", handleKeyDown);
+			document.removeEventListener("pointerdown", handlePointerDown);
+		};
+	}, [closeMenus, isMobileMenuOpen, isProfileMenuOpen]);
+
 	const focusClass =
 		"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 	return (
-		<header className="relative flex w-full items-center justify-center bg-primary px-4 py-4 md:px-6">
+		<header
+			ref={headerRef}
+			className="relative flex w-full items-center justify-center bg-primary px-4 py-4 md:px-6"
+		>
 			<nav className="flex w-full max-w-5xl items-center justify-between gap-6">
 				<Link
 					href="/"
@@ -48,30 +91,46 @@ export function Header(): ReactElement {
 				>
 					RoomFull
 				</Link>
-				<div className="hidden items-center gap-6 md:flex">
-					<Link
-						href="/"
-						className={clsx(
-							focusClass,
-							"text-lg font-semibold text-primary-soft text-shadow-sm",
-						)}
-					>
-						Buchen
-					</Link>
-				</div>
+				{!isAdmin && (
+					<div className="hidden items-center gap-6 md:flex">
+						<Link
+							href="/booking-options"
+							className={clsx(
+								focusClass,
+								"text-lg font-semibold text-primary-soft text-shadow-sm",
+							)}
+						>
+							Buchen
+						</Link>
+					</div>
+				)}
 				<div className="hidden items-center justify-center gap-4 font-semibold text-primary-soft text-shadow-sm md:flex">
-					{isAuthenticated ? (
+					{isAuthenticated && (
 						<>
-							<Link
-								href="/me/bookings"
-								onClick={closeMenus}
-								className={clsx(
-									focusClass,
-									"text-lg font-semibold text-primary-soft text-shadow-sm",
-								)}
-							>
-								Meine Buchungen
-							</Link>
+							{isCustomer && (
+								<Link
+									href="/me/bookings"
+									onClick={closeMenus}
+									className={clsx(
+										focusClass,
+										"text-lg font-semibold text-primary-soft text-shadow-sm",
+									)}
+								>
+									Meine Buchungen
+								</Link>
+							)}
+							{isAdmin && (
+								<Link
+									href="/admin"
+									onClick={closeMenus}
+									className={clsx(
+										focusClass,
+										"text-lg font-semibold text-primary-soft text-shadow-sm",
+									)}
+								>
+									Admin
+								</Link>
+							)}
 							<div className="relative">
 								<Button
 									variant="secondary"
@@ -99,7 +158,9 @@ export function Header(): ReactElement {
 												</p>
 											)}
 										</MenuHeader>
-										<MenuDisabledItem>Einstellungen · geplant</MenuDisabledItem>
+										<MenuLinkItem href="/me/account" onClick={closeMenus}>
+											Mein Account
+										</MenuLinkItem>
 										<MenuButtonItem onClick={handleLogout}>
 											Abmelden
 										</MenuButtonItem>
@@ -107,7 +168,8 @@ export function Header(): ReactElement {
 								)}
 							</div>
 						</>
-					) : (
+					)}
+					{isAnonymous && (
 						<>
 							<Link
 								href="/login"
@@ -148,14 +210,23 @@ export function Header(): ReactElement {
 			</nav>
 			{isMobileMenuOpen && (
 				<Menu className="absolute inset-x-4 top-full z-20 mt-2 md:hidden">
-					<MenuLinkItem href="/" onClick={closeMenus}>
-						Buchen
-					</MenuLinkItem>
-					{isAuthenticated ? (
+					{!isAdmin && (
+						<MenuLinkItem href="/booking-options" onClick={closeMenus}>
+							Buchen
+						</MenuLinkItem>
+					)}
+					{isAuthenticated && (
 						<>
-							<MenuLinkItem href="/me/bookings" onClick={closeMenus}>
-								Meine Buchungen
-							</MenuLinkItem>
+							{isCustomer && (
+								<MenuLinkItem href="/me/bookings" onClick={closeMenus}>
+									Meine Buchungen
+								</MenuLinkItem>
+							)}
+							{isAdmin && (
+								<MenuLinkItem href="/admin" onClick={closeMenus}>
+									Admin Dashboard
+								</MenuLinkItem>
+							)}
 							<MenuHeader className="mt-2">
 								<p className="text-sm font-semibold">
 									{user?.name ?? "Profil"}
@@ -166,10 +237,13 @@ export function Header(): ReactElement {
 									</p>
 								)}
 							</MenuHeader>
-							<MenuDisabledItem>Einstellungen · geplant</MenuDisabledItem>
+							<MenuLinkItem href="/me/account" onClick={closeMenus}>
+								Mein Account
+							</MenuLinkItem>
 							<MenuButtonItem onClick={handleLogout}>Abmelden</MenuButtonItem>
 						</>
-					) : (
+					)}
+					{isAnonymous && (
 						<>
 							<MenuLinkItem href="/login" onClick={closeMenus}>
 								Einloggen
