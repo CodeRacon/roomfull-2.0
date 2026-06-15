@@ -24,3 +24,9 @@ export async function doesAreaExist(id: string): Promise<boolean> {
 
 	return area !== null;
 }
+
+export async function listAreasForAdminContext(): Promise<Area[]> {
+	return prisma.area.findMany({
+		orderBy: { name: "asc" },
+	});
+}

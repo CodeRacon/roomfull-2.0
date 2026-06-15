@@ -16,15 +16,39 @@ export type CreateUnitInput = {
 	displayOrder?: number;
 };
 
-export type UpdateUnitInput = { id: string } & Partial<CreateUnitInput>;
+export type UpdateUnitInput = { id: string } & Partial<
+	Omit<CreateUnitInput, "areaId">
+> & {
+		areaId?: string | null;
+	};
 
 export type UnitTypeIdentity = {
 	id: string;
 	name: UnitTypeName;
 };
 
+export type AdminUnitStatusFilter = "active" | "deactivated" | "all";
+
+export type ListAdminUnitsInput = {
+	status: AdminUnitStatusFilter;
+	unitType?: UnitTypeName;
+	search?: string;
+};
+
 export type UnitWithRelations = Prisma.BookableUnitGetPayload<{
 	include: { unitType: true; area: true };
+}>;
+
+export type UnitForAvailability = Prisma.BookableUnitGetPayload<{
+	include: {
+		bookings: {
+			select: {
+				startTime: true;
+				endTime: true;
+			};
+		};
+		unitType: true;
+	};
 }>;
 
 export type UnitTypeForBookingOption = Prisma.UnitTypeGetPayload<{
@@ -63,6 +87,34 @@ export async function listActiveUnitsWithRelationsByUnitType(
 			unitType: { name: unitType },
 		},
 		orderBy: [{ displayOrder: "asc" }, { createdAt: "desc" }],
+		include: { unitType: true, area: true },
+	});
+}
+
+export async function listAdminUnitsWithRelations(
+	input: ListAdminUnitsInput,
+): Promise<UnitWithRelations[]> {
+	const where: Prisma.BookableUnitWhereInput = {};
+
+	if (input.status === "active") {
+		where.isActive = true;
+	}
+
+	if (input.status === "deactivated") {
+		where.isActive = false;
+	}
+
+	if (input.unitType) {
+		where.unitType = { name: input.unitType };
+	}
+
+	if (input.search) {
+		where.name = { contains: input.search, mode: "insensitive" };
+	}
+
+	return prisma.bookableUnit.findMany({
+		where,
+		orderBy: [{ displayOrder: "asc" }, { name: "asc" }, { id: "asc" }],
 		include: { unitType: true, area: true },
 	});
 }
@@ -176,6 +228,37 @@ export async function listAvailableUnitsForAllocation(input: {
 	});
 }
 
+export async function listActiveUnitsForAvailability(input: {
+	areaId: string;
+	unitTypeId: string;
+	startTime: Date;
+	endTime: Date;
+}): Promise<UnitForAvailability[]> {
+	return prisma.bookableUnit.findMany({
+		where: {
+			isActive: true,
+			areaId: input.areaId,
+			unitTypeId: input.unitTypeId,
+		},
+		include: {
+			unitType: true,
+			bookings: {
+				where: {
+					status: BookingStatus.ACTIVE,
+					startTime: { lt: input.endTime },
+					endTime: { gt: input.startTime },
+				},
+				select: {
+					startTime: true,
+					endTime: true,
+				},
+				orderBy: { startTime: "asc" },
+			},
+		},
+		orderBy: [{ displayOrder: "asc" }, { id: "asc" }],
+	});
+}
+
 export async function createBookingWithTransaction(input: {
 	userId: string;
 	unitId: string;
@@ -229,6 +312,15 @@ export async function listUnitTypesForBookingOptions(
 				orderBy: [{ displayOrder: "asc" }, { id: "asc" }],
 			},
 		},
+	});
+}
+
+export async function listUnitTypesForAdminContext(): Promise<
+	UnitTypeIdentity[]
+> {
+	return prisma.unitType.findMany({
+		orderBy: { name: "asc" },
+		select: { id: true, name: true },
 	});
 }
 

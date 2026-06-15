@@ -3,6 +3,8 @@ import { AppError } from "../lib/app-error.js";
 import {
 	createNewUnit,
 	deactivateExistingUnit,
+	getAdminUnitContext,
+	listAdminUnits,
 	updateExistingUnit,
 } from "../services/unit.service.js";
 
@@ -16,8 +18,11 @@ type CreateUnitBody = {
 	displayOrder?: number;
 };
 
-type UpdateUnitBody = Partial<CreateUnitBody>;
+type UpdateUnitBody = Partial<Omit<CreateUnitBody, "areaId">> & {
+	areaId?: string | null;
+};
 const INVALID_BODY_MESSAGE = "Ungültiger Request Body";
+const INVALID_QUERY_MESSAGE = "Ungültige Query-Parameter";
 const INVALID_ROUTE_PARAMS_MESSAGE = "Ungültige Route-Parameter";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -106,10 +111,10 @@ function parseUpdateUnitBody(body: unknown): UpdateUnitBody | null {
 	}
 
 	if ("areaId" in body) {
-		if (typeof body.areaId !== "string") {
+		if (body.areaId !== null && typeof body.areaId !== "string") {
 			return null;
 		}
-		parsed.areaId = body.areaId.trim();
+		parsed.areaId = body.areaId === null ? null : body.areaId.trim();
 	}
 
 	if ("displayOrder" in body) {
@@ -129,6 +134,67 @@ function parseUpdateUnitBody(body: unknown): UpdateUnitBody | null {
 function parseUnitId(params: Request["params"]): string | null {
 	const unitId = typeof params.unitId === "string" ? params.unitId.trim() : "";
 	return unitId.length > 0 ? unitId : null;
+}
+
+function parseOptionalQueryString(value: unknown): string | undefined | null {
+	if (value === undefined) {
+		return undefined;
+	}
+
+	if (typeof value !== "string") {
+		return null;
+	}
+
+	return value;
+}
+
+function parseAdminUnitsQuery(query: Request["query"]): {
+	status?: string;
+	unitType?: string;
+	search?: string;
+} | null {
+	const status = parseOptionalQueryString(query.status);
+	const unitType = parseOptionalQueryString(query.unitType);
+	const search = parseOptionalQueryString(query.search);
+
+	if (status === null || unitType === null || search === null) {
+		return null;
+	}
+
+	return { status, unitType, search };
+}
+
+export async function listAdminUnitsController(
+	req: Request,
+	res: Response,
+	next: NextFunction,
+): Promise<void> {
+	const query = parseAdminUnitsQuery(req.query);
+
+	if (!query) {
+		fail(next, 400, INVALID_QUERY_MESSAGE);
+		return;
+	}
+
+	try {
+		const units = await listAdminUnits(query);
+		res.status(200).json({ units });
+	} catch (error) {
+		next(error);
+	}
+}
+
+export async function getAdminUnitContextController(
+	_req: Request,
+	res: Response,
+	next: NextFunction,
+): Promise<void> {
+	try {
+		const context = await getAdminUnitContext();
+		res.status(200).json(context);
+	} catch (error) {
+		next(error);
+	}
 }
 
 export async function createAdminUnitController(

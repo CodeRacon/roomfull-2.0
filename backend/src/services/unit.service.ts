@@ -1,7 +1,11 @@
 import type { BookableUnit, UnitTypeName } from "@prisma/client";
-import { doesAreaExist } from "../db/area.repository.js";
+import {
+	doesAreaExist,
+	listAreasForAdminContext,
+} from "../db/area.repository.js";
 import { hasOverlappingActiveBookings } from "../db/booking.repository.js";
 import {
+	type AdminUnitStatusFilter,
 	type CreateUnitInput,
 	createUnit,
 	deactivateUnit,
@@ -9,8 +13,11 @@ import {
 	findActiveUnitByIdWithRelations,
 	findUnitById,
 	findUnitTypeById,
+	type ListAdminUnitsInput,
 	listActiveUnitsWithRelations,
 	listActiveUnitsWithRelationsByUnitType,
+	listAdminUnitsWithRelations,
+	listUnitTypesForAdminContext,
 	listUnitTypesForBookingOptions,
 	type UnitTypeForBookingOption,
 	type UnitWithRelations,
@@ -56,6 +63,25 @@ export type BookingOption = {
 	areas: BookingOptionArea[];
 };
 
+export type AdminUnitListInput = {
+	status?: string;
+	unitType?: string;
+	search?: string;
+};
+
+export type AdminUnitContext = {
+	unitTypes: {
+		id: string;
+		name: UnitTypeName;
+	}[];
+	areas: {
+		id: string;
+		name: string;
+		description: string | null;
+		isActive: boolean;
+	}[];
+};
+
 export const BOOKING_OPTION_UNIT_TYPES: UnitTypeName[] = [
 	"HOT_DESK",
 	"BOOTH",
@@ -82,6 +108,28 @@ function parseOptionalUnitType(value?: string): UnitTypeName | undefined {
 		default:
 			throw new AppError(400, "unitType ist ungültig");
 	}
+}
+
+function parseAdminUnitStatus(value?: string): AdminUnitStatusFilter {
+	const normalized = value?.trim().toLowerCase();
+
+	if (!normalized) {
+		return "active";
+	}
+
+	switch (normalized) {
+		case "active":
+		case "deactivated":
+		case "all":
+			return normalized;
+		default:
+			throw new AppError(400, "status ist ungültig");
+	}
+}
+
+function normalizeAdminUnitSearch(value?: string): string | undefined {
+	const normalized = value?.trim();
+	return normalized && normalized.length > 0 ? normalized : undefined;
 }
 
 function getBookingOptionStatus(totalActiveUnits: number): BookingOptionStatus {
@@ -196,8 +244,12 @@ function normalizeUpdateInput(input: UpdateUnitInput): UpdateUnitInput {
 	}
 
 	if (input.areaId !== undefined) {
-		const trimmedAreaId = input.areaId.trim();
-		normalized.areaId = trimmedAreaId.length > 0 ? trimmedAreaId : undefined;
+		if (input.areaId === null) {
+			normalized.areaId = null;
+		} else {
+			const trimmedAreaId = input.areaId.trim();
+			normalized.areaId = trimmedAreaId.length > 0 ? trimmedAreaId : null;
+		}
 	}
 
 	if (input.capacity !== undefined) {
@@ -284,7 +336,7 @@ function validateUpdateInput(input: UpdateUnitInput): void {
 		assertNonNegativeInteger(input.displayOrder, "displayOrder muss >= 0 sein");
 	}
 
-	if (input.areaId !== undefined) {
+	if (input.areaId !== undefined && input.areaId !== null) {
 		assertNonEmpty(input.areaId, "areaId ist ungültig");
 	}
 }
@@ -317,6 +369,27 @@ export async function getPublicUnits(input?: {
 	}
 
 	return listActiveUnitsWithRelations();
+}
+
+export async function listAdminUnits(
+	input: AdminUnitListInput = {},
+): Promise<UnitWithRelations[]> {
+	const filters: ListAdminUnitsInput = {
+		status: parseAdminUnitStatus(input.status),
+		unitType: parseOptionalUnitType(input.unitType),
+		search: normalizeAdminUnitSearch(input.search),
+	};
+
+	return listAdminUnitsWithRelations(filters);
+}
+
+export async function getAdminUnitContext(): Promise<AdminUnitContext> {
+	const [unitTypes, areas] = await Promise.all([
+		listUnitTypesForAdminContext(),
+		listAreasForAdminContext(),
+	]);
+
+	return { unitTypes, areas };
 }
 
 export async function getPublicBookingOptions(): Promise<BookingOption[]> {
@@ -405,17 +478,19 @@ export async function updateExistingUnit(
 
 	validateUpdateInput(normalizedInput);
 
+	const hasAreaIdChange = "areaId" in normalizedInput;
 	const effectiveUnitTypeId =
 		normalizedInput.unitTypeId ?? existingUnit.unitTypeId;
-	const effectiveAreaId =
-		normalizedInput.areaId ?? existingUnit.areaId ?? undefined;
+	const effectiveAreaId = hasAreaIdChange
+		? (normalizedInput.areaId ?? undefined)
+		: (existingUnit.areaId ?? undefined);
 
 	await assertUnitTypeExistsAndHotDeskHasArea(
 		effectiveUnitTypeId,
 		effectiveAreaId,
 	);
 
-	if (normalizedInput.areaId !== undefined) {
+	if (normalizedInput.areaId !== undefined && normalizedInput.areaId !== null) {
 		await assertAreaExists(normalizedInput.areaId);
 	}
 
