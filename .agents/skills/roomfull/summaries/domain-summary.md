@@ -24,7 +24,7 @@ Gebucht wird immer eine konkrete `BookableUnit`.
 
 ## Customer-Einstieg
 
-Die Homepage soll perspektivisch `BookingOption`s anzeigen, nicht einzelne BookableUnits.
+Die Booking Options Page `/booking-options` zeigt `BookingOption`s, nicht einzelne BookableUnits als Startseiten-Inventar.
 
 Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem bewusst freigegebenen UnitType:
 

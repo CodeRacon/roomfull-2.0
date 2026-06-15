@@ -49,7 +49,7 @@ Eine BookingOption:
 
 - entspricht im MVP genau einem bewusst freigegebenen UnitType
 - wird über eine explizite Backend-Allowlist veröffentlicht
-- ist der Einstieg auf der Homepage
+- ist der Einstieg auf der Booking Options Page `/booking-options`
 - ist kein Ersatz für die konkrete BookableUnit, die am Ende gebucht wird
 
 Allowlist in V1:
@@ -117,12 +117,18 @@ Bedeutung:
 
 ## Zeitmodell
 
-Version 1 arbeitet ohne feste Slots.
+Version 1 arbeitet ohne gespeicherte TimeSlot-Objekte.
 
 Verfügbarkeit wird aus bestehenden Bookings berechnet über:
 
 - `start_time`
 - `end_time`
+
+Alle Bookings müssen auf dem globalen Booking Time Grid liegen:
+
+- 15-Minuten-Raster
+- Start und Ende müssen Rasterpunkte sein
+- UnitTypes unterscheiden sich über Dauergrenzen, nicht über eigene Raster
 
 ## Öffnungszeiten
 
@@ -160,6 +166,7 @@ Für Version 1 gelten globale Öffnungszeiten:
 - nur zukünftige Zeiträume sind buchbar
 - `start_time < end_time`
 - Start und Ende müssen am selben Kalendertag liegen
+- Start und Ende müssen auf dem 15-Minuten-Booking-Time-Grid liegen
 - Booking muss innerhalb globaler Öffnungszeiten liegen
 - Dauer muss zur UnitType-Policy passen
 - keine Überschneidung aktiver Bookings auf derselben Unit

@@ -43,7 +43,17 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 
 ## Public BookingOptions
 
-- Die Homepage zeigt perspektivisch keine einzelnen `BookableUnit`s mehr, sondern `BookingOption`s als Customer-facing Einstieg in den Buchungsflow
+- `/` ist die öffentliche Home Page und erklärt RoomFull als Service
+- `/booking-options` ist die fokussierte Booking Options Page und zeigt `BookingOption`s als Customer-facing Einstieg in den Buchungsflow
+- `/booking-options` bleibt eine schlanke Kategorie-Übersicht; konkrete Area- oder Unit-Auswahl passiert auf `/booking-options/[slug]`
+- Angebots-Teaser auf der Home Page verlinken auf `/booking-options/[slug]`, nicht direkt auf `/bookings/new`
+- Die Home Page nennt diese Teaser in der UI `Arbeitsbereiche`; fachlich bleiben es `BookingOption`s
+- Die Home Page nutzt `BookingOption`s als Datenbasis, präsentiert sie aber kuratiert mit service-orientierten Texten und Medien
+- Varianten werden auf der Home Page nur angeteasert; konkrete Area- oder Unit-Auswahl passiert auf `/booking-options/[slug]`
+- Die Home Page braucht visuelle Arbeitsbereich-Signale; der erste Slice darf vorhandene Assets nutzen und soll spätere Bilder pro Arbeitsbereich ermöglichen
+- Die Home Page nutzt auth-aware CTAs:
+  - anonym: `Jetzt buchen`, `Registrieren`, `Einloggen`
+  - angemeldet: `Jetzt buchen`, `Meine Buchungen`
 - Eine `BookingOption` entspricht im MVP genau einem bewusst freigegebenen `UnitType`
 - Public BookingOptions kommen aus einer expliziten Backend-Allowlist, nicht automatisch aus allen `UnitType`-Datensätzen
 - Allowlist für V1:
@@ -73,9 +83,11 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 
 ## Zeitmodell
 
-- keine festen Timeslot-Tabellen
+- keine gespeicherten TimeSlot-Objekte
 - Bookings arbeiten mit `start_time` und `end_time`
 - Verfügbarkeit wird aus bestehenden Bookings berechnet
+- alle Bookings müssen auf dem globalen 15-Minuten-Booking-Time-Grid liegen
+- Availability Slots sind berechnete Preview-Ergebnisse, keine gespeicherten Fachobjekte
 
 ## Öffnungszeiten-Entscheidung
 
@@ -116,9 +128,12 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - nur zukünftige Zeiträume
 - nur Montag bis Freitag
 - nur innerhalb globaler Öffnungszeiten (08:00-22:00)
+- Start und Ende müssen auf dem 15-Minuten-Booking-Time-Grid liegen
 - Overlap-Regel: `new_start < existing_end AND new_end > existing_start`
 - Customers dürfen nur eigene zukünftige Bookings stornieren
 - Admin darf Bookings lesen und ebenfalls Bookings anlegen
+- Admin nutzt für operative oder testweise Booking-Erstellung bewusst den normalen Customer-Flow über `/booking-options`
+- Es gibt in V1 keinen separaten Admin-Einstieg für "Buchungsflow prüfen"
 - kein Admin-Fremd-Storno in V1 (späterer Ausbau)
 
 ## Fachliche Wahrheit

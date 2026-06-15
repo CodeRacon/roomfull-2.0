@@ -10,26 +10,53 @@ Ziel ist nicht maximaler Feature-Umfang, sondern eine saubere Umsetzung von:
 - Konfliktprüfung
 - klarer Fullstack-Struktur
 
+## V1-Stand
+
+Der V1-MVP-Stand ist fachlich erreicht.
+
+Enthalten sind:
+
+- Customer Self-Service für BookingOptions, Verfügbarkeit, Buchung und eigenes Storno
+- Admin Dashboard mit Buchungsbetrieb und Unit-Inventar
+- Admin-Verwaltung von BookableUnits inklusive Anlegen, Bearbeiten, Deaktivieren und Reaktivieren
+- Backend-seitige Fachregeln für Buchbarkeit, Dauer, Öffnungszeiten, Konflikte und Rollenrechte
+
+Bewusst nicht Teil von V1:
+
+- Admin-Bearbeitung von UnitTypes oder deren Dauerregeln
+- Admin-Fremd-Storno
+- separater Admin-Einstieg für "Buchungsflow prüfen"
+- automatisierte breite E2E-/Integrationstest-Abdeckung; V1 wird manuell und visuell geprüft
+
 ## MVP-Funktionen
 
 ### Customer
 
 - registrieren
 - einloggen
-- aktive Units sehen
-- Unit-Details sehen
+- BookingOptions als Einstieg in den Buchungsflow sehen
+- aktive Units für konkrete Auswahl und Details sehen
 - Verfügbarkeit prüfen
 - Buchung anlegen
 - eigene Buchungen sehen
-- eigene Buchungen stornieren
+- eigene zukünftige Buchungen stornieren
 
 ### Admin
 
+- eigenes Admin-Dashboard nutzen
 - Units anlegen
 - Units bearbeiten
 - Units deaktivieren
-- alle Buchungen sehen
-- Buchungen verwalten
+- Units reaktivieren
+- alle Buchungen im Buchungsbetrieb sehen
+- ebenfalls operative Buchungen über den normalen Customer-Flow anlegen
+
+Wenn Admins Buchbarkeit prüfen oder testweise buchen wollen, nutzen sie bewusst den normalen Customer-Flow über `/booking-options`. Es gibt in V1 keinen separaten Admin-Einstieg für "Buchungsflow prüfen".
+
+Nicht Teil des Admin-MVP:
+
+- UnitTypes oder deren Dauerregeln im Admin-UI bearbeiten
+- fremde Buchungen stornieren
 
 ## Nicht Teil von Version 1
 
@@ -65,6 +92,7 @@ Wichtige Regeln:
 - Hot Desk
 - Booth
 - Team Room
+- Meeting Room
 
 ## Öffnungszeiten-Entscheidung
 
@@ -162,6 +190,7 @@ Beispiel-Check nach dem UnitType-Seed:
   - `Hot Desk`
   - `Booth`
   - `Team Room`
+  - `Meeting Room`
 
 ### 5) Backend starten
 
@@ -201,10 +230,14 @@ Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
 
 ```txt
 /
-  SKILL.md
   README.md
 
-  docs/
+  .agents/skills/roomfull/
+    summaries/
+      project-summary.md
+      domain-summary.md
+      fsd-summary.md
+      api-summary.md
     domain-rules.md
     api-overview.md
     fsd-architecture.md
@@ -212,9 +245,17 @@ Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
     backend-conventions.md
     project-decisions.md
 
+  backend/
+    prisma/
+    src/
+      routes/
+      controllers/
+      services/
+      db/
+      middleware/
+
   src/
     app/
-    pages/
     widgets/
     features/
     entities/
@@ -240,18 +281,20 @@ Features:
 
 - `auth/sign-in`
 - `auth/sign-up`
-- `unit/check-availability`
 - `booking/create-booking`
 - `booking/cancel-booking`
-- `admin/create-unit`
-- `admin/update-unit`
-- `admin/deactivate-unit`
+- `booking/export-booking-calendar`
+- `admin/manage-unit`
 
 ## Dokumentation
 
-- `docs/domain-rules.md` → Fachregeln
-- `docs/api-overview.md` → API-Überblick
-- `docs/fsd-architecture.md` → Frontend-Architektur
-- `docs/frontend-conventions.md` → Frontend-Regeln
-- `docs/backend-conventions.md` → Backend-Regeln
-- `docs/project-decisions.md` → bewusste Entscheidungen
+- `.agents/skills/roomfull/summaries/project-summary.md` → Projektüberblick
+- `.agents/skills/roomfull/summaries/domain-summary.md` → Domain-Kurzüberblick
+- `.agents/skills/roomfull/summaries/fsd-summary.md` → Frontend-Architektur-Kurzüberblick
+- `.agents/skills/roomfull/summaries/api-summary.md` → API-Kurzüberblick
+- `.agents/skills/roomfull/domain-rules.md` → Fachregeln
+- `.agents/skills/roomfull/api-overview.md` → API-Überblick
+- `.agents/skills/roomfull/fsd-architecture.md` → Frontend-Architektur
+- `.agents/skills/roomfull/frontend-conventions.md` → Frontend-Regeln
+- `.agents/skills/roomfull/backend-conventions.md` → Backend-Regeln
+- `.agents/skills/roomfull/project-decisions.md` → bewusste Entscheidungen

@@ -11,6 +11,7 @@ Das Projekt dient vor allem dazu, Business-Logik, Rollen/Rechte, Datenmodellieru
 Version 1 konzentriert sich auf den Buchungskern:
 
 - Auth für Customer und Admin
+- eigenes Admin-Dashboard als Einstieg in Admin-Arbeitsbereiche
 - BookingOptions als Customer-Einstieg anzeigen
 - aktive Units für konkrete Auswahl und Details anzeigen
 - Verfügbarkeit prüfen
@@ -18,7 +19,7 @@ Version 1 konzentriert sich auf den Buchungskern:
 - Units administrativ anlegen, bearbeiten und deaktivieren
 - Buchungen administrativ einsehen und verwalten
 
-Die Homepage soll perspektivisch nicht das interne Unit-Inventar zeigen, sondern buchbare Bedarfskategorien wie `HOT_DESK`, `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM`.
+Die Homepage erklärt RoomFull als Service. Die separate Booking Options Page zeigt buchbare Bedarfskategorien wie `HOT_DESK`, `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM`.
 
 ## Nicht Teil von Version 1
 

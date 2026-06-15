@@ -47,7 +47,7 @@ Authorization: Bearer <token>
 
 ### `GET /public/booking-options`
 
-Liefert die Customer-facing BookingOptions für den Homepage-Einstieg.
+Liefert die Customer-facing BookingOptions für die Booking Options Page.
 
 Der Endpoint arbeitet ohne Zeitraum und beschreibt nur grundsätzliche Buchbarkeit.
 
@@ -164,6 +164,39 @@ Regeln:
 - unbekannte oder nicht buchbare Unit/Area liefert `404`
 - liefert keine zeitbezogene Verfügbarkeit und keinen `409`
 
+### `GET /bookings/availability?date=YYYY-MM-DD&unitId=...`
+
+Liefert auth-required die Booking Availability fuer Direct Booking.
+
+### `GET /bookings/availability?date=YYYY-MM-DD&areaId=...&unitType=HOT_DESK`
+
+Liefert auth-required die Booking Availability fuer Hot-Desk-Auto-Assign.
+
+Response:
+
+```ts
+type BookingAvailability = {
+  date: string;
+  timeGridMinutes: 15;
+  openingHours: { start: "08:00"; end: "22:00" };
+  slots: Array<{
+    start: string; // HH:mm
+    end: string; // HH:mm
+    availableUnitCount: number;
+  }>;
+  blockedIntervals: Array<{ start: string; end: string }>; // HH:mm
+};
+```
+
+Regeln:
+
+- akzeptiert entweder `unitId` oder `areaId + unitType=HOT_DESK`
+- `slots` sind berechnete Availability Slots, keine gespeicherten TimeSlot-Objekte
+- `availableUnitCount` wird ohne konkrete Unit-IDs geliefert
+- `date` muss ein buchbarer Berliner Werktag sein
+- Slots folgen dem globalen 15-Minuten-Booking-Time-Grid
+- Submit bleibt die finale race-sichere Buchungsprüfung
+
 ### `POST /bookings`
 
 Legt eine neue Buchung an.
@@ -221,6 +254,48 @@ Storniert eine eigene zukünftige Buchung.
 
 ## Admin
 
+### `GET /admin/units`
+
+Liefert BookableUnits für die Admin-Inventaransicht inklusive Aktivierungsstatus.
+
+Query:
+
+```txt
+GET /admin/units?status=active&unitType=HOT_DESK&search=Desk
+```
+
+Filter:
+
+- `status=active|deactivated|all` (Default: `active`)
+- `unitType=HOT_DESK|BOOTH|TEAM_ROOM|MEETING_ROOM`
+- `search` sucht einfach nach Unit-Name
+
+Response:
+
+```ts
+type AdminUnitListResponse = {
+  units: Unit[];
+};
+```
+
+### `GET /admin/units/context`
+
+Liefert Auswahlwerte für Admin-Unit-Formulare.
+
+Response:
+
+```ts
+type AdminUnitContextResponse = {
+  unitTypes: Array<{ id: string; name: UnitTypeName }>;
+  areas: Array<{
+    id: string;
+    name: string;
+    description: string | null;
+    isActive: boolean;
+  }>;
+};
+```
+
 ### `POST /admin/units`
 
 Legt eine neue Unit an.
@@ -235,7 +310,27 @@ Deaktiviert eine Unit.
 
 ### `GET /admin/bookings`
 
-Liefert alle Buchungen.
+Liefert gefilterte Buchungen inklusive minimaler Customer- und Unit-Anzeigedaten.
+
+Query:
+
+```txt
+GET /admin/bookings?status=upcoming&from=2027-01-01&to=2027-01-31&limit=100
+```
+
+`status` ist ein View-Status: `upcoming`, `today`, `completed`, `cancelled` oder `all`.
+`all` umfasst alle Booking-Status im gewählten Zeitraum; ohne explizite `from/to`-Werte nutzt `all` 30 Tage zurück und 30 Tage voraus.
+`from` und `to` sind inklusive Kalendertage im Format `YYYY-MM-DD`.
+`limit` muss zwischen `1` und `500` liegen.
+
+Response:
+
+```ts
+type AdminBooking = Booking & {
+  user: { id: string; name: string; email: string; role: "CUSTOMER" | "ADMIN" };
+  unit: { id: string; name: string; unitType: { name: UnitTypeName } };
+};
+```
 
 ## Rollenlogik
 

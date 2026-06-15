@@ -81,6 +81,22 @@ import { BookingCard } from "@/entities/booking/ui/BookingCard";
 - keine unnötig generischen Monster-Komponenten
 - Seiten bauen zusammen, implementieren aber nicht alles selbst
 
+## Account Overview
+
+`/me/account` ist in V1 eine geschützte Nur-Lese-Page für Session-User-Daten aller angemeldeten Rollen.
+
+Sie zeigt Name, E-Mail, Rolle und "Nutzer seit" aus der Frontend Session.
+
+Ein Einstieg zu `/me/bookings` ist erlaubt, bevorzugt als Anzeige der nächsten anstehenden Buchung statt als generischer Menü-Link. Das bleibt Navigation zur Booking-Liste und kein Account-Inhalt.
+
+Logout bleibt in V1 im Header-Profilmenü und wird nicht zusätzlich auf `/me/account` platziert.
+
+Keine sichtbaren Platzhalter für spätere Account-Einstellungen. Profilbearbeitung, Passwortänderung und Booking-Präferenzen werden erst sichtbar, wenn sie als eigene Feature-Slices umgesetzt werden.
+
+Solange dort nur Name, E-Mail und Rolle angezeigt werden, braucht sie keine eigene Feature-Slice und keinen eigenen Backend-Endpoint.
+
+Erst echte Account-Aktionen wie Profilbearbeitung oder Passwortänderung werden als eigene Feature-Slices geschnitten.
+
 ## Form-Logik
 
 Form-State und Interaktionslogik gehören in die passende Feature-Slice, nicht global in shared.
@@ -118,6 +134,21 @@ Beispiele:
 - Login/Register rufen `startSession(authResponse)` auf
 - Logout ruft `endSession()` auf
 - geschützte UI-Flows nutzen `RequireAuth`
+
+## Admin Area
+
+`/admin` ist der Einstieg in die Admin-Arbeitsoberfläche und kein Redirect auf eine Detailseite.
+
+Admin-Navigation ist rollenbasiert von Customer-Navigation getrennt:
+
+- Customer sehen Customer-Einstiege wie `Buchen` und `Meine Buchungen`
+- Admins sehen im globalen Header nur den Einstieg `Admin`
+
+Admin-Seiten nutzen eine konsistente Admin-Subnavigation für die Arbeitsbereiche `Dashboard`, `Buchungsbetrieb` und `Unit-Inventar`.
+
+Admins dürfen technisch operative Bookings anlegen, nutzen dafür aber bewusst den normalen Customer-Flow über `/booking-options`.
+
+Es gibt in V1 keinen separaten Admin-Einstieg für "Buchungsflow prüfen"; der Header und das Admin-Dashboard halten Admin-Arbeitsbereiche und Customer-Booking-Flow getrennt.
 
 ## Shared-Regel
 

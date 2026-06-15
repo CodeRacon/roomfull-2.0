@@ -29,7 +29,7 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 - `GET /public/units/:unitId`
 - `GET /public/units/:unitId/availability?start=...&end=...`
 
-`GET /public/booking-options` ist perspektivisch der Homepage-Einstieg.
+`GET /public/booking-options` speist die Booking Options Page als fokussierten Buchungseinstieg.
 
 Der Endpoint liefert grundsätzliche Customer-Angebote ohne Zeitraum:
 
@@ -59,6 +59,8 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 ### Bookings
 
 - `GET /bookings/context`
+- `GET /bookings/availability?date=YYYY-MM-DD&unitId=...`
+- `GET /bookings/availability?date=YYYY-MM-DD&areaId=...&unitType=HOT_DESK`
 - `POST /bookings`
 - `GET /me/bookings`
 - `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
@@ -68,10 +70,36 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 
 ### Admin
 
+- `GET /admin/units`
+- `GET /admin/units/context`
 - `POST /admin/units`
 - `PUT /admin/units/:unitId`
 - `PATCH /admin/units/:unitId/deactivate`
 - `GET /admin/bookings`
+
+`GET /admin/units` liefert BookableUnits für die Admin-Inventaransicht und darf aktive, deaktivierte oder alle Units enthalten.
+
+Unterstützte Query-Parameter:
+
+- `status=active|deactivated|all` (Default: `active`)
+- `unitType=HOT_DESK|BOOTH|TEAM_ROOM|MEETING_ROOM`
+- `search=<name>`
+
+`GET /admin/units/context` liefert Auswahlwerte für Admin-Unit-Formulare:
+
+- `unitTypes`
+- `areas`
+
+`GET /admin/bookings` liefert gefilterte Bookings inklusive minimaler Customer- und Unit-Anzeigedaten (`user.name`, `user.email`, `unit.name`, `unit.unitType.name`) für die Admin-Übersicht.
+
+Unterstützte Query-Parameter:
+
+- `status=upcoming|today|completed|cancelled|all`
+- `from=YYYY-MM-DD`
+- `to=YYYY-MM-DD`
+- `limit=1..500`
+
+`status=all` umfasst Vergangenheit und Zukunft im gewählten Zeitraum, damit anstehende Bookings nicht aus der Gesamtsicht fallen.
 
 ## Rollenbezug
 
@@ -92,6 +120,15 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 
 Der Endpoint liefert Anzeige- und Dauerregel-Kontext, aber keine zeitbezogene Verfügbarkeit.
 
+`GET /bookings/availability` liefert nach Datumsauswahl die gemeinsame Availability-Basis fuer Direct Booking und Hot-Desk-Auto-Assign:
+
+- globales 15-Minuten-Grid
+- Öffnungszeiten als lokale `HH:mm`
+- `slots` als berechnete Availability Slots mit `availableUnitCount`
+- `blockedIntervals` als lokale `HH:mm`
+- keine konkreten Hot-Desk-Unit-IDs
+- Submit bleibt finale Verfügbarkeitsprüfung
+
 BookingOptions nutzen dieselbe fachliche Unterscheidung:
 
 - `AUTO_ASSIGN` für Hot Desk
@@ -105,6 +142,7 @@ BookingOptions nutzen dieselbe fachliche Unterscheidung:
 - Start und Ende am selben Kalendertag
 - nur zukünftige Zeiträume
 - nur Mo-Fr und innerhalb 08:00-22:00
+- Start und Ende auf globalem 15-Minuten-Grid
 - Dauer nach UnitType-Policy
 - keine Überschneidung aktiver Bookings auf derselben Unit
 - Auto-Assign ist race-sicher (Transaktion/Konflikt-Retry)

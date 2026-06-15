@@ -212,6 +212,52 @@
 			}
 		},
 		"/admin/units": {
+			"get": {
+				"tags": ["Admin Units"],
+				"summary": "Units für Admin-Inventar laden",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "status",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": ["active", "deactivated", "all"],
+							"default": "active"
+						}
+					},
+					{
+						"name": "unitType",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						}
+					},
+					{
+						"name": "search",
+						"in": "query",
+						"required": false,
+						"schema": { "type": "string" },
+						"description": "Einfache Suche nach Unit-Name"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Admin-Inventarliste",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/UnitListResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" }
+				}
+			},
 			"post": {
 				"tags": ["Admin Units"],
 				"summary": "Neue Unit erstellen",
@@ -237,6 +283,27 @@
 					"401": { "$ref": "#/components/responses/Unauthorized" },
 					"403": { "$ref": "#/components/responses/Forbidden" },
 					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
+		"/admin/units/context": {
+			"get": {
+				"tags": ["Admin Units"],
+				"summary": "Auswahlwerte für Admin-Unit-Formular laden",
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Admin-Unit-Formular-Kontext",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdminUnitContextResponse"
+								}
+							}
+						}
+					},
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" }
 				}
 			}
 		},
@@ -341,6 +408,60 @@
 						"content": {
 							"application/json": {
 								"schema": { "$ref": "#/components/schemas/BookingContextResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
+		"/bookings/availability": {
+			"get": {
+				"tags": ["Customer Bookings"],
+				"summary": "Booking Availability für einen Tag laden",
+				"description": "Auth-required Endpoint für die Create Booking Page. Akzeptiert entweder `unitId` für Direct Booking oder `areaId + unitType=HOT_DESK` für Hot-Desk-Auto-Assign. Liefert lokale HH:mm Availability Slots und blockierende Intervalle für den gewählten Tag.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "date",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"example": "2027-01-18"
+						}
+					},
+					{
+						"name": "unitId",
+						"in": "query",
+						"required": false,
+						"schema": { "type": "string" },
+						"description": "Konkrete Unit für Direct Booking"
+					},
+					{
+						"name": "areaId",
+						"in": "query",
+						"required": false,
+						"schema": { "type": "string" },
+						"description": "Area für Hot-Desk-Auto-Assign"
+					},
+					{
+						"name": "unitType",
+						"in": "query",
+						"required": false,
+						"schema": { "type": "string", "enum": ["HOT_DESK"] },
+						"description": "UnitType für Auto-Assign; in V1 nur HOT_DESK"
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Booking Availability für den Tag",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/BookingAvailabilityResponse" }
 							}
 						}
 					},
@@ -469,14 +590,53 @@
 		"/admin/bookings": {
 			"get": {
 				"tags": ["Admin Bookings"],
-				"summary": "Alle Buchungen laden (Admin)",
+				"summary": "Buchungen gefiltert laden (Admin)",
 				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "status",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["upcoming", "today", "completed", "cancelled", "all"],
+							"default": "upcoming"
+						}
+					},
+					{
+						"name": "from",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"example": "2027-01-01"
+						}
+					},
+					{
+						"name": "to",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"example": "2027-01-31"
+						}
+					},
+					{
+						"name": "limit",
+						"in": "query",
+						"schema": {
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 500,
+							"default": 100
+						}
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "Alle Buchungen",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/BookingListResponse" }
+								"schema": { "$ref": "#/components/schemas/AdminBookingListResponse" }
 							}
 						}
 					},
@@ -622,6 +782,43 @@
 				},
 				"required": ["units"]
 			},
+			"AdminUnitContextUnitType": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": {
+						"type": "string",
+						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+					}
+				},
+				"required": ["id", "name"]
+			},
+			"AdminUnitContextArea": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string" },
+					"description": { "type": "string", "nullable": true },
+					"isActive": { "type": "boolean" }
+				},
+				"required": ["id", "name", "description", "isActive"]
+			},
+			"AdminUnitContextResponse": {
+				"type": "object",
+				"properties": {
+					"unitTypes": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/AdminUnitContextUnitType"
+						}
+					},
+					"areas": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/AdminUnitContextArea" }
+					}
+				},
+				"required": ["unitTypes", "areas"]
+			},
 			"BookingOptionArea": {
 				"type": "object",
 				"properties": {
@@ -729,7 +926,7 @@
 					"isActive": { "type": "boolean" },
 					"displayOrder": { "type": "integer", "minimum": 0 },
 					"unitTypeId": { "type": "string" },
-					"areaId": { "type": "string" }
+					"areaId": { "type": "string", "nullable": true }
 				}
 			},
 			"CreateBookingRequest": {
@@ -821,6 +1018,86 @@
 				},
 				"required": ["bookingContext"]
 			},
+			"AvailabilitySlot": {
+				"type": "object",
+				"properties": {
+					"start": {
+						"type": "string",
+						"pattern": "^\\d{2}:\\d{2}$",
+						"example": "08:00"
+					},
+					"end": {
+						"type": "string",
+						"pattern": "^\\d{2}:\\d{2}$",
+						"example": "08:30"
+					},
+					"availableUnitCount": { "type": "integer", "minimum": 1 }
+				},
+				"required": ["start", "end", "availableUnitCount"]
+			},
+			"BlockedInterval": {
+				"type": "object",
+				"properties": {
+					"start": {
+						"type": "string",
+						"pattern": "^\\d{2}:\\d{2}$",
+						"example": "10:00"
+					},
+					"end": {
+						"type": "string",
+						"pattern": "^\\d{2}:\\d{2}$",
+						"example": "11:00"
+					}
+				},
+				"required": ["start", "end"]
+			},
+			"BookingAvailability": {
+				"type": "object",
+				"properties": {
+					"date": { "type": "string", "format": "date" },
+					"timeGridMinutes": { "type": "integer", "enum": [15] },
+					"openingHours": {
+						"type": "object",
+						"properties": {
+							"start": {
+								"type": "string",
+								"pattern": "^\\d{2}:\\d{2}$",
+								"example": "08:00"
+							},
+							"end": {
+								"type": "string",
+								"pattern": "^\\d{2}:\\d{2}$",
+								"example": "22:00"
+							}
+						},
+						"required": ["start", "end"]
+					},
+					"slots": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/AvailabilitySlot" }
+					},
+					"blockedIntervals": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/BlockedInterval" }
+					}
+				},
+				"required": [
+					"date",
+					"timeGridMinutes",
+					"openingHours",
+					"slots",
+					"blockedIntervals"
+				]
+			},
+			"BookingAvailabilityResponse": {
+				"type": "object",
+				"properties": {
+					"availability": {
+						"$ref": "#/components/schemas/BookingAvailability"
+					}
+				},
+				"required": ["availability"]
+			},
 			"Booking": {
 				"type": "object",
 				"properties": {
@@ -885,12 +1162,46 @@
 					}
 				]
 			},
+			"AdminBooking": {
+				"allOf": [
+					{ "$ref": "#/components/schemas/MyBooking" },
+					{
+						"type": "object",
+						"properties": {
+							"user": {
+								"type": "object",
+								"properties": {
+									"id": { "type": "string" },
+									"name": { "type": "string" },
+									"email": { "type": "string", "format": "email" },
+									"role": {
+										"type": "string",
+										"enum": ["CUSTOMER", "ADMIN"]
+									}
+								},
+								"required": ["id", "name", "email", "role"]
+							}
+						},
+						"required": ["user"]
+					}
+				]
+			},
 			"BookingListResponse": {
 				"type": "object",
 				"properties": {
 					"bookings": {
 						"type": "array",
 						"items": { "$ref": "#/components/schemas/MyBooking" }
+					}
+				},
+				"required": ["bookings"]
+			},
+			"AdminBookingListResponse": {
+				"type": "object",
+				"properties": {
+					"bookings": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/AdminBooking" }
 					}
 				},
 				"required": ["bookings"]
