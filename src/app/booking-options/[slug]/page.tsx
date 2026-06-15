@@ -94,8 +94,8 @@ export default async function BookingOptionPage({
 				</h1>
 				<p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
 					{showsAreaCards
-						? `Insgesamt ${hotDeskSeatCount} Einzelplätze, verteilt auf ${hotDeskAreas.length} Areas.`
-						: `Aktive Angebote: ${units.length}`}
+						? `${hotDeskSeatCount} Plätze an ${hotDeskAreas.length} Orten.`
+						: `${units.length} passende Räume verfügbar.`}
 				</p>
 
 				{units.length > 0 && !showsAreaCards && (
@@ -128,7 +128,7 @@ export default async function BookingOptionPage({
 								</h2>
 								<p className="room-card__text mt-2 text-sm leading-6">
 									{area.description ??
-										"Hot-Desk-Area mit buchbaren Einzelplätzen."}
+										"Ein Bereich mit buchbaren Einzelplätzen."}
 								</p>
 								<div className="mt-4 flex flex-wrap items-center gap-3">
 									<Badge className="room-card__badge">{`${area.seatCount} Einzelplätze`}</Badge>
@@ -144,8 +144,8 @@ export default async function BookingOptionPage({
 				)}
 
 				{units.length === 0 && (
-					<FeedbackBox title="This is an Info:" className="mt-8">
-						Aktuell sind keine Angebote verfügbar.
+					<FeedbackBox title="Gerade nichts verfügbar" className="mt-8">
+						Für diese Auswahl gibt es aktuell keine buchbaren Plätze oder Räume.
 					</FeedbackBox>
 				)}
 			</div>

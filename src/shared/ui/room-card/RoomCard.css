@@ -17,7 +17,7 @@
 	transition: width 0.25s ease;
 }
 
-.room-card:hover::before {
+.room-card--interactive:hover::before {
 	width: 100%;
 }
 

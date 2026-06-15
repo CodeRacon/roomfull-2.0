@@ -46,13 +46,13 @@ function getBookingOptionIcon(key: BookingOption["key"]) {
 function getBookingOptionCtaLabel(key: BookingOption["key"]) {
 	switch (key) {
 		case "HOT_DESK":
-			return "Platz finden";
+			return "Platz auswählen";
 		case "BOOTH":
-			return "Booth ansehen";
+			return "Booth auswählen";
 		case "TEAM_ROOM":
-			return "Team Rooms ansehen";
+			return "Team Room auswählen";
 		case "MEETING_ROOM":
-			return "Meeting Rooms ansehen";
+			return "Meeting Room auswählen";
 	}
 }
 
@@ -62,7 +62,7 @@ export function BookingOptionsList({
 	if (bookingOptions.length === 0) {
 		return (
 			<FeedbackBox variant="empty" className="mt-8">
-				Keine Buchungsoptionen verfügbar.
+				Gerade sind keine Plätze oder Räume verfügbar.
 			</FeedbackBox>
 		);
 	}
@@ -77,7 +77,7 @@ export function BookingOptionsList({
 					<Link key={option.key} href={href} className="block rounded-md">
 						<Panel
 							padding="compact"
-							className={`room-card ${getBookingOptionCardClassName(option.key)}`}
+							className={`room-card room-card--interactive ${getBookingOptionCardClassName(option.key)}`}
 						>
 							<div className="flex min-h-32 items-center gap-5">
 								<div className="room-card__icon flex size-28 shrink-0 items-center justify-center rounded-md text-lg font-bold">

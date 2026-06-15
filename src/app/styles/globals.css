@@ -84,3 +84,18 @@ body {
 button {
 	cursor: pointer;
 }
+
+@keyframes booking-card-highlight {
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.55;
+	}
+}
+
+.booking-card--highlight {
+	animation: booking-card-highlight 0.25s ease-in-out 3;
+}
