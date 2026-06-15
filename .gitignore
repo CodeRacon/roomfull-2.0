@@ -15,6 +15,7 @@ backend/.env
 backend/.env.*
 
 .next
+*.tsbuildinfo
 
 out
 .env.local
