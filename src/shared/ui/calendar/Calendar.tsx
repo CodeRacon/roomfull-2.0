@@ -1,3 +1,5 @@
+import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
+import { clsx } from "clsx";
 import { Fragment, type ReactNode } from "react";
 
 export type CalendarDay = {
@@ -7,12 +9,23 @@ export type CalendarDay = {
 };
 
 type CalendarProps = {
+	accent?: CalendarAccentClasses;
 	canGoPrevious?: boolean;
 	isLoading?: boolean;
 	loadingLabel?: string;
 	onVisibleMonthChange: (month: string) => void;
 	renderDay: (day: CalendarDay) => ReactNode;
 	visibleMonth: string;
+};
+
+export type CalendarAccentClasses = {
+	containerClassName: string;
+	weekdayClassName: string;
+};
+
+const defaultCalendarAccentClasses: CalendarAccentClasses = {
+	containerClassName: "bg-background",
+	weekdayClassName: "bg-primary/10",
 };
 
 const weekdayLabels = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
@@ -89,9 +102,10 @@ function getCalendarDates(month: string): CalendarDay[] {
 }
 
 export function Calendar({
+	accent = defaultCalendarAccentClasses,
 	canGoPrevious = true,
 	isLoading = false,
-	loadingLabel = "Kalender wird geladen...",
+	loadingLabel = "Kalender wird geladen…",
 	onVisibleMonthChange,
 	renderDay,
 	visibleMonth,
@@ -99,37 +113,52 @@ export function Calendar({
 	const visibleMonthDate = getMonthStart(visibleMonth);
 
 	return (
-		<div className="rounded-md border border-primary-soft bg-primary-soft/35 p-4 shadow-xs">
-			<div className="flex items-center justify-between gap-3">
+		<div
+			className={clsx(
+				"border-2 border-primary p-3 transition-colors md:p-4",
+				accent.containerClassName,
+			)}
+		>
+			<div className="grid grid-cols-[2.75rem_minmax(0,1fr)_2.75rem] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-3">
 				<button
 					type="button"
 					disabled={!canGoPrevious}
 					onClick={() => onVisibleMonthChange(addMonths(visibleMonth, -1))}
-					className="cursor-pointer! rounded-md border border-primary-soft bg-surface px-3 py-2 text-sm font-semibold text-primary hover:bg-primary-soft disabled:cursor-default! disabled:bg-soft-muted disabled:text-muted disabled:opacity-50"
+					aria-label="Vorherigen Monat anzeigen"
+					className="inline-flex min-h-11 items-center justify-center bg-primary px-3 py-2 text-sm font-black text-primary-soft transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default! disabled:bg-primary/10 disabled:text-muted disabled:opacity-60"
 				>
-					Zurück
+					<ChevronRightIcon className="size-5 rotate-180" aria-hidden="true" />
+					<span className="sr-only sm:not-sr-only sm:ml-2">Zurück</span>
 				</button>
-				<p className="text-base font-semibold text-primary">
+				<p className="min-w-0 bg-primary/10 px-2 py-2 text-center text-sm font-black leading-tight text-primary md:text-base">
 					{monthFormatter.format(visibleMonthDate)}
 				</p>
 				<button
 					type="button"
 					onClick={() => onVisibleMonthChange(addMonths(visibleMonth, 1))}
-					className="cursor-pointer! rounded-md border border-primary-soft bg-surface px-3 py-2 text-sm font-semibold text-primary hover:bg-primary-soft"
+					aria-label="Nächsten Monat anzeigen"
+					className="inline-flex min-h-11 items-center justify-center bg-primary px-3 py-2 text-sm font-black text-primary-soft transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 				>
-					Weiter
+					<span className="sr-only sm:not-sr-only sm:mr-2">Weiter</span>
+					<ChevronRightIcon className="size-5" aria-hidden="true" />
 				</button>
 			</div>
 
-			{isLoading && <p className="mt-3 text-sm text-muted">{loadingLabel}</p>}
+			{isLoading && (
+				<p className="mt-3 bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
+					{loadingLabel}
+				</p>
+			)}
 
-			<div className="mt-4 grid grid-cols-7 gap-2 text-center text-xs font-semibold text-primary">
+			<div className="mt-4 grid grid-cols-7 gap-1 text-center text-xs font-black text-primary md:gap-2">
 				{weekdayLabels.map((label) => (
-					<span key={label}>{label}</span>
+					<span key={label} className={clsx("py-2", accent.weekdayClassName)}>
+						{label}
+					</span>
 				))}
 			</div>
 
-			<div className="mt-2 grid grid-cols-7 gap-2">
+			<div className="mt-1 grid grid-cols-7 gap-1 md:mt-2 md:gap-2">
 				{getCalendarDates(visibleMonth).map((day) => (
 					<Fragment key={day.date}>{renderDay(day)}</Fragment>
 				))}

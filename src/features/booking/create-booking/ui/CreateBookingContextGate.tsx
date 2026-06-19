@@ -87,7 +87,7 @@ export function CreateBookingContextGate() {
 	}
 
 	if (isLoading) {
-		return <Panel className="mt-8">Booking Context wird geladen...</Panel>;
+		return <Panel className="mt-8">Booking Context wird geladen…</Panel>;
 	}
 
 	if (errorMessage) {
@@ -99,7 +99,7 @@ export function CreateBookingContextGate() {
 	}
 
 	if (bookingContext === null) {
-		return <Panel className="mt-8">Booking Context wird vorbereitet...</Panel>;
+		return <Panel className="mt-8">Booking Context wird vorbereitet…</Panel>;
 	}
 
 	return <CreateBookingForm bookingContext={bookingContext} />;

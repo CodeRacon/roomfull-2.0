@@ -1,5 +1,6 @@
 "use client";
 
+import { clsx } from "clsx";
 import { useRouter } from "next/navigation";
 import { type ComponentPropsWithoutRef, useEffect, useState } from "react";
 import type {
@@ -15,10 +16,16 @@ import {
 	getUnitDayBookings,
 } from "@/entities/booking";
 import { useSession } from "@/entities/session";
+import type { UnitTypeName } from "@/entities/unit";
+import { formatUnitTypeName } from "@/entities/unit";
 import { ApiRequestError } from "@/shared/api";
-import { Badge, Button, FeedbackBox, Panel } from "@/shared/ui";
+import { Button, FeedbackBox } from "@/shared/ui";
 import { BookingTimePicker } from "./BookingTimePicker";
-import { type CalendarDayState, CustomCalendar } from "./CustomCalendar";
+import {
+	type CalendarDayState,
+	CustomCalendar,
+	type CustomCalendarAccentClasses,
+} from "./CustomCalendar";
 
 type CreateBookingFormProps = {
 	bookingContext: BookingContext;
@@ -33,8 +40,70 @@ type MinuteRange = {
 	start: number;
 };
 
+type BookingAccentTheme = {
+	accentClassName: string;
+	actionClassName: string;
+	calendarAccent: CustomCalendarAccentClasses;
+	sideLabel: string;
+};
+
 const OPENING_MINUTES = 8 * 60;
 const CLOSING_MINUTES = 22 * 60;
+
+const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
+	HOT_DESK: {
+		accentClassName: "bg-feed-teal",
+		actionClassName: "bg-feed-teal! text-primary! hover:bg-feed-teal!",
+		calendarAccent: {
+			containerClassName: "bg-feed-teal/10",
+			weekdayClassName: "bg-feed-teal/30",
+			availableClassName: "bg-feed-teal/10",
+			availableHoverClassName:
+				"md:hover:border-primary md:hover:bg-feed-teal/25",
+			todayBorderClassName: "border-feed-teal!",
+		},
+		sideLabel: "Areas",
+	},
+	BOOTH: {
+		accentClassName: "bg-feed-pink",
+		actionClassName: "bg-feed-pink! text-primary! hover:bg-feed-pink!",
+		calendarAccent: {
+			containerClassName: "bg-feed-pink/10",
+			weekdayClassName: "bg-feed-pink/25",
+			availableClassName: "bg-feed-pink/10",
+			availableHoverClassName:
+				"md:hover:border-primary md:hover:bg-feed-pink/25",
+			todayBorderClassName: "border-feed-pink!",
+		},
+		sideLabel: "Fokus",
+	},
+	TEAM_ROOM: {
+		accentClassName: "bg-feed-coral",
+		actionClassName: "bg-feed-coral! text-primary! hover:bg-feed-coral!",
+		calendarAccent: {
+			containerClassName: "bg-feed-coral/10",
+			weekdayClassName: "bg-feed-coral/25",
+			availableClassName: "bg-feed-coral/10",
+			availableHoverClassName:
+				"md:hover:border-primary md:hover:bg-feed-coral/25",
+			todayBorderClassName: "border-feed-coral!",
+		},
+		sideLabel: "Team",
+	},
+	MEETING_ROOM: {
+		accentClassName: "bg-feed-amber",
+		actionClassName: "bg-feed-amber! text-primary! hover:bg-feed-amber!",
+		calendarAccent: {
+			containerClassName: "bg-feed-amber/10",
+			weekdayClassName: "bg-feed-amber/30",
+			availableClassName: "bg-feed-amber/10",
+			availableHoverClassName:
+				"md:hover:border-primary md:hover:bg-feed-amber/25",
+			todayBorderClassName: "border-feed-amber!",
+		},
+		sideLabel: "Meet",
+	},
+};
 
 const berlinDateFormatter = new Intl.DateTimeFormat("en-CA", {
 	timeZone: "Europe/Berlin",
@@ -71,6 +140,11 @@ function getCurrentBerlinMonth(): string {
 function parseDate(date: string): Date {
 	const [year, month, day] = date.split("-").map(Number);
 	return new Date(Date.UTC(year, month - 1, day));
+}
+
+function parseTimeToMinutes(time: string): number {
+	const [hours, minutes] = time.split(":").map(Number);
+	return hours * 60 + minutes;
 }
 
 function formatDateParts(year: number, month: number, day: number): string {
@@ -187,7 +261,21 @@ function formatDuration(minutes: number): string {
 }
 
 function formatBookingSummaryDate(date: string): string {
-	return bookingSummaryDateFormatter.format(parseDate(date));
+	return `am ${bookingSummaryDateFormatter.format(parseDate(date))}`;
+}
+
+function formatBookingSummaryDuration(
+	startTime: string,
+	endTime: string,
+): string {
+	const durationMinutes =
+		parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
+
+	if (durationMinutes <= 0) {
+		return "";
+	}
+
+	return formatDuration(durationMinutes);
 }
 
 export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
@@ -339,12 +427,23 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 		bookingContext.mode === "DIRECT"
 			? bookingContext.unit.unitType
 			: bookingContext.unitType;
+	const accentTheme = bookingAccentThemeByUnitType[unitType.name];
+	const capacityLabel =
+		bookingContext.mode === "DIRECT"
+			? `${bookingContext.unit.capacity} Personen`
+			: `${bookingContext.area.seatCount} Einzelplätze`;
+	const durationLabel = `min. ${formatDuration(
+		unitType.minDurationMinutes,
+	)} - max. ${formatDuration(unitType.maxDurationMinutes)}`;
+	const selectionModeLabel =
+		bookingContext.mode === "DIRECT" ? "Direkte Unit" : "Auto-Assign";
 
 	const isBookingSelectionComplete =
 		date !== "" && startTime !== "" && endTime !== "";
 	const bookingSummary = isBookingSelectionComplete
 		? {
 				date: formatBookingSummaryDate(date),
+				duration: formatBookingSummaryDuration(startTime, endTime),
 				target: title,
 				time: `${startTime}-${endTime} Uhr`,
 			}
@@ -409,101 +508,146 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 	};
 
 	return (
-		<Panel className="mt-8">
-			<form onSubmit={handleSubmit}>
-				<h2 className="text-lg font-semibold">{title}</h2>
-				<p className="mt-2 text-sm leading-6 text-primary">{description}</p>
-				<div className="mt-4 flex flex-wrap gap-2">
-					{bookingContext.mode === "DIRECT" ? (
-						<Badge>{`Kapazität: ${bookingContext.unit.capacity} Personen`}</Badge>
-					) : (
-						<Badge>{`${bookingContext.area.seatCount} Einzelplätze`}</Badge>
-					)}
-					<Badge>{`Dauer: min. ${formatDuration(
-						unitType.minDurationMinutes,
-					)} - max. ${formatDuration(unitType.maxDurationMinutes)}`}</Badge>
+		<form className="mt-8" onSubmit={handleSubmit}>
+			<section
+				className={clsx(
+					"grid min-h-[24rem] content-between p-5 text-primary md:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8",
+					accentTheme.accentClassName,
+				)}
+				aria-labelledby="booking-context-title"
+			>
+				<div className="flex items-start justify-between gap-5 lg:col-span-2">
+					<span className="rotate-180 text-3xl font-black leading-none text-white/70 [writing-mode:vertical-rl] md:text-4xl">
+						{accentTheme.sideLabel}
+					</span>
+					<span className="bg-primary/10 px-3 py-1.5 text-xs font-black md:text-sm">
+						{formatUnitTypeName(unitType.name)}
+					</span>
 				</div>
-				<div className="mt-6">
-					<h3 className="text-sm font-semibold">Datum</h3>
-					<p className="mt-1 text-sm text-muted">
-						Wähle einen verfügbaren Werktag.
+
+				<div className="mt-12 self-end lg:mt-16">
+					<p className="text-sm font-black uppercase tracking-[0.18em]">
+						Booking Context
 					</p>
-					<div className="mt-3">
-						<CustomCalendar
-							dayStates={calendarDayStates}
-							isLoadingStates={isLoadingCalendarStates}
-							onDateSelect={handleDateSelect}
-							onVisibleMonthChange={setVisibleMonth}
-							selectedDate={date}
-							visibleMonth={visibleMonth}
-						/>
+					<h2
+						id="booking-context-title"
+						className="mt-3 text-4xl font-black leading-none md:text-6xl"
+					>
+						{title}
+					</h2>
+					<p className="mt-5 max-w-2xl text-base font-semibold leading-7 md:text-lg">
+						{description}
+					</p>
+				</div>
+
+				<dl className="mt-10 grid self-end text-sm font-black sm:grid-cols-3 lg:mt-0">
+					<div className="bg-primary px-4 py-3 text-primary-soft">
+						<dt className="text-primary-soft/70">Auswahl</dt>
+						<dd>{selectionModeLabel}</dd>
 					</div>
+					<div className="bg-primary/10 px-4 py-3">
+						<dt className="text-primary/55">Kapazität</dt>
+						<dd>{capacityLabel}</dd>
+					</div>
+					<div className="bg-primary/10 px-4 py-3">
+						<dt className="text-primary/55">Dauer</dt>
+						<dd>{durationLabel}</dd>
+					</div>
+				</dl>
+			</section>
+
+			<section className="mt-10 grid border-y-4 border-primary lg:grid-cols-[18rem_1fr]">
+				<div className="bg-primary p-5 text-primary-soft md:p-6">
+					<p className="text-sm font-black uppercase tracking-[0.18em]">
+						Datum
+					</p>
+					<h3 className="type-section-title mt-5">Wähle deinen Werktag</h3>
+				</div>
+				<div className="p-0 lg:p-6 lg:pr-0">
+					<p className="my-4 text-sm font-semibold text-muted lg:mb-4 lg:mt-0">
+						Wähle einen verfügbaren Werktag. Wochenenden und vergangene Tage
+						sind nicht buchbar.
+					</p>
+					<CustomCalendar
+						accent={accentTheme.calendarAccent}
+						dayStates={calendarDayStates}
+						isLoadingStates={isLoadingCalendarStates}
+						onDateSelect={handleDateSelect}
+						onVisibleMonthChange={setVisibleMonth}
+						selectedDate={date}
+						visibleMonth={visibleMonth}
+					/>
 					{calendarStatesError && (
 						<FeedbackBox variant="error" className="mt-3">
 							{calendarStatesError}
 						</FeedbackBox>
 					)}
 				</div>
-				{date !== "" && (
-					<>
-						{isLoadingBookingAvailability && (
-							<p className="mt-5 text-sm text-muted">
-								Verfügbarkeit wird geladen...
-							</p>
-						)}
-						{bookingAvailabilityError && (
-							<FeedbackBox variant="error" className="mt-5">
-								{bookingAvailabilityError}
-							</FeedbackBox>
-						)}
-						{!isLoadingBookingAvailability &&
-							!bookingAvailabilityError &&
-							bookingAvailability && (
-								<BookingTimePicker
-									availability={bookingAvailability}
-									endTime={endTime}
-									mode={
-										bookingContext.mode === "DIRECT" ? "DIRECT" : "HOT_DESK"
-									}
-									onEndTimeChange={setEndTime}
-									onStartTimeChange={setStartTime}
-									startTime={startTime}
-								/>
-							)}
-					</>
-				)}
-				{submitError && (
-					<FeedbackBox variant="error" className="mt-4">
-						{submitError}
-					</FeedbackBox>
-				)}
-				<div className="mt-6 flex flex-col gap-3 border-border-muted border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
-					{bookingSummary && (
-						<FeedbackBox
-							variant="success"
-							title=""
-							className="sm:w-fit! w-full!"
-						>
-							<div className="flex gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 justify-center">
-								<span className="font-semibold">{bookingSummary.target}</span>
-								<span className="text-success-text/70 sm:inline">-</span>
-								<span>{bookingSummary.date}</span>
-								<span className="text-success-text/70 sm:inline">-</span>
-								<span className="font-medium tabular-nums">
-									{bookingSummary.time}
-								</span>
-							</div>
+			</section>
+
+			{date !== "" && (
+				<>
+					{isLoadingBookingAvailability && (
+						<p className="mt-6 bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
+							Verfügbarkeit wird geladen…
+						</p>
+					)}
+					{bookingAvailabilityError && (
+						<FeedbackBox variant="error" className="mt-5">
+							{bookingAvailabilityError}
 						</FeedbackBox>
 					)}
+					{!isLoadingBookingAvailability &&
+						!bookingAvailabilityError &&
+						bookingAvailability && (
+							<BookingTimePicker
+								availability={bookingAvailability}
+								endTime={endTime}
+								mode={bookingContext.mode === "DIRECT" ? "DIRECT" : "HOT_DESK"}
+								onEndTimeChange={setEndTime}
+								onStartTimeChange={setStartTime}
+								startTime={startTime}
+							/>
+						)}
+				</>
+			)}
+			{submitError && (
+				<FeedbackBox variant="error" className="mt-4">
+					{submitError}
+				</FeedbackBox>
+			)}
+			<div className="mt-8 border-t-4 border-primary pt-5">
+				{bookingSummary && (
+					<div
+						className={clsx(
+							"mb-5 px-4 py-4 text-lg font-black leading-tight text-primary md:px-5 md:text-2xl",
+							accentTheme.calendarAccent.weekdayClassName,
+						)}
+					>
+						<div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-3">
+							<span>{bookingSummary.target}</span>
+							<span className="hidden text-primary/55 sm:inline">|</span>
+							<span>{bookingSummary.date}</span>
+							<span className="hidden text-primary/55 sm:inline">|</span>
+							<span>{bookingSummary.duration}</span>
+							<span className="hidden text-primary/55 sm:inline">→</span>
+							<span className="tabular-nums">{bookingSummary.time}</span>
+						</div>
+					</div>
+				)}
+				<div className="flex justify-end">
 					<Button
 						type="submit"
 						disabled={isSubmitting || !isBookingSelectionComplete}
-						className="w-full shrink-0 sm:w-auto ml-auto"
+						className={clsx(
+							"min-h-14 w-full shrink-0 px-6 text-base sm:w-auto",
+							isBookingSelectionComplete && accentTheme.actionClassName,
+						)}
 					>
-						{isSubmitting ? "Buchung wird erstellt..." : "Buchung erstellen"}
+						{isSubmitting ? "Buchung wird erstellt…" : "Buchung erstellen"}
 					</Button>
 				</div>
-			</form>
-		</Panel>
+			</div>
+		</form>
 	);
 }

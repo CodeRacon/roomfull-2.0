@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import type { BookingAvailability } from "@/entities/booking";
-import { Badge, FeedbackBox } from "@/shared/ui";
+import { FeedbackBox } from "@/shared/ui";
 
 type BookingTimePickerMode = "DIRECT" | "HOT_DESK";
 
@@ -147,13 +147,13 @@ function getTimeButtonClassName(
 	isDisabled: boolean,
 ): string {
 	return clsx(
-		"min-h-10 rounded-md border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-		isSelected && "border-secondary bg-secondary text-white",
+		"min-h-11 touch-manipulation border-2 px-3 py-2 text-sm font-black tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+		isSelected && "border-primary bg-primary text-primary-soft",
 		!isSelected &&
 			!isDisabled &&
-			"cursor-pointer! border-border bg-surface text-text hover:bg-surface-muted",
+			"cursor-pointer! border-primary/35 bg-background text-primary md:hover:border-primary md:hover:bg-primary/10",
 		isDisabled &&
-			"cursor-default! border-border-muted bg-surface-muted text-muted opacity-50",
+			"cursor-default! border-dashed border-primary/20 bg-primary/5 text-muted opacity-60",
 	);
 }
 
@@ -177,28 +177,27 @@ export function BookingTimePicker({
 	}
 
 	return (
-		<div className="border-border-muted mt-5 border-t pt-5">
-			<div className="flex flex-wrap items-start justify-between gap-3">
-				<div>
-					<h3 className="text-sm font-semibold">Zeit</h3>
-					<p className="mt-1 text-sm text-muted">
-						Öffnungszeiten: {availability.openingHours.start}-
-						{availability.openingHours.end} Uhr
-					</p>
-				</div>
-				<Badge variant={hasStartOptions ? "success" : "danger"}>
-					{hasStartOptions ? "Zeiten verfügbar" : "voll belegt"}
-				</Badge>
+		<section className="mt-8 border-t-4 border-primary pt-6">
+			<div>
+				<h3 className="text-xs font-black uppercase tracking-[0.18em] text-primary">
+					Zeit
+				</h3>
+				<p className="mt-2 text-sm font-semibold text-muted">
+					Öffnungszeiten: {availability.openingHours.start}-
+					{availability.openingHours.end} Uhr
+				</p>
 			</div>
 
 			{availability.blockedIntervals.length > 0 && (
 				<div className="mt-4">
-					<p className="text-sm font-medium text-text">Bereits belegt</p>
+					<p className="text-xs font-black uppercase tracking-[0.18em] text-primary">
+						Bereits belegt
+					</p>
 					<ul className="mt-2 flex flex-wrap gap-2 text-sm text-muted">
 						{availability.blockedIntervals.map((interval) => (
 							<li
 								key={`${interval.start}-${interval.end}`}
-								className="rounded-full bg-surface-muted px-3 py-1"
+								className="bg-primary/10 px-3 py-1.5 text-xs font-black text-primary"
 							>
 								{interval.start}-{interval.end} Uhr
 							</li>
@@ -214,14 +213,16 @@ export function BookingTimePicker({
 			)}
 
 			<div className="mt-5">
-				<p className="text-medium font-semibold text-text">Startzeit</p>
+				<p className="text-xs font-black uppercase tracking-[0.18em] text-primary">
+					Startzeit
+				</p>
 				<div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
 					{startTimeGridItems.map((item) => {
 						if (item.type === "unavailable-range") {
 							return (
 								<div
 									key={`${item.start}-${item.end}`}
-									className="col-span-3 rounded-md border border-dashed border-border-muted bg-surface-muted px-3 py-2 text-center text-sm font-medium text-muted sm:col-span-4 lg:col-span-6"
+									className="col-span-3 border-2 border-dashed border-primary/25 bg-primary/5 px-3 py-2 text-center text-sm font-semibold text-muted sm:col-span-4 lg:col-span-6"
 								>
 									{item.start}-{item.end} Uhr nicht verfügbar
 								</div>
@@ -237,12 +238,13 @@ export function BookingTimePicker({
 								key={item.time}
 								type="button"
 								disabled={isDisabled}
+								aria-pressed={isSelected}
 								className={getTimeButtonClassName(isSelected, isDisabled)}
 								onClick={() => handleStartChange(item.time)}
 							>
 								<span>{item.time}</span>
 								{mode === "HOT_DESK" && availableUnitCount > 0 && (
-									<span className="mt-0.5 block text-[10px] font-medium leading-tight">
+									<span className="mt-0.5 block text-[10px] font-semibold leading-tight">
 										{availableUnitCount} frei
 									</span>
 								)}
@@ -254,7 +256,9 @@ export function BookingTimePicker({
 
 			{startTime !== "" && (
 				<div className="mt-5">
-					<p className="text-medium font-semibold text-text">Endzeit</p>
+					<p className="text-xs font-black uppercase tracking-[0.18em] text-primary">
+						Endzeit
+					</p>
 					<div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
 						{endOptions.map((option) => {
 							const isSelected = endTime === option.time;
@@ -263,12 +267,13 @@ export function BookingTimePicker({
 								<button
 									key={option.time}
 									type="button"
+									aria-pressed={isSelected}
 									className={getTimeButtonClassName(isSelected, false)}
 									onClick={() => onEndTimeChange(option.time)}
 								>
 									<span>{option.time}</span>
 									{mode === "HOT_DESK" && option.availableUnitCount && (
-										<span className="mt-0.5 block text-[10px] font-medium leading-tight">
+										<span className="mt-0.5 block text-[10px] font-semibold leading-tight">
 											{option.availableUnitCount} frei
 										</span>
 									)}
@@ -278,6 +283,6 @@ export function BookingTimePicker({
 					</div>
 				</div>
 			)}
-		</div>
+		</section>
 	);
 }

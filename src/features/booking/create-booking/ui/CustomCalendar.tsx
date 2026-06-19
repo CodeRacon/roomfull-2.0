@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import type { CalendarAccentClasses } from "@/shared/ui";
 import { Calendar } from "@/shared/ui";
 
 export type CalendarDayState =
@@ -7,12 +8,27 @@ export type CalendarDayState =
 	| "fully-booked";
 
 type CustomCalendarProps = {
+	accent?: CustomCalendarAccentClasses;
 	dayStates: Record<string, CalendarDayState>;
 	isLoadingStates?: boolean;
 	onDateSelect: (date: string) => void;
 	onVisibleMonthChange: (month: string) => void;
 	selectedDate: string;
 	visibleMonth: string;
+};
+
+export type CustomCalendarAccentClasses = CalendarAccentClasses & {
+	availableClassName: string;
+	availableHoverClassName: string;
+	todayBorderClassName: string;
+};
+
+const defaultCustomCalendarAccentClasses: CustomCalendarAccentClasses = {
+	containerClassName: "bg-background",
+	weekdayClassName: "bg-primary/10",
+	availableClassName: "bg-background",
+	availableHoverClassName: "md:hover:border-primary md:hover:bg-primary/10",
+	todayBorderClassName: "border-primary!",
 };
 
 const berlinDateFormatter = new Intl.DateTimeFormat("en-CA", {
@@ -44,64 +60,95 @@ function getDayClassName(input: {
 	isOutsideMonth: boolean;
 	isPast: boolean;
 	isSelected: boolean;
+	isToday: boolean;
 	isWeekend: boolean;
 	state: CalendarDayState;
+	theme: CustomCalendarAccentClasses;
 }): string {
 	const baseClassName =
-		"min-h-12 rounded-md border px-2 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+		"min-h-12 touch-manipulation border-2 px-1 py-2 text-sm font-black tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:min-h-14 sm:px-2";
 
 	if (input.isDisabled) {
-		return clsx(baseClassName, "cursor-default!", {
-			"border-tertiary bg-tertiary-soft text-tertiary opacity-80":
-				input.state === "fully-booked",
-			"border-transparent bg-surface-muted/40 text-zinc-400 opacity-45":
-				input.state !== "fully-booked" && input.isOutsideMonth,
-			"border-border-muted bg-surface-muted text-zinc-400 opacity-75":
-				input.state !== "fully-booked" && !input.isOutsideMonth && input.isPast,
-			"border-dashed border-primary-soft bg-surface text-primary opacity-55":
-				input.state !== "fully-booked" &&
+		return clsx(
+			baseClassName,
+			"cursor-default!",
+			input.state === "fully-booked" &&
+				"border-feed-pink bg-feed-pink/25 text-danger-text",
+			input.state !== "fully-booked" &&
+				input.isOutsideMonth &&
+				"border-transparent bg-primary/5 text-muted opacity-50",
+			input.state !== "fully-booked" &&
+				!input.isOutsideMonth &&
+				input.isPast &&
+				"border-primary/15 bg-primary/5 text-muted opacity-60",
+			input.state !== "fully-booked" &&
 				!input.isOutsideMonth &&
 				!input.isPast &&
-				input.isWeekend,
-			"border-border-muted bg-surface-muted text-muted opacity-60":
-				input.state !== "fully-booked" &&
+				!input.isToday &&
+				input.isWeekend &&
+				"border-dashed border-primary/25 bg-background text-muted opacity-60",
+			input.state !== "fully-booked" &&
 				!input.isOutsideMonth &&
 				!input.isPast &&
-				!input.isWeekend,
-		});
+				!input.isToday &&
+				!input.isWeekend &&
+				"border-primary/15 bg-primary/5 text-muted opacity-60",
+			input.state !== "fully-booked" &&
+				!input.isOutsideMonth &&
+				!input.isPast &&
+				input.isToday &&
+				input.isWeekend &&
+				clsx(
+					"border-dashed bg-background text-muted opacity-75",
+					input.theme.todayBorderClassName,
+				),
+			input.state !== "fully-booked" &&
+				!input.isOutsideMonth &&
+				!input.isPast &&
+				input.isToday &&
+				!input.isWeekend &&
+				clsx(
+					"bg-primary/5 text-primary opacity-80",
+					input.theme.todayBorderClassName,
+				),
+		);
 	}
 
 	if (input.isSelected) {
 		return clsx(
 			baseClassName,
-			"cursor-pointer! border-primary bg-primary text-primary-soft shadow-sm",
+			"cursor-pointer! bg-primary text-primary-soft",
+			input.isToday ? input.theme.todayBorderClassName : "border-primary",
 		);
 	}
 
 	if (input.state === "fully-booked") {
 		return clsx(
 			baseClassName,
-			"cursor-default! border-tertiary bg-tertiary-soft text-tertiary opacity-80",
+			"cursor-default! border-feed-pink bg-feed-pink/25 text-danger-text",
 		);
 	}
 
 	if (input.state === "partially-booked") {
 		return clsx(
 			baseClassName,
-			"cursor-pointer! border-warning-text bg-warning-bg text-warning-text hover:bg-surface",
+			"cursor-pointer! border-feed-amber bg-feed-amber/35 text-primary md:hover:bg-feed-amber/55",
 		);
 	}
 
 	if (input.isOutsideMonth) {
 		return clsx(
 			baseClassName,
-			"cursor-default! border-transparent bg-surface-muted/40 text-zinc-400 opacity-45",
+			"cursor-default! border-transparent bg-primary/5 text-muted opacity-50",
 		);
 	}
 
 	return clsx(
 		baseClassName,
-		"cursor-pointer! border-primary-soft bg-primary-soft/60 text-primary hover:border-primary hover:bg-primary-soft",
+		"cursor-pointer! border-primary/35 text-primary",
+		input.theme.availableClassName,
+		input.theme.availableHoverClassName,
+		input.isToday && input.theme.todayBorderClassName,
 	);
 }
 
@@ -117,6 +164,7 @@ function getDayStateLabel(state: CalendarDayState): string | null {
 }
 
 export function CustomCalendar({
+	accent = defaultCustomCalendarAccentClasses,
 	dayStates,
 	isLoadingStates = false,
 	onDateSelect,
@@ -130,14 +178,16 @@ export function CustomCalendar({
 
 	return (
 		<Calendar
+			accent={accent}
 			canGoPrevious={canGoPrevious}
 			isLoading={isLoadingStates}
-			loadingLabel="Belegung wird geladen..."
+			loadingLabel="Belegung wird geladen…"
 			onVisibleMonthChange={onVisibleMonthChange}
 			visibleMonth={visibleMonth}
 			renderDay={({ date, dayNumber, isOutsideMonth }) => {
 				const state = dayStates[date] ?? "available";
 				const isPast = date < today;
+				const isToday = date === today;
 				const isWeekendDay = isWeekend(date);
 				const isDisabled =
 					isOutsideMonth || isPast || isWeekendDay || state === "fully-booked";
@@ -154,14 +204,17 @@ export function CustomCalendar({
 							isOutsideMonth,
 							isPast,
 							isSelected: selectedDate === date,
+							isToday,
 							isWeekend: isWeekendDay,
 							state,
+							theme: accent,
 						})}
-						aria-label={`${date}${stateLabel ? `, ${stateLabel}` : ""}`}
+						aria-label={`${date}${isToday ? ", heute" : ""}${stateLabel ? `, ${stateLabel}` : ""}`}
+						aria-pressed={selectedDate === date}
 					>
 						<span>{dayNumber}</span>
 						{stateLabel && (
-							<span className="mt-1 block text-[10px] font-medium leading-tight">
+							<span className="mt-1 hidden text-[10px] font-semibold leading-tight sm:block">
 								{stateLabel}
 							</span>
 						)}
