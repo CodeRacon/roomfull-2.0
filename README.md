@@ -103,10 +103,65 @@ Wichtige Regeln:
 
 ## Tech Stack
 
-- Frontend: Next.js + TypeScript + Tailwind CSS
+- Runtime: Node.js 24 LTS, im Projekt über `.nvmrc` gepinnt
+- Frontend: Next.js 16.2.9 + TypeScript + Tailwind CSS
 - UI-Helfer: `clsx` für bedingte Klassen und Varianten
 - Backend: Express + TypeScript
 - Datenbank: PostgreSQL
+
+## Lokale Voraussetzungen
+
+- Node.js 24 LTS
+- npm
+- PostgreSQL 17
+
+Wenn `nvm` installiert ist, nutzt das Projekt die Version aus `.nvmrc`:
+
+```bash
+nvm use
+```
+
+Prüfen:
+
+```bash
+node -v
+npm -v
+```
+
+Erwartet wird Node `24.17.0` oder eine kompatible Node-24-LTS-Version.
+
+## Lokales Setup Frontend
+
+Dependencies im Projekt-Root installieren:
+
+```bash
+npm install
+```
+
+Frontend starten:
+
+```bash
+npm run dev
+```
+
+Der Next.js-Dev-Server läuft danach standardmäßig unter:
+
+- `http://localhost:3000`
+
+Next.js nutzt in diesem Projekt im Dev-Mode Turbopack. Wenn Navigation oder
+Kompilierung im lokalen Dev-Server auffällig langsam wird, zuerst prüfen:
+
+```bash
+node -v
+npm run lint
+```
+
+Bei Cache-Problemen kann der generierte Next-Cache neu aufgebaut werden:
+
+```bash
+rm -rf .next
+npm run dev
+```
 
 ## Lokales Setup Backend + PostgreSQL
 
@@ -135,7 +190,9 @@ Falls `createdb` meldet, dass die DB schon existiert, ist das in Ordnung.
 ### 3) Backend-Umgebung einrichten
 
 ```bash
-cp backend/.env.example backend/.env
+cd backend
+npm install
+cp .env.example .env
 ```
 
 Wichtig: In `backend/.env` muss `DATABASE_URL` zu deinem lokalen DB-User passen.
