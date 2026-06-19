@@ -380,7 +380,7 @@ export function AdminUnitFormPanel({
 					</label>
 				</Field>
 
-				<div className="flex flex-wrap items-center justify-between gap-3 border-border-muted border-t pt-5">
+				<div className="flex flex-wrap items-center justify-between gap-3 border-border border-t pt-5">
 					<div className="flex flex-wrap gap-2">
 						<Button type="submit" disabled={isSubmitting}>
 							{mode === "create" ? "Unit anlegen" : "Änderungen speichern"}

@@ -132,7 +132,7 @@ export function AdminUnitsTable({
 				<div className="mt-6 overflow-x-auto">
 					<table className="w-full min-w-[52rem] border-collapse text-left text-sm">
 						<thead>
-							<tr className="border-border-muted border-b text-xs font-semibold text-muted uppercase">
+							<tr className="border-border border-b text-xs font-semibold text-muted uppercase">
 								<th className="py-3 pr-4">Name</th>
 								<th className="px-4 py-3">UnitType</th>
 								<th className="px-4 py-3">Area</th>
@@ -146,7 +146,7 @@ export function AdminUnitsTable({
 							{units.map((unit) => (
 								<tr
 									key={unit.id}
-									className="border-border-muted border-b last:border-b-0"
+									className="border-border border-b last:border-b-0"
 								>
 									<td className="max-w-64 py-4 pr-4 align-top">
 										<p className="truncate font-semibold text-text">

@@ -150,7 +150,7 @@ export function AdminBookingsTable({
 					<details
 						key={group.dateKey}
 						open={isGroupOpenByDefault(group)}
-						className="group rounded-md border border-border-muted bg-surface-muted/45"
+						className="group rounded-md border border-border bg-surface-muted/45"
 					>
 						<summary className="cursor-pointer list-none rounded-md px-4 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
 							<div className="flex flex-wrap items-center justify-between gap-3">
@@ -173,7 +173,7 @@ export function AdminBookingsTable({
 								</div>
 							</div>
 						</summary>
-						<div className="space-y-2 border-border-muted border-t p-3">
+						<div className="space-y-2 border-border border-t p-3">
 							{group.bookings.map((booking) => {
 								const displayStatus = getDisplayStatus(booking);
 
