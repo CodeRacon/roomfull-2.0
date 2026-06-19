@@ -1,69 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-	--color-background: #f0e2db;
+	--color-feed-cream: #faf0e6;
+	--color-feed-ink: #191919;
+	--color-feed-teal: #8fc7bd;
+	--color-feed-pink: #dc6b8c;
+	--color-feed-coral: #fb7953;
+	--color-feed-amber: #f6ad4f;
 
-	--color-surface: #ffffff;
-	--color-surface-muted: #f3f3f3f3;
+	--color-background: var(--color-feed-cream);
 
-	--color-border: #b1a6b9;
-	--color-border-muted: #c3c3c3;
-	--color-text: #172331;
-	--color-muted: #b1a6b9;
+	--color-surface: #fff8f1;
+	--color-surface-muted: #f1dfd0;
 
-	--color-primary: #6d597a;
-	--color-primary-hover: #5c4869;
-	--color-primary-soft: #e7dce8;
+	--color-border: #d8c9ba;
+	--color-text: var(--color-feed-ink);
+	--color-muted: #6f665f;
 
-	--color-secondary: #355070;
-	--color-secondary-soft: #dce4ed;
+	--color-primary: var(--color-feed-ink);
+	--color-primary-hover: #2b2b2b;
+	--color-primary-soft: var(--color-feed-cream);
 
-	--color-tertiary: #b56576;
-	--color-tertiary-soft: #f0d8dd;
+	--color-secondary: #4f8077;
+	--color-secondary-hover: #3f6b63;
+	--color-secondary-soft: #dceeea;
 
-	--color-accent-one: #e56b6f;
-	--color-accent-one-soft: #f8d5d7;
+	--color-success-bg: #dceeea;
+	--color-success-text: #315d55;
 
-	--color-accent-two: #eaac8b;
-	--color-accent-two-soft: #f8dfd0;
+	--color-warning-bg: #ffe2b9;
+	--color-warning-text: #7a4f0d;
 
-	--color-success-bg: #e7efe5;
-	--color-success-text: #355f45;
+	--color-danger-bg: #f7d3df;
+	--color-danger-text: #8a2948;
 
-	--color-warning-bg: #fff2d8;
-	--color-warning-text: #805a13;
-
-	--color-danger-bg: #f8d5d7;
-	--color-danger-text: #8a2636;
-
-	--color-focus: #355070;
-
-	--color-room-desk: #355070;
-	--color-room-desk-soft: #dce4ed;
-	--color-room-desk-muted: #eef3f8;
-	--color-room-desk-strong: #293f59;
-
-	--color-room-booth: #6d597a;
-	--color-room-booth-soft: #e7dce8;
-	--color-room-booth-muted: #f5eef6;
-	--color-room-booth-strong: #5c4869;
-
-	--color-room-team: #4f7469;
-	--color-room-team-soft: #dfeae5;
-	--color-room-team-muted: #f0f7f4;
-	--color-room-team-strong: #31554c;
-
-	--color-room-meeting: #eaac8b;
-	--color-room-meeting-soft: #f8dfd0;
-	--color-room-meeting-muted: #fff1e8;
-	--color-room-meeting-strong: #8a5634;
+	--color-focus: var(--color-feed-ink);
 }
 
 :root {
 	color-scheme: light;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	line-height: 1.5;
-	/* color: #b1a6b9; */
 }
 
 * {
@@ -79,6 +56,98 @@ body {
 body {
 	background: var(--color-background);
 	color: var(--color-text);
+}
+
+.type-display-hero {
+	font-size: 3.5rem;
+	font-weight: 900;
+	letter-spacing: 0;
+	line-height: 1;
+	text-wrap: pretty;
+}
+
+.type-display-page {
+	font-size: 2.5rem;
+	font-weight: 900;
+	letter-spacing: 0;
+	line-height: 1;
+	text-wrap: pretty;
+}
+
+.type-panel-title {
+	font-size: 2.5rem;
+	font-weight: 900;
+	letter-spacing: 0;
+	line-height: 1;
+	text-wrap: pretty;
+}
+
+.type-section-title {
+	font-size: 2rem;
+	font-weight: 650;
+	letter-spacing: 0;
+	line-height: 1.15;
+	text-wrap: pretty;
+}
+
+.type-body-lead {
+	font-size: 1rem;
+	line-height: 1.75;
+}
+
+.type-header-link {
+	font-size: 1rem;
+	font-weight: 650;
+	line-height: 1.25;
+}
+
+@media (min-width: 40rem) {
+	.type-display-hero {
+		font-size: 4.5rem;
+	}
+
+	.type-display-page {
+		font-size: 3rem;
+	}
+
+	.type-panel-title {
+		font-size: 3rem;
+	}
+}
+
+@media (min-width: 48rem) {
+	.type-display-hero {
+		font-size: 6rem;
+	}
+
+	.type-display-page {
+		font-size: 4.5rem;
+	}
+
+	.type-section-title {
+		font-size: 2.5rem;
+	}
+
+	.type-body-lead {
+		font-size: 1.125rem;
+		line-height: 1.8;
+	}
+}
+
+@media (min-width: 64rem) {
+	.type-display-hero {
+		font-size: 7.5rem;
+	}
+
+	.type-panel-title {
+		font-size: 3.5rem;
+	}
+}
+
+@media (min-width: 83rem) {
+	.type-display-hero {
+		font-size: 8.5rem;
+	}
 }
 
 button {

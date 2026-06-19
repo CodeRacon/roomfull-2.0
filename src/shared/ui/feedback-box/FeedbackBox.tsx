@@ -17,22 +17,22 @@ export function FeedbackBox({
 	variant = "info",
 }: FeedbackBoxProps) {
 	const feedbackBoxClassName = clsx(
-		"w-full rounded-md border px-3 py-1 text-sm leading-6",
+		"w-full border-2 px-4 py-3 text-sm font-semibold leading-6",
 		!title && "h-fit leading-4",
-		variant === "info" && "border-primary bg-primary-soft text-text",
-		variant === "empty" && "border-dashed border-border px-4 py-2 text-muted",
+		variant === "info" && "border-primary bg-primary/10 text-primary",
+		variant === "empty" &&
+			"border-dashed border-primary/40 bg-background text-muted",
 		variant === "success" &&
-			"border-success-text/20 bg-success-bg text-success-text",
+			"border-success-text bg-success-bg text-success-text",
 		variant === "warning" &&
-			"border-warning-text/20 bg-warning-bg text-warning-text",
-		variant === "error" &&
-			"border-danger-text/20 bg-danger-bg text-danger-text",
+			"border-warning-text bg-warning-bg text-warning-text",
+		variant === "error" && "border-danger-text bg-danger-bg text-danger-text",
 		className,
 	);
 
 	return (
 		<div className={feedbackBoxClassName}>
-			{title && <p className="font-medium">{title}</p>}
+			{title && <p className="font-black">{title}</p>}
 			<div>{children}</div>
 		</div>
 	);

@@ -18,9 +18,10 @@ export function Field({
 	className,
 	htmlFor,
 }: FieldProps) {
-	const fieldClassName = clsx("p-4", className);
-	const labelClassName = "text-m font-medium text-text";
-	const feedbackClassName = "ml-1 mt-1 text-xs";
+	const fieldClassName = clsx("space-y-2 py-3", className);
+	const labelClassName =
+		"text-xs font-black uppercase tracking-[0.16em] text-primary";
+	const feedbackClassName = "text-xs font-semibold leading-5";
 
 	return (
 		<div className={fieldClassName}>

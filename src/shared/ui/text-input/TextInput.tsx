@@ -13,14 +13,14 @@ export function TextInput({
 	...props
 }: TextInputProps) {
 	const textInputClassName = clsx(
-		"w-full rounded-md border bg-surface px-3 py-2 text-sm text-text shadow-xs transition-colors placeholder:text-muted",
-		"focus-visible:outline-1",
+		"min-h-11 w-full border-2 bg-background px-3 py-2 text-sm font-semibold text-text transition-colors placeholder:text-muted",
+		"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
 		!invalid &&
-			"focus-visible:outline-focus border-border hover:border-primary",
+			"border-primary/40 hover:border-primary disabled:border-primary/20 disabled:hover:border-primary/20",
 		invalid &&
-			"border-danger-text focus-visible:outline-danger-text bg-danger-bg!",
+			"border-danger-text bg-danger-bg! text-danger-text placeholder:text-danger-text/65 focus-visible:outline-danger-text",
 		disabled &&
-			"border-border-muted disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70",
+			"disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70",
 		className,
 	);
 

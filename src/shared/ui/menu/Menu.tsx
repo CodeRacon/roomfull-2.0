@@ -18,14 +18,14 @@ type MenuDisabledItemProps = {
 };
 
 const menuItemClassName =
-	"block rounded-md px-3 py-2 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+	"block px-5 py-4 text-base font-black text-primary transition-colors hover:bg-primary hover:text-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 export function Menu({ className, ...props }: MenuProps) {
 	return (
 		<div
 			role="menu"
 			className={clsx(
-				"rounded-md border border-border bg-surface p-2 text-text shadow-lg text-shadow-none",
+				"border-2 border-primary bg-background p-0 text-text shadow-none text-shadow-none",
 				className,
 			)}
 			{...props}
@@ -35,7 +35,12 @@ export function Menu({ className, ...props }: MenuProps) {
 
 export function MenuHeader({ children, className }: MenuHeaderProps) {
 	return (
-		<div className={clsx("border-border border-b px-3 py-2", className)}>
+		<div
+			className={clsx(
+				"border-primary border-y-2 px-5 py-4 first:border-t-0",
+				className,
+			)}
+		>
 			{children}
 		</div>
 	);
@@ -76,7 +81,7 @@ export function MenuDisabledItem({ children }: MenuDisabledItemProps) {
 			type="button"
 			role="menuitem"
 			disabled
-			className="block w-full cursor-not-allowed rounded-md px-3 py-2 text-left text-sm font-medium text-muted"
+			className="block w-full cursor-not-allowed px-5 py-4 text-left text-base font-black text-muted"
 		>
 			{children}
 		</button>

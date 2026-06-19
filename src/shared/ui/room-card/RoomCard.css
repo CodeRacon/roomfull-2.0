@@ -2,7 +2,11 @@
 	position: relative;
 	overflow: hidden;
 	border-color: var(--room-card-accent);
-	background: linear-gradient(135deg, white, var(--room-card-muted));
+	background: linear-gradient(
+		135deg,
+		var(--color-surface),
+		var(--room-card-muted)
+	);
 }
 
 .room-card::before {
@@ -22,31 +26,31 @@
 }
 
 .room-card--desk {
-	--room-card-accent: var(--color-room-desk);
-	--room-card-soft: var(--color-room-desk-soft);
-	--room-card-muted: var(--color-room-desk-muted);
-	--room-card-strong: var(--color-room-desk-strong);
+	--room-card-accent: var(--color-secondary);
+	--room-card-soft: var(--color-secondary-soft);
+	--room-card-muted: #eef7f5;
+	--room-card-strong: var(--color-success-text);
 }
 
 .room-card--booth {
-	--room-card-accent: var(--color-room-booth);
-	--room-card-soft: var(--color-room-booth-soft);
-	--room-card-muted: var(--color-room-booth-muted);
-	--room-card-strong: var(--color-room-booth-strong);
+	--room-card-accent: var(--color-feed-pink);
+	--room-card-soft: var(--color-danger-bg);
+	--room-card-muted: #fff0f5;
+	--room-card-strong: var(--color-danger-text);
 }
 
 .room-card--team {
-	--room-card-accent: var(--color-room-team);
-	--room-card-soft: var(--color-room-team-soft);
-	--room-card-muted: var(--color-room-team-muted);
-	--room-card-strong: var(--color-room-team-strong);
+	--room-card-accent: var(--color-feed-coral);
+	--room-card-soft: #ffd9cb;
+	--room-card-muted: #fff1eb;
+	--room-card-strong: #8d351d;
 }
 
 .room-card--meeting {
-	--room-card-accent: var(--color-room-meeting);
-	--room-card-soft: var(--color-room-meeting-soft);
-	--room-card-muted: var(--color-room-meeting-muted);
-	--room-card-strong: var(--color-room-meeting-strong);
+	--room-card-accent: var(--color-feed-amber);
+	--room-card-soft: var(--color-warning-bg);
+	--room-card-muted: #fff3df;
+	--room-card-strong: var(--color-warning-text);
 }
 
 .room-card__title,

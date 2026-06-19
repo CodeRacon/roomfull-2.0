@@ -28,7 +28,7 @@ export function PasswordInput({
 				{...props}
 			></TextInput>
 			<button
-				className="absolute right-4 top-3 cursor-pointer"
+				className="absolute right-2 top-1/2 inline-flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:text-muted disabled:opacity-60"
 				type="button"
 				disabled={disabled}
 				aria-label={

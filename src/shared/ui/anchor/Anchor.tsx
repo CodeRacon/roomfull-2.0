@@ -14,11 +14,12 @@ export function Anchor({
 	...props
 }: AnchorProps) {
 	const anchorClassName = clsx(
-		"inline-flex items-center text-sm font-medium transition-colors",
+		"inline-flex min-h-10 items-center text-sm font-black transition-colors",
 		variant === "primary" &&
-			" justify-center rounded-md px-4 py-2 bg-secondary text-white hover:bg-secondary-hover",
-		"focus-visible:outline-focus focus-visible:outline-2 focus-visible:outline-offset-2",
-		variant === "secondary" && " text-secondary",
+			"justify-center bg-primary px-4 py-2 text-primary-soft hover:bg-primary-hover",
+		"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+		variant === "secondary" &&
+			"bg-primary/10 px-3 py-2 text-primary hover:bg-primary hover:text-primary-soft",
 		className,
 	);
 

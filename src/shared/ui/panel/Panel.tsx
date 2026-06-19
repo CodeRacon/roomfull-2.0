@@ -18,9 +18,10 @@ export function Panel({
 	padding = "normal",
 }: PanelProps) {
 	const panelClassName = clsx(
-		"rounded-md border border-border shadow-xs",
-		variant === "default" && "bg-surface",
-		variant === "muted" && "bg-surface-muted border-border-muted opacity-70",
+		"border-2 border-primary/35",
+		variant === "default" && "bg-background",
+		variant === "muted" &&
+			"border-dashed border-primary/30 bg-primary/5 text-muted",
 		padding === "normal" && "p-6",
 		padding === "compact" && "p-4",
 		className,
