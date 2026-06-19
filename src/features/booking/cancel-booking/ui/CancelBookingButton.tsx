@@ -2,6 +2,7 @@
 
 import CancelBooking from "@public/icons/general/ic-trash.svg";
 import { clsx } from "clsx";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import type { Booking } from "@/entities/booking";
 import { cancelBooking } from "@/entities/booking";
@@ -10,8 +11,10 @@ import { ApiRequestError } from "@/shared/api";
 
 type CancelBookingButtonProps = {
 	bookingId: string;
+	children?: ReactNode;
 	className?: string;
 	disabled?: boolean;
+	iconClassName?: string;
 	onCancelled: (booking: Booking) => void;
 	onError: (message: string) => void;
 	onSubmittingChange?: (isSubmitting: boolean) => void;
@@ -36,8 +39,10 @@ function getCancelBookingErrorMessage(error: ApiRequestError): string {
 
 export function CancelBookingButton({
 	bookingId,
+	children,
 	className,
 	disabled = false,
+	iconClassName,
 	onCancelled,
 	onError,
 	onSubmittingChange,
@@ -81,9 +86,10 @@ export function CancelBookingButton({
 			onClick={handleClick}
 			disabled={disabled || isSubmitting}
 			aria-label="Buchung stornieren"
-			className={clsx("bg-danger-bg rounded-full p-2 shadow-xs", className)}
+			className={clsx(className ?? "bg-danger-bg rounded-full p-2 shadow-xs")}
 		>
-			<CancelBooking className="size-4 text-danger-text" />
+			<CancelBooking className={iconClassName ?? "size-4 text-danger-text"} />
+			{children}
 		</button>
 	);
 }

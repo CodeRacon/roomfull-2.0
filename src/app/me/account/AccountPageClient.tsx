@@ -1,6 +1,5 @@
 "use client";
 
-import "@/shared/ui/room-card/RoomCard.css";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { listMyBookings, type MyBooking } from "@/entities/booking";
@@ -92,18 +91,18 @@ function findNextBooking(bookings: MyBooking[]): MyBooking | null {
 	return upcomingBookings[0] ?? null;
 }
 
-function getBookingCardClassName(
+function getBookingAccentClassName(
 	unitTypeName: MyBooking["unit"]["unitType"]["name"],
 ) {
 	switch (unitTypeName) {
 		case "HOT_DESK":
-			return "room-card--desk";
+			return "bg-feed-teal";
 		case "BOOTH":
-			return "room-card--booth";
+			return "bg-feed-pink";
 		case "TEAM_ROOM":
-			return "room-card--team";
+			return "bg-feed-coral";
 		case "MEETING_ROOM":
-			return "room-card--meeting";
+			return "bg-feed-amber";
 	}
 }
 
@@ -188,7 +187,7 @@ export function AccountPageClient() {
 						<h2 className="text-lg font-semibold">Nächste Buchung</h2>
 						{isLoadingBookings && (
 							<p className="mt-3 text-sm leading-6 text-muted">
-								Deine nächste Buchung wird geladen...
+								Deine nächste Buchung wird geladen…
 							</p>
 						)}
 						{bookingErrorMessage && (
@@ -199,22 +198,32 @@ export function AccountPageClient() {
 						{!isLoadingBookings && !bookingErrorMessage && nextBooking && (
 							<Link
 								href={getHighlightedBookingHref(nextBooking.id)}
-								className={`room-card room-card--interactive mt-4 block rounded-md border p-4 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${getBookingCardClassName(
-									nextBooking.unit.unitType.name,
-								)}`}
+								className="group mt-5 block overflow-hidden border-2 border-primary bg-background text-primary transition-colors hover:bg-primary hover:text-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 							>
-								<p className="room-card__text text-sm font-medium">
-									{formatBookingWindow(
-										nextBooking.startTime,
-										nextBooking.endTime,
-									)}
-								</p>
-								<p className="room-card__title mt-2 text-base font-semibold">
-									{nextBooking.unit.name}
-								</p>
-								<p className="room-card__badge mt-3 w-fit rounded-full px-3 py-1 text-sm font-medium">
-									{formatUnitTypeName(nextBooking.unit.unitType.name)}
-								</p>
+								<span
+									className={`block h-3 ${getBookingAccentClassName(
+										nextBooking.unit.unitType.name,
+									)}`}
+									aria-hidden="true"
+								/>
+								<span className="block p-5">
+									<span className="block text-lg font-black leading-snug">
+										{formatBookingWindow(
+											nextBooking.startTime,
+											nextBooking.endTime,
+										)}
+									</span>
+									<span className="mt-4 block text-2xl font-black leading-none text-pretty">
+										{nextBooking.unit.name}
+									</span>
+									<span
+										className={`mt-5 inline-flex border-2 border-primary px-4 py-2 text-base font-black text-primary transition-colors group-hover:border-primary-soft group-hover:text-primary-soft ${getBookingAccentClassName(
+											nextBooking.unit.unitType.name,
+										)}`}
+									>
+										{formatUnitTypeName(nextBooking.unit.unitType.name)}
+									</span>
+								</span>
 							</Link>
 						)}
 						{!isLoadingBookings && !bookingErrorMessage && !nextBooking && (

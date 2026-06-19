@@ -1,6 +1,7 @@
 "use client";
 
 import { clsx } from "clsx";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -75,21 +76,32 @@ export function Header(): ReactElement {
 
 	const focusClass =
 		"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+	const menuTriggerClass =
+		"border-primary! bg-background! text-primary! hover:bg-primary! hover:text-primary-soft!";
+	const menuTriggerOpenClass = "bg-primary! text-primary-soft!";
 
 	return (
 		<header
 			ref={headerRef}
-			className="relative flex w-full items-center justify-center bg-primary px-4 py-4 md:px-6"
+			className="sticky top-0 z-30 flex w-full items-center justify-center border-border border-b bg-background px-4 py-2.5 md:px-6"
 		>
-			<nav className="flex w-full max-w-5xl items-center justify-between gap-6">
+			<nav className="flex w-full max-w-7xl items-center justify-between gap-8">
 				<Link
 					href="/"
+					aria-label="Zur Startseite"
 					className={clsx(
 						focusClass,
-						"shrink-0 text-3xl font-bold text-primary-soft text-shadow-sm md:text-4xl",
+						"inline-flex shrink-0 items-center gap-3 text-text transition-colors hover:text-secondary",
 					)}
 				>
-					RoomFull
+					<Image
+						src="/logo/roomfull-mark-circle.svg"
+						alt=""
+						aria-hidden="true"
+						width={80}
+						height={80}
+						className="size-18 shrink-0 md:size-20"
+					/>
 				</Link>
 				{!isAdmin && (
 					<div className="hidden items-center gap-6 md:flex">
@@ -97,14 +109,14 @@ export function Header(): ReactElement {
 							href="/booking-options"
 							className={clsx(
 								focusClass,
-								"text-lg font-semibold text-primary-soft text-shadow-sm",
+								"type-header-link text-text transition-colors hover:text-secondary",
 							)}
 						>
 							Buchen
 						</Link>
 					</div>
 				)}
-				<div className="hidden items-center justify-center gap-4 font-semibold text-primary-soft text-shadow-sm md:flex">
+				<div className="type-header-link hidden items-center justify-center gap-5 text-text md:flex">
 					{isAuthenticated && (
 						<>
 							{isCustomer && (
@@ -113,7 +125,7 @@ export function Header(): ReactElement {
 									onClick={closeMenus}
 									className={clsx(
 										focusClass,
-										"text-lg font-semibold text-primary-soft text-shadow-sm",
+										"transition-colors hover:text-secondary",
 									)}
 								>
 									Meine Buchungen
@@ -125,7 +137,7 @@ export function Header(): ReactElement {
 									onClick={closeMenus}
 									className={clsx(
 										focusClass,
-										"text-lg font-semibold text-primary-soft text-shadow-sm",
+										"transition-colors hover:text-secondary",
 									)}
 								>
 									Admin
@@ -134,7 +146,10 @@ export function Header(): ReactElement {
 							<div className="relative">
 								<Button
 									variant="secondary"
-									className="border-surface!"
+									className={clsx(
+										menuTriggerClass,
+										isProfileMenuOpen && menuTriggerOpenClass,
+									)}
 									aria-haspopup="menu"
 									aria-expanded={isProfileMenuOpen}
 									onClick={() =>
@@ -149,11 +164,11 @@ export function Header(): ReactElement {
 								{isProfileMenuOpen && (
 									<Menu className="absolute right-0 z-10 mt-2 min-w-56">
 										<MenuHeader>
-											<p className="text-sm font-semibold">
+											<p className="text-base font-black">
 												{user?.name ?? "Profil"}
 											</p>
 											{user?.email && (
-												<p className="mt-1 truncate text-xs text-muted">
+												<p className="mt-1 truncate text-sm font-semibold text-muted">
 													{user.email}
 												</p>
 											)}
@@ -175,7 +190,7 @@ export function Header(): ReactElement {
 								href="/login"
 								className={clsx(
 									focusClass,
-									"text-lg font-semibold text-primary-soft text-shadow-sm",
+									"transition-colors hover:text-secondary",
 								)}
 							>
 								Einloggen
@@ -184,7 +199,7 @@ export function Header(): ReactElement {
 								href="/register"
 								className={clsx(
 									focusClass,
-									"text-lg font-semibold text-primary-soft text-shadow-sm",
+									"transition-colors hover:text-secondary",
 								)}
 							>
 								Registrieren
@@ -194,7 +209,11 @@ export function Header(): ReactElement {
 				</div>
 				<Button
 					variant="secondary"
-					className="border-surface! md:hidden"
+					className={clsx(
+						menuTriggerClass,
+						isMobileMenuOpen && menuTriggerOpenClass,
+						"md:hidden",
+					)}
 					aria-haspopup="menu"
 					aria-expanded={isMobileMenuOpen}
 					aria-label="Hauptmenü öffnen"
@@ -227,12 +246,10 @@ export function Header(): ReactElement {
 									Admin Dashboard
 								</MenuLinkItem>
 							)}
-							<MenuHeader className="mt-2">
-								<p className="text-sm font-semibold">
-									{user?.name ?? "Profil"}
-								</p>
+							<MenuHeader>
+								<p className="text-base font-black">{user?.name ?? "Profil"}</p>
 								{user?.email && (
-									<p className="mt-1 truncate text-xs text-muted">
+									<p className="mt-1 truncate text-sm font-semibold text-muted">
 										{user.email}
 									</p>
 								)}

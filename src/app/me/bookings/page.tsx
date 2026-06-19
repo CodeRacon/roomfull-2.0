@@ -1,19 +1,20 @@
 import { Suspense } from "react";
-import { Panel } from "@/shared/ui";
 import { MyBookingsPageClient } from "./MyBookingsPageClient";
 
 export default function MyBookingsPage() {
 	return (
-		<main className="min-h-screen bg-background px-6 py-10 text-text">
-			<div className="mx-auto w-full max-w-5xl">
-				<h1 className="text-3xl font-semibold tracking-tight text-text">
-					Meine Buchungen
-				</h1>
+		<main className="min-h-[calc(100svh-4.5rem)] bg-background px-4 py-6 text-text md:px-6">
+			<div className="mx-auto w-full max-w-7xl">
+				<h1 className="type-display-page max-w-4xl">Meine Buchungen</h1>
+				<p className="type-body-lead mt-5 max-w-2xl text-muted">
+					Behalte deine kommenden Termine, Kalender-Downloads und Stornierungen
+					an einem Ort im Blick.
+				</p>
 				<Suspense
 					fallback={
-						<Panel className="mt-8 text-sm text-muted" padding="compact">
-							Deine Buchungen werden vorbereitet...
-						</Panel>
+						<p className="mt-8 bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
+							Deine Buchungen werden vorbereitet…
+						</p>
 					}
 				>
 					<MyBookingsPageClient />

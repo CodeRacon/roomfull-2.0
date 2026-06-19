@@ -1,6 +1,7 @@
 "use client";
 
 import DownloadIcs from "@public/icons/general/ic-download-ics.svg";
+import type { ReactNode } from "react";
 import type { MyBooking } from "@/entities/booking";
 import {
 	buildBookingCalendarContent,
@@ -9,12 +10,16 @@ import {
 
 type ExportBookingCalendarButtonProps = {
 	booking: MyBooking;
+	children?: ReactNode;
 	className?: string;
+	iconClassName?: string;
 };
 
 export function ExportBookingCalendarButton({
 	booking,
+	children,
 	className,
+	iconClassName,
 }: ExportBookingCalendarButtonProps) {
 	function handleClick(): void {
 		const calendarContent = buildBookingCalendarContent(booking);
@@ -38,7 +43,8 @@ export function ExportBookingCalendarButton({
 			className={className}
 			aria-label="Buchung als ICS herunterladen"
 		>
-			<DownloadIcs className="size-4" />
+			<DownloadIcs className={iconClassName ?? "size-4"} />
+			{children}
 		</button>
 	);
 }

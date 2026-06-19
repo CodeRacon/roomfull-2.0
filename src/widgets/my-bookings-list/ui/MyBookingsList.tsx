@@ -1,19 +1,12 @@
 import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
 import TrashIcon from "@public/icons/general/ic-trash.svg";
-import "@/shared/ui/room-card/RoomCard.css";
+import { clsx } from "clsx";
 import { useState } from "react";
 import type { Booking, MyBooking } from "@/entities/booking";
 import { formatUnitTypeName } from "@/entities/unit";
 import { CancelBookingButton } from "@/features/booking/cancel-booking";
 import { ExportBookingCalendarButton } from "@/features/booking/export-booking-calendar";
-import {
-	Badge,
-	Button,
-	Calendar,
-	FeedbackBox,
-	Panel,
-	TextInput,
-} from "@/shared/ui";
+import { Button, Calendar, FeedbackBox, TextInput } from "@/shared/ui";
 
 type MyBookingsListProps = {
 	bookings: MyBooking[];
@@ -56,10 +49,16 @@ const bookingListDayFormatter = new Intl.DateTimeFormat("de-DE", {
 });
 
 const calendarExportButtonClassName =
-	"rounded-full bg-secondary-soft p-2 text-secondary shadow-xs transition-colors border-secondary-soft border hover:border-secondary hover:border";
+	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-secondary bg-background px-3 py-2 text-sm font-black text-secondary transition-colors hover:bg-secondary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 const cancelTriggerButtonClassName =
-	"rounded-full bg-danger-bg p-2 shadow-xs border border-danger-bg hover:border-danger-text hover:border";
+	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-danger-text bg-background px-3 py-2 text-sm font-black text-danger-text transition-colors hover:bg-danger-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+const cancelConfirmButtonClassName =
+	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-danger-text bg-danger-text px-3 py-2 text-sm font-black text-danger-bg transition-colors hover:bg-danger-text/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60";
 const maxVisibleCalendarLabels = 3;
+const myBookingsCalendarAccent = {
+	containerClassName: "bg-background",
+	weekdayClassName: "bg-primary text-primary-soft",
+};
 
 function isSameLocalDay(start: Date, end: Date): boolean {
 	return (
@@ -108,18 +107,18 @@ function formatBookingStatus(status: Booking["status"]): string {
 	}
 }
 
-function getBookingCardClassName(
+function getBookingAccentClassName(
 	unitTypeName: MyBooking["unit"]["unitType"]["name"],
-) {
+): string {
 	switch (unitTypeName) {
 		case "HOT_DESK":
-			return "room-card--desk";
+			return "bg-feed-teal";
 		case "BOOTH":
-			return "room-card--booth";
+			return "bg-feed-pink";
 		case "TEAM_ROOM":
-			return "room-card--team";
+			return "bg-feed-coral";
 		case "MEETING_ROOM":
-			return "room-card--meeting";
+			return "bg-feed-amber";
 	}
 }
 
@@ -180,6 +179,14 @@ function canCancelMyBooking(booking: MyBooking): boolean {
 	);
 }
 
+function BookingMetaTag({ children }: { children: string }) {
+	return (
+		<span className="inline-flex min-h-8 items-center bg-primary/10 px-3 py-1.5 text-xs font-black text-primary">
+			{children}
+		</span>
+	);
+}
+
 function MyBookingsViewModeSwitch({
 	onViewModeChange,
 	viewMode,
@@ -194,8 +201,8 @@ function MyBookingsViewModeSwitch({
 	];
 
 	return (
-		<div className="mt-8 inline-flex gap-1 rounded-md border border-border bg-surface p-1 shadow-xs">
-			{modes.map((mode) => {
+		<div className="mt-8 inline-grid grid-cols-3 border-2 border-primary">
+			{modes.map((mode, index) => {
 				const isActive = viewMode === mode.value;
 
 				return (
@@ -204,10 +211,12 @@ function MyBookingsViewModeSwitch({
 						type="button"
 						aria-pressed={isActive}
 						onClick={() => onViewModeChange(mode.value)}
-						className={`rounded px-3 py-1.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+						className={`min-h-11 border-primary px-4 py-2 text-sm font-black transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus ${
+							index > 0 ? "border-l-2" : ""
+						} ${
 							isActive
-								? "bg-primary text-white"
-								: "text-primary hover:bg-primary-soft"
+								? "bg-primary text-primary-soft"
+								: "bg-background text-primary hover:bg-primary/10"
 						}`}
 					>
 						{mode.label}
@@ -223,20 +232,20 @@ function getCalendarMarkerColorClassName(
 ): string {
 	switch (unitTypeName) {
 		case "HOT_DESK":
-			return "border-room-desk bg-room-desk-soft text-room-desk-strong";
+			return "border-secondary bg-secondary-soft text-success-text";
 		case "BOOTH":
-			return "border-room-booth bg-room-booth-soft text-room-booth-strong";
+			return "border-feed-pink bg-danger-bg text-danger-text";
 		case "TEAM_ROOM":
-			return "border-room-team bg-room-team-soft text-room-team-strong";
+			return "border-feed-coral bg-feed-coral/25 text-text";
 		case "MEETING_ROOM":
-			return "border-room-meeting bg-room-meeting-soft text-room-meeting-strong";
+			return "border-feed-amber bg-warning-bg text-warning-text";
 	}
 }
 
 function getCalendarMarkerClassName(
 	unitTypeName: MyBooking["unit"]["unitType"]["name"],
 ): string {
-	return `block h-1.5 w-full rounded-full border sm:h-auto sm:truncate sm:px-1.5 sm:py-0.5 sm:text-left sm:text-[10px] sm:font-semibold sm:leading-tight ${getCalendarMarkerColorClassName(
+	return `block h-2 w-full border-2 sm:h-auto sm:truncate sm:px-1.5 sm:py-1 sm:text-left sm:text-[10px] sm:font-black sm:leading-tight ${getCalendarMarkerColorClassName(
 		unitTypeName,
 	)}`;
 }
@@ -250,14 +259,14 @@ function MyBookingsCalendarLegend() {
 	];
 
 	return (
-		<div className="mb-3 flex flex-wrap gap-2">
+		<div className="mb-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
 			{unitTypes.map((unitTypeName) => (
 				<div
 					key={unitTypeName}
-					className="flex items-center gap-2 rounded-full border border-border-muted bg-surface px-2.5 py-1 text-xs font-medium text-muted"
+					className="flex min-h-10 items-center gap-2 border-2 border-primary bg-background px-3 py-2 text-xs font-black text-primary"
 				>
 					<span
-						className={`h-2 w-6 rounded-full border ${getCalendarMarkerColorClassName(
+						className={`h-3 w-8 border-2 ${getCalendarMarkerColorClassName(
 							unitTypeName,
 						)}`}
 						aria-hidden="true"
@@ -292,53 +301,57 @@ function BookingCard({
 	const canConfirmCancel = cancelConfirmationInput.trim() === "STORNO";
 
 	return (
-		<Panel
+		<article
 			key={booking.id}
-			padding="compact"
-			className={`room-card ${getBookingCardClassName(
-				booking.unit.unitType.name,
-			)} ${isPast ? "opacity-65 grayscale-[0.85]" : ""} ${
-				isHighlighted ? "booking-card--highlight" : ""
-			}`}
+			className={clsx(
+				"grid min-h-64 border-2 bg-background sm:grid-rows-[0.5rem_1fr]",
+				isPast ? "border-primary/30 opacity-70" : "border-primary",
+				isHighlighted && "booking-card--highlight",
+			)}
 		>
-			<div className="flex min-h-32 flex-col justify-center gap-2">
-				<p className="room-card__title text-base font-semibold">
-					{booking.unit.name}
-				</p>
-				<p className="room-card__text text-sm font-medium">
-					{formatBookingWindow(booking.startTime, booking.endTime)}
-				</p>
-				<div className="mt-2 flex flex-wrap gap-2">
-					<span className="room-card__badge rounded-full px-3 py-1 text-sm">
-						{formatUnitTypeName(booking.unit.unitType.name)}
-					</span>
-					<span className="room-card__badge rounded-full px-3 py-1 text-sm">
-						{formatBookingStatus(booking.status)}
-					</span>
-					{isPast && (
-						<span className="room-card__badge rounded-full px-3 py-1 text-sm">
-							Vergangen
-						</span>
-					)}
+			<div
+				className={clsx(
+					"h-2 w-full",
+					getBookingAccentClassName(booking.unit.unitType.name),
+				)}
+				aria-hidden="true"
+			/>
+			<div className="flex min-h-56 flex-col p-5">
+				<div className="min-w-0">
+					<p className="truncate text-2xl font-black leading-none text-primary">
+						{booking.unit.name}
+					</p>
+					<p className="mt-3 text-sm font-semibold leading-6 text-muted">
+						{formatBookingWindow(booking.startTime, booking.endTime)}
+					</p>
 				</div>
-				{canExportCalendar && (
-					<div className="flex mt-3 gap-4 items-center room-card__text text-sm">
+
+				<div className="mt-5 flex flex-wrap gap-2">
+					<BookingMetaTag>
+						{formatUnitTypeName(booking.unit.unitType.name)}
+					</BookingMetaTag>
+					<BookingMetaTag>{formatBookingStatus(booking.status)}</BookingMetaTag>
+					{isPast && <BookingMetaTag>Vergangen</BookingMetaTag>}
+				</div>
+
+				<div className="mt-auto flex flex-wrap gap-3 pt-8">
+					{canExportCalendar && (
 						<ExportBookingCalendarButton
 							booking={booking}
 							className={calendarExportButtonClassName}
-						/>
-						<span className="room-card__text">Download .ics</span>
-					</div>
-				)}
-				{canCancelBooking && (
-					<div className="mt-3 room-card__text text-sm">
-						{isCancelConfirmationOpen ? (
-							<div className="space-y-3">
+							iconClassName="size-4"
+						>
+							Download .ics
+						</ExportBookingCalendarButton>
+					)}
+					{canCancelBooking &&
+						(isCancelConfirmationOpen ? (
+							<div className="w-full border-t-2 border-primary pt-4">
 								<p className="text-danger-text">
 									Zum Stornieren bitte "STORNO" eingeben.
 								</p>
-								<div className="flex flex-wrap items-center gap-3 justify-between">
-									<div className="flex items-center gap-4">
+								<div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+									<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
 										<TextInput
 											value={cancelConfirmationInput}
 											onChange={(event) =>
@@ -350,12 +363,15 @@ function BookingCard({
 										/>
 										<CancelBookingButton
 											bookingId={booking.id}
-											className="rounded-full p-2 shadow-xs disabled:opacity-50"
+											className={cancelConfirmButtonClassName}
+											iconClassName="size-4"
 											onCancelled={onBookingCancelled}
 											onError={onBookingCancelError}
 											onSubmittingChange={setIsCancelSubmitting}
 											disabled={!canConfirmCancel}
-										/>
+										>
+											Stornieren
+										</CancelBookingButton>
 									</div>
 									<Button
 										type="button"
@@ -371,22 +387,18 @@ function BookingCard({
 								</div>
 							</div>
 						) : (
-							<div className="flex items-center gap-4">
-								<button
-									type="button"
-									onClick={() => setIsCancelConfirmationOpen(true)}
-									className={cancelTriggerButtonClassName}
-									aria-label="Stornierung vorbereiten"
-								>
-									<TrashIcon className="size-4 text-danger-text" />
-								</button>
-								<span className="text-danger-text">Buchung stornieren</span>
-							</div>
-						)}
-					</div>
-				)}
+							<button
+								type="button"
+								onClick={() => setIsCancelConfirmationOpen(true)}
+								className={cancelTriggerButtonClassName}
+							>
+								<TrashIcon className="size-4" aria-hidden="true" />
+								Buchung stornieren
+							</button>
+						))}
+				</div>
 			</div>
-		</Panel>
+		</article>
 	);
 }
 
@@ -413,58 +425,63 @@ function BookingListRow({
 	const canConfirmCancel = cancelConfirmationInput.trim() === "STORNO";
 
 	return (
-		<Panel
-			padding="compact"
-			className={`room-card ${getBookingCardClassName(
-				booking.unit.unitType.name,
-			)} ${isPast ? "opacity-65 grayscale-[0.85]" : ""} ${
-				isHighlighted ? "booking-card--highlight" : ""
-			}`}
+		<article
+			className={clsx(
+				"grid border-2 bg-background md:grid-cols-[0.5rem_minmax(0,1fr)]",
+				isPast ? "border-primary/30 opacity-70" : "border-primary",
+				isHighlighted && "booking-card--highlight",
+			)}
 		>
+			<div
+				className={clsx(
+					"h-2 w-full md:h-full md:w-2",
+					getBookingAccentClassName(booking.unit.unitType.name),
+				)}
+				aria-hidden="true"
+			/>
 			<div className="flex flex-col gap-3">
-				<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+				<div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
 					<div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
-						<p className="room-card__title min-w-36 truncate text-sm font-semibold">
+						<p className="min-w-36 truncate text-base font-black text-primary">
 							{booking.unit.name}
 						</p>
-						<p className="room-card__text text-sm font-medium">
+						<p className="text-sm font-semibold text-muted">
 							{formatBookingListWindow(booking.startTime, booking.endTime)}
 						</p>
-						<span className="room-card__badge rounded-full px-2.5 py-1 text-xs">
+						<BookingMetaTag>
 							{formatUnitTypeName(booking.unit.unitType.name)}
-						</span>
-						<span className="room-card__badge rounded-full px-2.5 py-1 text-xs">
+						</BookingMetaTag>
+						<BookingMetaTag>
 							{formatBookingStatus(booking.status)}
-						</span>
-						{isPast && (
-							<span className="room-card__badge rounded-full px-2.5 py-1 text-xs">
-								Vergangen
-							</span>
-						)}
+						</BookingMetaTag>
+						{isPast && <BookingMetaTag>Vergangen</BookingMetaTag>}
 					</div>
 					{(canExportCalendar || canCancelBooking) && (
-						<div className="flex shrink-0 items-center gap-2">
+						<div className="flex shrink-0 flex-wrap items-center gap-2">
 							{canExportCalendar && (
 								<ExportBookingCalendarButton
 									booking={booking}
 									className={calendarExportButtonClassName}
-								/>
+									iconClassName="size-4"
+								>
+									.ics
+								</ExportBookingCalendarButton>
 							)}
 							{canCancelBooking && (
 								<button
 									type="button"
 									onClick={() => setIsCancelConfirmationOpen(true)}
 									className={cancelTriggerButtonClassName}
-									aria-label="Stornierung vorbereiten"
 								>
-									<TrashIcon className="size-4 text-danger-text" />
+									<TrashIcon className="size-4" aria-hidden="true" />
+									Stornieren
 								</button>
 							)}
 						</div>
 					)}
 				</div>
 				{canCancelBooking && isCancelConfirmationOpen && (
-					<div className="border-border-muted border-t pt-3 room-card__text text-sm">
+					<div className="border-primary border-t-2 px-4 pb-4 pt-4 text-sm font-semibold">
 						<p className="text-danger-text">
 							Zum Stornieren bitte "STORNO" eingeben.
 						</p>
@@ -481,12 +498,15 @@ function BookingListRow({
 								/>
 								<CancelBookingButton
 									bookingId={booking.id}
-									className="rounded-full p-2 shadow-xs disabled:opacity-50"
+									className={cancelConfirmButtonClassName}
+									iconClassName="size-4"
 									onCancelled={onBookingCancelled}
 									onError={onBookingCancelError}
 									onSubmittingChange={setIsCancelSubmitting}
 									disabled={!canConfirmCancel}
-								/>
+								>
+									Stornieren
+								</CancelBookingButton>
 							</div>
 							<Button
 								type="button"
@@ -503,7 +523,7 @@ function BookingListRow({
 					</div>
 				)}
 			</div>
-		</Panel>
+		</article>
 	);
 }
 
@@ -536,9 +556,10 @@ function BookingCalendarView({
 	const selectedDayBookings = bookingsByDate[selectedDate] ?? [];
 
 	return (
-		<Panel className="mt-4 p-2">
+		<div className="mt-4">
 			<MyBookingsCalendarLegend />
 			<Calendar
+				accent={myBookingsCalendarAccent}
 				visibleMonth={visibleMonth}
 				onVisibleMonthChange={setVisibleMonth}
 				renderDay={({ date, dayNumber, isOutsideMonth }) => {
@@ -551,14 +572,24 @@ function BookingCalendarView({
 					);
 					const overflowBookingCount =
 						dayBookings.length - visibleBookings.length;
+					const dayNumberClassName = clsx(
+						"block text-xs font-black",
+						isSelectedDate && "text-primary-soft",
+						!isSelectedDate && isOutsideMonth && "text-muted",
+						!isSelectedDate && !isOutsideMonth && "text-primary",
+					);
+					const overflowClassName = clsx(
+						"truncate px-1.5 py-1 text-[10px] font-black",
+						isSelectedDate
+							? "bg-primary-soft/15 text-primary-soft"
+							: "bg-primary/10 text-primary",
+					);
 
 					const dayContent = (
 						<>
-							<span className="block text-xs font-semibold text-muted">
-								{dayNumber}
-							</span>
+							<span className={dayNumberClassName}>{dayNumber}</span>
 							{visibleBookings.length > 0 && (
-								<div className="mt-1 grid gap-1">
+								<div className="mt-2 grid gap-1">
 									{visibleBookings.map((booking) => {
 										const label = formatUnitTypeName(
 											booking.unit.unitType.name,
@@ -577,7 +608,7 @@ function BookingCalendarView({
 										);
 									})}
 									{overflowBookingCount > 0 && (
-										<span className="truncate rounded bg-surface-muted px-1.5 py-0.5 text-[10px] font-semibold text-muted">
+										<span className={overflowClassName}>
 											+{overflowBookingCount}
 										</span>
 									)}
@@ -586,15 +617,18 @@ function BookingCalendarView({
 						</>
 					);
 
-					const dayClassName = `min-h-20 rounded-md border p-1.5 text-left text-sm transition-colors sm:min-h-24 ${
-						isOutsideMonth
-							? "border-transparent bg-surface-muted/40 text-zinc-400 opacity-45"
-							: "border-border-muted bg-surface"
-					} ${
-						hasBookings
-							? "cursor-pointer hover:border-primary hover:bg-primary-soft/40"
-							: ""
-					} ${isSelectedDate ? "border-focus ring-2 ring-focus" : ""}`;
+					const dayClassName = clsx(
+						"min-h-20 border-2 p-1.5 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus sm:min-h-24",
+						isSelectedDate && "border-primary bg-primary text-primary-soft",
+						!isSelectedDate &&
+							isOutsideMonth &&
+							"border-primary/10 bg-primary/5 opacity-45",
+						!isSelectedDate &&
+							!isOutsideMonth &&
+							"border-primary bg-background text-primary",
+						hasBookings && "cursor-pointer",
+						hasBookings && !isSelectedDate && "hover:bg-primary/10",
+					);
 
 					if (!hasBookings) {
 						return <div className={dayClassName}>{dayContent}</div>;
@@ -616,8 +650,8 @@ function BookingCalendarView({
 				}}
 			/>
 			{selectedDayBookings.length > 0 && (
-				<div className="mt-4">
-					<p className="text-sm font-semibold text-text">
+				<div className="mt-4 border-t-4 border-primary pt-4">
+					<p className="inline-flex bg-primary px-3 py-2 text-sm font-black text-primary-soft">
 						{bookingDayFormatter.format(new Date(`${selectedDate}T00:00:00`))}
 					</p>
 					<div className="mt-3 grid gap-3">
@@ -634,7 +668,7 @@ function BookingCalendarView({
 					</div>
 				</div>
 			)}
-		</Panel>
+		</div>
 	);
 }
 
@@ -660,19 +694,21 @@ function BookingSection({
 	viewMode: MyBookingsViewMode;
 }) {
 	return (
-		<details open={defaultOpen} className="mt-8 group">
-			<summary className="cursor-pointer list-none rounded-md px-1 py-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-				<div className="flex flex-wrap items-center gap-3">
-					<h2 className="text-xl font-semibold tracking-tight text-text">
-						{title}
-					</h2>
-					<ChevronRightIcon
-						className="size-6 text-text transition-transform duration-200 ease-out group-open:rotate-90"
-						aria-hidden="true"
-					/>
-					<Badge variant="muted" className="ml-4 text-sm">
+		<details open={defaultOpen} className="group mt-10">
+			<summary className="cursor-pointer list-none border-y-4 border-primary bg-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
+				<div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
+					<div className="flex min-h-16 min-w-0 items-center gap-3 bg-primary px-4 py-3 text-primary-soft">
+						<h2 className="min-w-0 text-xl font-black leading-tight text-pretty md:text-2xl">
+							{title}
+						</h2>
+						<ChevronRightIcon
+							className="size-6 shrink-0 transition-transform duration-200 ease-out group-open:rotate-90 motion-reduce:transition-none"
+							aria-hidden="true"
+						/>
+					</div>
+					<div className="mx-1 mb-0 flex min-h-14 items-center bg-primary-soft px-4 py-3 text-sm font-black text-primary md:mx-0 md:mb-0 md:mr-1">
 						{bookings.length} {bookings.length === 1 ? "Buchung" : "Buchungen"}
-					</Badge>
+					</div>
 				</div>
 			</summary>
 			{bookings.length === 0 ? (

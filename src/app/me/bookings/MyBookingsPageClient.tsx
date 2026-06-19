@@ -10,7 +10,7 @@ import {
 import { useSession } from "@/entities/session";
 import { RequireAuth } from "@/features/auth/require-auth";
 import { ApiRequestError } from "@/shared/api";
-import { FeedbackBox, Panel } from "@/shared/ui";
+import { FeedbackBox } from "@/shared/ui";
 import {
 	MyBookingsList,
 	type MyBookingsViewMode,
@@ -155,7 +155,9 @@ export function MyBookingsPageClient() {
 	return (
 		<RequireAuth>
 			{isLoading && (
-				<Panel className="mt-8">Deine Buchungen werden geladen...</Panel>
+				<p className="mt-8 bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
+					Deine Buchungen werden geladen…
+				</p>
 			)}
 			{errorMessage && (
 				<FeedbackBox variant="error" className="mt-8">
