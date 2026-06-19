@@ -1,0 +1,15 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+	<title id="title">RoomFull circle logo concept</title>
+	<desc id="desc">A circular RoomFull logo mark with four vertical brand color stripes and cream stacked text.</desc>
+	<clipPath id="roomfull-circle-clip">
+		<circle cx="256" cy="256" r="202"/>
+	</clipPath>
+	<g clip-path="url(#roomfull-circle-clip)">
+		<rect x="54" y="54" width="101" height="404" fill="#8FC7BD"/>
+		<rect x="155" y="54" width="101" height="404" fill="#DC6B8C"/>
+		<rect x="256" y="54" width="101" height="404" fill="#FB7953"/>
+		<rect x="357" y="54" width="101" height="404" fill="#F6AD4F"/>
+	</g>
+	<text x="256" y="251" fill="#FAF0E6" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="104" font-weight="900" letter-spacing="-6">Room</text>
+	<text x="256" y="338" fill="#FAF0E6" text-anchor="middle" font-family="Arial Black, Impact, sans-serif" font-size="108" font-weight="900" letter-spacing="-7">Full</text>
+</svg>

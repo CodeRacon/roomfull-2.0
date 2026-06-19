@@ -7,6 +7,9 @@ import { AppProviders } from "./providers";
 export const metadata: Metadata = {
 	title: "RoomFull 2.0",
 	description: "Room booking MVP",
+	icons: {
+		icon: "/logo/roomfull-favicon.svg",
+	},
 };
 
 type RootLayoutProps = Readonly<{
