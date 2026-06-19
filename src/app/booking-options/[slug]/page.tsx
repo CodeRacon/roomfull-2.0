@@ -1,9 +1,12 @@
+import { clsx } from "clsx";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import "@/widgets/booking-options-list/ui/BookingOptionsList.css";
 import type { BookingOptionKey } from "@/entities/booking-option";
-import { parseBookingOptionSlug } from "@/entities/booking-option";
+import {
+	getBookingOptionDescription,
+	parseBookingOptionSlug,
+} from "@/entities/booking-option";
 import { formatUnitTypeName, getPublicUnits } from "@/entities/unit";
-import { Anchor, Badge, FeedbackBox, Panel } from "@/shared/ui";
 
 type BookingOptionPageProps = {
 	params: Promise<{ slug: string }>;
@@ -16,16 +19,46 @@ type HotDeskAreaCard = {
 	seatCount: number;
 };
 
-function getBookingOptionCardClassName(key: BookingOptionKey) {
+type SelectionItem = {
+	id: string;
+	name: string;
+	description: string;
+	capacityLabel: string;
+	href: string;
+};
+
+type BookingOptionTheme = {
+	backgroundClassName: string;
+	sideLabel: string;
+	selectionLabel: string;
+};
+
+function getBookingOptionTheme(key: BookingOptionKey): BookingOptionTheme {
 	switch (key) {
 		case "HOT_DESK":
-			return "room-card--desk";
+			return {
+				backgroundClassName: "bg-feed-teal",
+				sideLabel: "Areas",
+				selectionLabel: "Area-Auswahl",
+			};
 		case "BOOTH":
-			return "room-card--booth";
+			return {
+				backgroundClassName: "bg-feed-pink",
+				sideLabel: "Fokus",
+				selectionLabel: "BookableUnit-Auswahl",
+			};
 		case "TEAM_ROOM":
-			return "room-card--team";
+			return {
+				backgroundClassName: "bg-feed-coral",
+				sideLabel: "Team",
+				selectionLabel: "BookableUnit-Auswahl",
+			};
 		case "MEETING_ROOM":
-			return "room-card--meeting";
+			return {
+				backgroundClassName: "bg-feed-amber",
+				sideLabel: "Meet",
+				selectionLabel: "BookableUnit-Auswahl",
+			};
 	}
 }
 
@@ -42,6 +75,30 @@ function getBookingCtaLabel(key: BookingOptionKey) {
 	}
 }
 
+function getSelectionHeading(key: BookingOptionKey) {
+	if (key === "HOT_DESK") {
+		return "Wähle deine Area";
+	}
+
+	return `Wähle deine ${formatUnitTypeName(key)}`;
+}
+
+function getUnitCapacityLabel(capacity: number) {
+	if (capacity === 1) {
+		return "1 Person";
+	}
+
+	return `${capacity} Personen`;
+}
+
+function formatCountLabel(count: number, singular: string, plural: string) {
+	if (count === 1) {
+		return `1 ${singular}`;
+	}
+
+	return `${count} ${plural}`;
+}
+
 export default async function BookingOptionPage({
 	params,
 }: BookingOptionPageProps) {
@@ -55,9 +112,9 @@ export default async function BookingOptionPage({
 	const units = await getPublicUnits({ unitType: bookingOptionKey });
 
 	const showsAreaCards = bookingOptionKey === "HOT_DESK";
-	const roomCardClassName = `room-card ${getBookingOptionCardClassName(
-		bookingOptionKey,
-	)} p-5`;
+	const theme = getBookingOptionTheme(bookingOptionKey);
+	const bookingOptionName = formatUnitTypeName(bookingOptionKey);
+	const unitType = units[0]?.unitType;
 
 	const hotDeskAreasById = new Map<string, HotDeskAreaCard>();
 
@@ -85,69 +142,142 @@ export default async function BookingOptionPage({
 		(sum, area) => sum + area.seatCount,
 		0,
 	);
+	const selectionItems: SelectionItem[] = showsAreaCards
+		? hotDeskAreas.map((area) => ({
+				id: area.id,
+				name: area.name,
+				description:
+					area.description ?? "Ein Bereich mit buchbaren Einzelplätzen.",
+				capacityLabel: formatCountLabel(
+					area.seatCount,
+					"Einzelplatz",
+					"Einzelplätze",
+				),
+				href: `/bookings/new?unitType=HOT_DESK&areaId=${area.id}`,
+			}))
+		: units.map((unit) => ({
+				id: unit.id,
+				name: unit.name,
+				description: unit.description,
+				capacityLabel: getUnitCapacityLabel(unit.capacity),
+				href: `/bookings/new?unitId=${unit.id}`,
+			}));
+	const availabilityLabel = showsAreaCards
+		? `${formatCountLabel(hotDeskSeatCount, "Platz", "Plätze")} / ${formatCountLabel(
+				hotDeskAreas.length,
+				"Area",
+				"Areas",
+			)}`
+		: formatCountLabel(units.length, "Raum", "Räume");
+	const durationLabel = unitType
+		? `${unitType.minDurationMinutes}-${unitType.maxDurationMinutes} Min.`
+		: "Zeitraum im Booking";
 
 	return (
-		<main className="min-h-screen bg-background px-6 py-10 text-text">
-			<div className="mx-auto w-full max-w-5xl">
-				<h1 className="text-3xl font-semibold tracking-tight text-text">
-					{formatUnitTypeName(bookingOptionKey)}
-				</h1>
-				<p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
-					{showsAreaCards
-						? `${hotDeskSeatCount} Plätze an ${hotDeskAreas.length} Orten.`
-						: `${units.length} passende Räume verfügbar.`}
-				</p>
+		<main className="min-h-[calc(100svh-4.5rem)] bg-background px-4 py-6 text-text md:px-6">
+			<div className="mx-auto w-full max-w-7xl">
+				<Link
+					href="/booking-options"
+					className="inline-flex min-h-10 items-center bg-primary px-3 py-2 text-sm font-black text-primary-soft transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+				>
+					BookingOptions
+				</Link>
 
-				{units.length > 0 && !showsAreaCards && (
-					<section className="mt-8 grid gap-4 sm:grid-cols-2">
-						{units.map((unit) => (
-							<Panel key={unit.id} className={roomCardClassName}>
-								<h2 className="room-card__title text-lg font-semibold">
-									{unit.name}
-								</h2>
-								<p className="room-card__text mt-2 text-sm leading-6">
-									{unit.description}
-								</p>
-								<div className="mt-4 flex flex-wrap items-center gap-3">
-									<Badge className="room-card__badge">{`Kapazität: ${unit.capacity} Personen`}</Badge>
-									<Anchor href={`/bookings/new?unitId=${unit.id}`}>
-										{getBookingCtaLabel(bookingOptionKey)}
-									</Anchor>
-								</div>
-							</Panel>
-						))}
-					</section>
-				)}
+				<section
+					className={clsx(
+						"mt-6 grid min-h-[28rem] content-between p-5 text-primary md:p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8",
+						theme.backgroundClassName,
+					)}
+					aria-labelledby="booking-option-title"
+				>
+					<div className="flex items-start justify-between gap-5 lg:col-span-2">
+						<span className="rotate-180 text-3xl font-black leading-none text-white/70 [writing-mode:vertical-rl] md:text-4xl">
+							{theme.sideLabel}
+						</span>
+						<span className="bg-primary/10 px-3 py-1.5 text-xs font-black md:text-sm">
+							{availabilityLabel}
+						</span>
+					</div>
 
-				{units.length > 0 && showsAreaCards && (
-					<section className="mt-8 grid gap-4 sm:grid-cols-2">
-						{hotDeskAreas.map((area) => (
-							<Panel key={area.id} className={roomCardClassName}>
-								<h2 className="room-card__title text-lg font-semibold">
-									{area.name}
-								</h2>
-								<p className="room-card__text mt-2 text-sm leading-6">
-									{area.description ??
-										"Ein Bereich mit buchbaren Einzelplätzen."}
-								</p>
-								<div className="mt-4 flex flex-wrap items-center gap-3">
-									<Badge className="room-card__badge">{`${area.seatCount} Einzelplätze`}</Badge>
-									<Anchor
-										href={`/bookings/new?unitType=HOT_DESK&areaId=${area.id}`}
+					<div className="mt-14 self-end lg:mt-20">
+						<p className="text-sm font-black uppercase tracking-[0.18em]">
+							BookingOption
+						</p>
+						<h1 id="booking-option-title" className="type-display-page mt-3">
+							{bookingOptionName}
+						</h1>
+						<p className="mt-5 max-w-2xl text-base font-semibold leading-7 md:text-lg">
+							{getBookingOptionDescription(bookingOptionKey)}
+						</p>
+					</div>
+
+					<dl className="mt-10 grid self-end text-sm font-black sm:grid-cols-3 lg:mt-0">
+						<div className="bg-primary px-4 py-3 text-primary-soft">
+							<dt className="text-primary-soft/70">Auswahl</dt>
+							<dd>{theme.selectionLabel}</dd>
+						</div>
+						<div className="bg-primary/10 px-4 py-3">
+							<dt className="text-primary/55">Dauer</dt>
+							<dd>{durationLabel}</dd>
+						</div>
+						<div className="bg-primary/10 px-4 py-3">
+							<dt className="text-primary/55">Verfügbar</dt>
+							<dd>{availabilityLabel}</dd>
+						</div>
+					</dl>
+				</section>
+
+				<section className="mt-10" aria-labelledby="selection-title">
+					<div className="grid border-y-4 border-primary lg:grid-cols-[18rem_1fr]">
+						<div className="bg-primary p-5 text-primary-soft md:p-6">
+							<p className="text-sm font-black uppercase tracking-[0.18em]">
+								Konkrete Auswahl
+							</p>
+							<h2 id="selection-title" className="type-section-title mt-5">
+								{getSelectionHeading(bookingOptionKey)}
+							</h2>
+						</div>
+
+						{selectionItems.length > 0 ? (
+							<div className="divide-y-4 divide-primary">
+								{selectionItems.map((item, index) => (
+									<Link
+										key={item.id}
+										href={item.href}
+										className="group grid min-h-[13rem] gap-5 bg-background p-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-focus md:grid-cols-[4.5rem_minmax(0,1fr)_12rem] md:p-6 md:hover:bg-primary md:hover:text-primary-soft"
 									>
-										{getBookingCtaLabel(bookingOptionKey)}
-									</Anchor>
-								</div>
-							</Panel>
-						))}
-					</section>
-				)}
-
-				{units.length === 0 && (
-					<FeedbackBox title="Gerade nichts verfügbar" className="mt-8">
-						Für diese Auswahl gibt es aktuell keine buchbaren Plätze oder Räume.
-					</FeedbackBox>
-				)}
+										<span className="text-5xl font-black leading-none tabular-nums md:text-6xl">
+											{String(index + 1).padStart(2, "0")}
+										</span>
+										<span className="min-w-0">
+											<span className="block text-2xl font-black leading-none md:text-4xl">
+												{item.name}
+											</span>
+											<span className="mt-4 block max-w-2xl text-sm font-semibold leading-6 text-muted md:text-base md:group-hover:text-primary-soft/80">
+												{item.description}
+											</span>
+										</span>
+										<span className="flex flex-col items-start justify-between gap-5 md:items-end">
+											<span className="bg-primary/10 px-3 py-2 text-xs font-black md:group-hover:bg-primary-soft/15">
+												{item.capacityLabel}
+											</span>
+											<span className="inline-flex min-h-11 items-center bg-primary px-4 py-2 text-sm font-black text-primary-soft transition-transform motion-reduce:transition-none md:group-hover:translate-x-1 md:group-hover:bg-primary-soft md:group-hover:text-primary">
+												{getBookingCtaLabel(bookingOptionKey)}
+											</span>
+										</span>
+									</Link>
+								))}
+							</div>
+						) : (
+							<div className="bg-background p-5 md:p-6">
+								<p className="max-w-xl text-base font-semibold leading-7 text-muted">
+									Für diese Auswahl gibt es aktuell keine buchbaren Plätze oder
+									Räume.
+								</p>
+							</div>
+						)}
+					</div>
+				</section>
 			</div>
 		</main>
 	);
