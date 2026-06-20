@@ -120,6 +120,7 @@ export type AdminBookingViewStatus =
 export type ListAdminBookingsInput = {
 	from?: string;
 	limit?: number;
+	search?: string;
 	status?: AdminBookingViewStatus;
 	to?: string;
 };

@@ -61,6 +61,7 @@ export type AdminBookingViewStatus =
 type ListAllBookingsForAdminInput = {
 	from?: string;
 	limit?: string;
+	search?: string;
 	status?: string;
 	to?: string;
 };
@@ -579,6 +580,7 @@ export async function listAllBookingsForAdmin(
 ): Promise<AdminBookingRecord[]> {
 	const status = parseAdminBookingViewStatus(input.status);
 	const limit = parseAdminBookingLimit(input.limit);
+	const search = input.search?.trim();
 	const dateRange = resolveAdminBookingDateRange({
 		from: input.from,
 		status,
@@ -591,6 +593,7 @@ export async function listAllBookingsForAdmin(
 			return listAllBookingsRecords({
 				limit,
 				orderBy: { startTime: "asc" },
+				search,
 				status: BookingStatus.ACTIVE,
 				startBefore: dateRange.toEnd,
 				endAfter:
@@ -602,6 +605,7 @@ export async function listAllBookingsForAdmin(
 			return listAllBookingsRecords({
 				limit,
 				orderBy: { startTime: "asc" },
+				search,
 				status: BookingStatus.ACTIVE,
 				startBefore: dateRange.toEnd,
 				endAfter: dateRange.fromStart,
@@ -610,6 +614,7 @@ export async function listAllBookingsForAdmin(
 			return listAllBookingsRecords({
 				limit,
 				orderBy: { endTime: "desc" },
+				search,
 				status: BookingStatus.ACTIVE,
 				startBefore: dateRange.toEnd,
 				endAfter: dateRange.fromStart,
@@ -619,6 +624,7 @@ export async function listAllBookingsForAdmin(
 			return listAllBookingsRecords({
 				limit,
 				orderBy: { updatedAt: "desc" },
+				search,
 				status: BookingStatus.CANCELLED,
 				startBefore: dateRange.toEnd,
 				endAfter: dateRange.fromStart,
@@ -627,6 +633,7 @@ export async function listAllBookingsForAdmin(
 			return listAllBookingsRecords({
 				limit,
 				orderBy: { startTime: "asc" },
+				search,
 				startBefore: dateRange.toEnd,
 				endAfter: dateRange.fromStart,
 			});

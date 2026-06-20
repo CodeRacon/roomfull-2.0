@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { clsx } from "clsx";
+import { useDeferredValue, useEffect, useState } from "react";
 import {
 	type AdminBooking,
 	type AdminBookingViewStatus,
@@ -10,7 +11,7 @@ import { useSession } from "@/entities/session";
 import { formatUnitTypeName } from "@/entities/unit";
 import { RequireAuth } from "@/features/auth/require-auth";
 import { ApiRequestError } from "@/shared/api";
-import { FeedbackBox, Panel } from "@/shared/ui";
+import { FeedbackBox, TextInput } from "@/shared/ui";
 import { AdminBookingsTable } from "@/widgets/admin-bookings-table";
 
 type AdminBookingFilter = AdminBookingViewStatus;
@@ -56,6 +57,21 @@ const rangePresets: {
 	{ days: 90, key: "quarter", label: "3 Monate" },
 	{ days: 365, key: "year", label: "1 Jahr" },
 ];
+
+function getBookingFilterSelectedClassName(status: AdminBookingFilter): string {
+	switch (status) {
+		case "today":
+			return "bg-warning-bg text-warning-text";
+		case "upcoming":
+			return "bg-success-bg text-success-text";
+		case "completed":
+			return "bg-surface-muted text-muted";
+		case "cancelled":
+			return "bg-danger-bg text-danger-text";
+		case "all":
+			return "bg-primary text-on-primary";
+	}
+}
 
 const berlinDateFormatter = new Intl.DateTimeFormat("en-CA", {
 	timeZone: "Europe/Berlin",
@@ -189,6 +205,8 @@ export function AdminBookingsPageClient() {
 		useState<AdminBookingFilter>("upcoming");
 	const [selectedRangePreset, setSelectedRangePreset] =
 		useState<AdminBookingRangePreset>(() => DEFAULT_RANGE_PRESET);
+	const [searchQuery, setSearchQuery] = useState("");
+	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const [bookings, setBookings] = useState<AdminBooking[]>([]);
 	const [summary, setSummary] = useState<AdminBookingSummary>(() =>
 		getEmptySummary(),
@@ -217,16 +235,19 @@ export function AdminBookingsPageClient() {
 						listAdminBookings({
 							...selectedRange,
 							limit: DEFAULT_LIMIT,
+							search: deferredSearchQuery,
 							status: selectedFilter,
 						}),
 						listAdminBookings({
 							...selectedRange,
 							limit: SUMMARY_LIMIT,
+							search: deferredSearchQuery,
 							status: "all",
 						}),
 						listAdminBookings({
 							...todayRange,
 							limit: SUMMARY_LIMIT,
+							search: deferredSearchQuery,
 							status: "today",
 						}),
 					]);
@@ -262,91 +283,141 @@ export function AdminBookingsPageClient() {
 		}
 
 		void loadBookings();
-	}, [selectedFilter, selectedRangePreset, status, endSession]);
+	}, [
+		selectedFilter,
+		selectedRangePreset,
+		deferredSearchQuery,
+		status,
+		endSession,
+	]);
 
 	return (
 		<RequireAuth allowedRoles={["ADMIN"]}>
-			<div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-				<Panel padding="compact">
-					<p className="text-sm font-medium text-muted">Heute</p>
-					<p className="mt-2 text-3xl font-semibold">{summary.todayBookings}</p>
-					<p className="mt-1 text-xs text-muted">Buchungen am aktuellen Tag</p>
-				</Panel>
-				<Panel padding="compact">
-					<p className="text-sm font-medium text-muted">Anstehend</p>
-					<p className="mt-2 text-3xl font-semibold">
+			<div className="mt-8 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+				<div className="border-2 border-primary bg-background p-4">
+					<p className="text-xs font-black uppercase text-muted">Heute</p>
+					<p className="mt-3 text-4xl font-black leading-none tabular-nums text-primary">
+						{summary.todayBookings}
+					</p>
+					<p className="mt-2 text-xs font-semibold text-muted">
+						Buchungen am aktuellen Tag
+					</p>
+				</div>
+				<div className="border-2 border-primary bg-background p-4">
+					<p className="text-xs font-black uppercase text-muted">Anstehend</p>
+					<p className="mt-3 text-4xl font-black leading-none tabular-nums text-success-text">
 						{summary.upcomingInRange}
 					</p>
-					<p className="mt-1 text-xs text-muted">Im gewählten Zeitraum</p>
-				</Panel>
-				<Panel padding="compact">
-					<p className="text-sm font-medium text-muted">Storniert</p>
-					<p className="mt-2 text-3xl font-semibold">
+					<p className="mt-2 text-xs font-semibold text-muted">
+						Im gewählten Zeitraum
+					</p>
+				</div>
+				<div className="border-2 border-primary bg-background p-4">
+					<p className="text-xs font-black uppercase text-muted">Storniert</p>
+					<p className="mt-3 text-4xl font-black leading-none tabular-nums text-danger-text">
 						{summary.cancelledInRange}
 					</p>
-					<p className="mt-1 text-xs text-muted">Im gewählten Zeitraum</p>
-				</Panel>
-				<Panel padding="compact">
-					<p className="text-sm font-medium text-muted">Meistgebucht</p>
-					<p className="mt-2 truncate text-lg font-semibold">
+					<p className="mt-2 text-xs font-semibold text-muted">
+						Im gewählten Zeitraum
+					</p>
+				</div>
+				<div className="min-w-0 border-2 border-primary bg-background p-4">
+					<p className="text-xs font-black uppercase text-muted">
+						Meistgebucht
+					</p>
+					<p className="mt-3 truncate text-xl font-black leading-none text-primary">
 						{summary.topBooked?.label ?? "-"}
 					</p>
-					<p className="mt-1 truncate text-xs text-muted">
+					<p className="mt-2 truncate text-xs font-semibold text-muted">
 						{summary.topBooked
-							? `Alle im Zeitraum · ${summary.topBooked.count} · ${summary.topBooked.meta}`
+							? `${summary.topBooked.count} · ${summary.topBooked.meta}`
 							: "Keine Daten im Zeitraum"}
 					</p>
-				</Panel>
-			</div>
-
-			<div className="mt-6 flex flex-wrap items-end justify-between gap-4">
-				<div className="flex flex-wrap gap-2">
-					{filters.map((filter) => {
-						const isSelected = selectedFilter === filter.status;
-
-						return (
-							<button
-								key={filter.status}
-								type="button"
-								className={`min-h-10 rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
-									isSelected
-										? "border-secondary bg-secondary text-white"
-										: "border-border bg-surface text-text hover:bg-surface-muted"
-								}`}
-								aria-pressed={isSelected}
-								onClick={() => setSelectedFilter(filter.status)}
-							>
-								{filter.label}
-							</button>
-						);
-					})}
-				</div>
-
-				<div className="flex flex-wrap items-center gap-2">
-					<span className="text-sm font-semibold text-primary">Zeitraum:</span>
-					{rangePresets.map((rangePreset) => {
-						const isSelected = selectedRangePreset === rangePreset.key;
-
-						return (
-							<button
-								key={rangePreset.key}
-								type="button"
-								className={`min-h-10 rounded-md border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
-									isSelected
-										? "border-primary bg-primary text-white"
-										: "border-border bg-surface text-text hover:bg-surface-muted"
-								}`}
-								aria-pressed={isSelected}
-								onClick={() => setSelectedRangePreset(rangePreset.key)}
-							>
-								{rangePreset.label}
-							</button>
-						);
-					})}
 				</div>
 			</div>
 
-			{isLoading && <Panel className="mt-8">Buchungen werden geladen…</Panel>}
+			<div className="mt-6 grid gap-4 border-2 border-primary bg-background p-5">
+				<div>
+					<p className="mb-2 text-xs font-black uppercase text-muted">
+						Ansicht
+					</p>
+					<div className="grid border-2 border-primary sm:grid-cols-5">
+						{filters.map((filter) => {
+							const isSelected = selectedFilter === filter.status;
+
+							return (
+								<button
+									key={filter.status}
+									type="button"
+									className={clsx(
+										"h-14 border-primary border-t-2 px-3 py-2 text-sm font-black transition-colors first:border-t-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus sm:border-l-2 sm:border-t-0 sm:first:border-l-0",
+										isSelected
+											? getBookingFilterSelectedClassName(filter.status)
+											: "bg-background text-primary hover:bg-primary/10",
+									)}
+									aria-pressed={isSelected}
+									onClick={() => setSelectedFilter(filter.status)}
+								>
+									{filter.label}
+								</button>
+							);
+						})}
+					</div>
+				</div>
+
+				<div>
+					<p className="mb-2 text-xs font-black uppercase text-muted">
+						Zeitraum
+					</p>
+					<div className="grid border-2 border-primary sm:grid-cols-4">
+						{rangePresets.map((rangePreset) => {
+							const isSelected = selectedRangePreset === rangePreset.key;
+
+							return (
+								<button
+									key={rangePreset.key}
+									type="button"
+									className={clsx(
+										"h-14 border-primary border-t-2 px-3 py-2 text-sm font-black transition-colors first:border-t-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus sm:border-l-2 sm:border-t-0 sm:first:border-l-0",
+										isSelected
+											? "bg-primary text-on-primary"
+											: "bg-background text-primary hover:bg-primary/10",
+									)}
+									aria-pressed={isSelected}
+									onClick={() => setSelectedRangePreset(rangePreset.key)}
+								>
+									{rangePreset.label}
+								</button>
+							);
+						})}
+					</div>
+				</div>
+
+				<div>
+					<label
+						htmlFor="admin-booking-search"
+						className="mb-2 block text-xs font-black uppercase text-muted"
+					>
+						Customer
+					</label>
+					<TextInput
+						id="admin-booking-search"
+						type="search"
+						autoComplete="off"
+						name="admin-booking-search"
+						value={searchQuery}
+						placeholder="Name oder E-Mail suchen…"
+						className="h-14"
+						onChange={(event) => setSearchQuery(event.target.value)}
+					/>
+				</div>
+			</div>
+
+			{isLoading && (
+				<p className="mt-8 bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
+					Buchungen werden geladen…
+				</p>
+			)}
 			{errorMessage && (
 				<FeedbackBox variant="error" className="mt-8">
 					{errorMessage}

@@ -1,7 +1,7 @@
 import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
 import type { AdminBooking } from "@/entities/booking";
 import { formatUnitTypeName } from "@/entities/unit";
-import { Badge, FeedbackBox, Panel } from "@/shared/ui";
+import { Badge, FeedbackBox } from "@/shared/ui";
 
 type AdminBookingsTableProps = {
 	bookings: AdminBooking[];
@@ -129,61 +129,65 @@ export function AdminBookingsTable({
 
 	if (bookings.length === 0) {
 		return (
-			<FeedbackBox variant="empty" className="mt-8">
+			<FeedbackBox variant="empty" className="mt-8 w-fit!">
 				Keine Buchungen für "{filterLabel}".
 			</FeedbackBox>
 		);
 	}
 
 	return (
-		<Panel className="mt-8">
-			<div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-				<div>
-					<h2 className="text-lg font-semibold">{filterLabel}</h2>
-					<p className="mt-1 text-sm text-muted">
-						{bookings.length} Buchungen im gewählten Zeitraum
-					</p>
+		<section className="mt-8">
+			<div className="border-primary border-y-4 bg-primary">
+				<div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
+					<div className="flex min-h-16 min-w-0 items-center bg-primary px-4 py-3 text-on-primary">
+						<h2 className="min-w-0 text-xl font-black leading-tight text-pretty md:text-2xl">
+							{filterLabel}
+						</h2>
+					</div>
+					<div className="mx-1 mb-0 flex min-h-14 items-center bg-on-primary px-4 py-3 text-sm font-black text-primary md:mx-0 md:mr-1">
+						{formatBookingCount(bookings.length)}
+					</div>
 				</div>
 			</div>
-			<div className="space-y-3">
+			<div className="mt-4 grid gap-3">
 				{bookingGroups.map((group) => (
 					<details
 						key={group.dateKey}
 						open={isGroupOpenByDefault(group)}
-						className="group rounded-md border border-border bg-surface-muted/45"
+						className="group border-2 border-primary bg-background"
 					>
-						<summary className="cursor-pointer list-none rounded-md px-4 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-							<div className="flex flex-wrap items-center justify-between gap-3">
-								<div className="min-w-0">
-									<p className="font-semibold text-text capitalize">
+						<summary className="cursor-pointer list-none border-primary border-b-2 bg-primary/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus">
+							<div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
+								<div className="flex min-h-16 min-w-0 flex-col justify-center px-4 py-3">
+									<p className="truncate font-black text-primary capitalize">
 										{group.dayLabel}
 									</p>
-									<p className="mt-1 text-xs text-muted">
+									<p className="mt-1 truncate text-xs font-semibold text-muted">
 										{getStatusSummary(group.bookings)}
 									</p>
 								</div>
-								<div className="flex items-center gap-3">
-									<span className="rounded-full bg-secondary-soft px-3 py-1 text-xs font-semibold text-secondary">
+								<div className="flex min-h-14 items-center gap-3 bg-primary px-4 py-3 text-on-primary md:min-h-16">
+									<span className="bg-on-primary px-3 py-2 text-xs font-black text-primary">
 										{formatBookingCount(group.bookings.length)}
 									</span>
 									<ChevronRightIcon
-										className="size-5 text-muted transition-transform group-open:rotate-90"
+										className="size-5 shrink-0 transition-transform duration-200 ease-out group-open:rotate-90 motion-reduce:transition-none"
 										aria-hidden="true"
 									/>
 								</div>
 							</div>
 						</summary>
-						<div className="space-y-2 border-border border-t p-3">
+						<div className="grid gap-3 p-3">
 							{group.bookings.map((booking) => {
 								const displayStatus = getDisplayStatus(booking);
 
 								return (
 									<div
 										key={booking.id}
-										className="grid gap-3 rounded-md border border-border bg-surface p-3 text-sm md:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1fr)] md:items-center"
+										className="grid gap-3 border-2 border-primary bg-background p-3 text-sm md:grid-cols-[8.5rem_minmax(0,1fr)_minmax(0,1fr)] md:items-center"
 									>
 										<div className="flex items-center gap-3 md:block">
-											<p className="font-semibold tabular-nums text-text">
+											<p className="font-black tabular-nums text-primary">
 												{formatTimeRange(booking)}
 											</p>
 											<Badge
@@ -194,7 +198,7 @@ export function AdminBookingsTable({
 											</Badge>
 										</div>
 										<div className="min-w-0">
-											<p className="truncate font-semibold text-text">
+											<p className="truncate font-black text-text">
 												{booking.user.name}
 											</p>
 											<p className="mt-1 truncate text-xs text-muted">
@@ -202,14 +206,14 @@ export function AdminBookingsTable({
 											</p>
 										</div>
 										<div className="min-w-0">
-											<p className="truncate font-semibold text-text">
+											<p className="truncate font-black text-text">
 												{booking.unit.name}
 											</p>
 											<p className="mt-1 truncate text-xs text-muted">
 												{formatUnitTypeName(booking.unit.unitType.name)}
 											</p>
 											{booking.status === "CANCELLED" && (
-												<p className="mt-2 text-xs font-medium text-danger-text">
+												<p className="mt-2 text-xs font-black text-danger-text">
 													Storno vermerkt
 												</p>
 											)}
@@ -221,6 +225,6 @@ export function AdminBookingsTable({
 					</details>
 				))}
 			</div>
-		</Panel>
+		</section>
 	);
 }

@@ -24,6 +24,7 @@ type CancelBookingInput = {
 type ListAllBookingsInput = {
 	limit: number;
 	orderBy: Prisma.BookingOrderByWithRelationInput;
+	search?: string;
 	status?: BookingStatus;
 	startBefore?: Date;
 	endAfter?: Date;
@@ -187,6 +188,16 @@ export async function listAllBookings(
 					}
 				: undefined,
 	};
+	const search = input.search?.trim();
+
+	if (search) {
+		where.user = {
+			OR: [
+				{ name: { contains: search, mode: "insensitive" } },
+				{ email: { contains: search, mode: "insensitive" } },
+			],
+		};
+	}
 
 	return prisma.booking.findMany({
 		where,

@@ -26,6 +26,11 @@ export async function listAdminBookings(
 		searchParams.set("limit", String(input.limit));
 	}
 
+	const search = input.search?.trim();
+	if (search) {
+		searchParams.set("search", search);
+	}
+
 	const queryString = searchParams.toString();
 	const path =
 		queryString.length > 0

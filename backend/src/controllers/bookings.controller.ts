@@ -221,12 +221,14 @@ function parseDateQuery(query: Request["query"]): string | null {
 function parseAdminBookingsQuery(query: Request["query"]): {
 	from?: string;
 	limit?: string;
+	search?: string;
 	status?: string;
 	to?: string;
 } {
 	return {
 		from: readStringQuery(query.from),
 		limit: readStringQuery(query.limit),
+		search: readStringQuery(query.search),
 		status: readStringQuery(query.status),
 		to: readStringQuery(query.to),
 	};
