@@ -70,13 +70,13 @@ type StripeLinkStyle = CSSProperties & {
 function getStripeClassName(key: BookingOption["key"]): string {
 	switch (key) {
 		case "HOT_DESK":
-			return "bg-feed-teal text-primary";
+			return "bg-unit-hot-desk text-primary";
 		case "BOOTH":
-			return "bg-feed-pink text-primary";
+			return "bg-unit-booth text-primary";
 		case "TEAM_ROOM":
-			return "bg-feed-coral text-primary";
+			return "bg-unit-team-room text-primary";
 		case "MEETING_ROOM":
-			return "bg-feed-amber text-primary";
+			return "bg-unit-meeting-room text-primary";
 	}
 }
 
@@ -282,12 +282,12 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 	const bookingOptionsHref = "/booking-options";
 
 	return (
-		<main className="min-h-[calc(100svh-6.5rem)] bg-background text-text">
-			<section className="flex min-h-[calc(100svh-6.5rem)] items-center px-4 py-5 md:px-6">
+		<main className="min-h-[calc(100svh-var(--app-shell-chrome-height))] bg-background text-text">
+			<section className="flex min-h-[calc(100svh-var(--app-shell-chrome-height))] items-center px-4 py-5 md:px-6">
 				<div className="mx-auto grid w-full max-w-7xl gap-8 min-[1328px]:grid-cols-[minmax(0,1fr)_minmax(24rem,34rem)] min-[1328px]:items-center">
-					<div className="flex flex-col justify-center gap-10 min-[1328px]:h-136 min-[1328px]:max-h-[calc(100svh-9rem)] min-[1328px]:min-h-112 min-[1328px]:justify-between min-[1328px]:gap-0">
+					<div className="flex flex-col justify-center gap-10 min-[1328px]:gap-8">
 						<div>
-							<h1 className="type-display-hero mt-0 max-w-5xl">
+							<h1 className="type-display-hero mt-0 max-w-5xl min-[1328px]:text-[clamp(6.5rem,13svh,8.5rem)]">
 								<span className="block min-[530px]:inline">Coworking</span>{" "}
 								<span className="block min-[530px]:inline">Spaces</span>{" "}
 								<span className="block min-[530px]:inline">buchen</span>
@@ -299,7 +299,7 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 							</p>
 						</div>
 
-						<div className="flex flex-wrap gap-3 mt-8">
+						<div className="flex flex-wrap gap-3">
 							<Link
 								href={bookingOptionsHref}
 								onClick={captureBookingOptionsTransitionOrigin}
@@ -311,14 +311,14 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 										variant: "stripe-board",
 									});
 								}}
-								className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-primary px-5 py-3 text-sm font-black text-primary-soft transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+								className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-primary px-5 py-3 text-sm font-black text-on-primary transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 							>
 								Jetzt buchen
 							</Link>
 							{isAuthenticated && (
 								<Link
 									href="/me/bookings"
-									className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-background px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary hover:text-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+									className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-background px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 								>
 									Meine Buchungen
 								</Link>
@@ -326,7 +326,7 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 							{isAnonymous && (
 								<Link
 									href="/login"
-									className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-background px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary hover:text-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+									className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-background px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 								>
 									Einloggen
 								</Link>
@@ -337,7 +337,7 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 					<nav
 						ref={stripeNavRef}
 						aria-label="Buchungsarten"
-						className="grid overflow-hidden sm:flex sm:h-[30rem] sm:w-full sm:justify-self-start min-[1328px]:h-[34rem] min-[1328px]:max-h-[calc(100svh-9rem)] min-[1328px]:min-h-[28rem]"
+						className="grid overflow-hidden sm:flex sm:h-[30rem] sm:w-full sm:justify-self-start min-[1328px]:h-[34rem] min-[1328px]:max-h-[calc(100svh-var(--app-home-content-offset))] min-[1328px]:min-h-[28rem]"
 						onBlur={(event) => {
 							if (
 								event.relatedTarget instanceof Node &&

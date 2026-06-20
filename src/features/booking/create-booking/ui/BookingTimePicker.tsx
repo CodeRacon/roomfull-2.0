@@ -148,7 +148,7 @@ function getTimeButtonClassName(
 ): string {
 	return clsx(
 		"min-h-11 touch-manipulation border-2 px-3 py-2 text-sm font-black tabular-nums transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
-		isSelected && "border-primary bg-primary text-primary-soft",
+		isSelected && "border-primary bg-primary text-on-primary",
 		!isSelected &&
 			!isDisabled &&
 			"cursor-pointer! border-primary/35 bg-background text-primary md:hover:border-primary md:hover:bg-primary/10",

@@ -26,28 +26,28 @@
 }
 
 .room-card--desk {
-	--room-card-accent: var(--color-secondary);
-	--room-card-soft: var(--color-secondary-soft);
+	--room-card-accent: var(--color-unit-hot-desk);
+	--room-card-soft: #dceeea;
 	--room-card-muted: #eef7f5;
 	--room-card-strong: var(--color-success-text);
 }
 
 .room-card--booth {
-	--room-card-accent: var(--color-feed-pink);
+	--room-card-accent: var(--color-unit-booth);
 	--room-card-soft: var(--color-danger-bg);
 	--room-card-muted: #fff0f5;
 	--room-card-strong: var(--color-danger-text);
 }
 
 .room-card--team {
-	--room-card-accent: var(--color-feed-coral);
+	--room-card-accent: var(--color-unit-team-room);
 	--room-card-soft: #ffd9cb;
 	--room-card-muted: #fff1eb;
 	--room-card-strong: #8d351d;
 }
 
 .room-card--meeting {
-	--room-card-accent: var(--color-feed-amber);
+	--room-card-accent: var(--color-unit-meeting-room);
 	--room-card-soft: var(--color-warning-bg);
 	--room-card-muted: #fff3df;
 	--room-card-strong: var(--color-warning-text);

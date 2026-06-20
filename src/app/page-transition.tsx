@@ -73,10 +73,10 @@ type PageTransitionProviderProps = {
 const coverDurationMs = 520;
 const revealDurationMs = 430;
 const stripeBoardPanels = [
-	"bg-feed-teal",
-	"bg-feed-pink",
-	"bg-feed-coral",
-	"bg-feed-amber",
+	"bg-unit-hot-desk",
+	"bg-unit-booth",
+	"bg-unit-team-room",
+	"bg-unit-meeting-room",
 ] as const;
 const fallbackOrigin: PageTransitionOrigin = {
 	top: 0,

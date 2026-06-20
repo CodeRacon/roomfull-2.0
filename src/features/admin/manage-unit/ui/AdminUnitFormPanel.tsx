@@ -399,7 +399,7 @@ export function AdminUnitFormPanel({
 							{unit.isActive ? (
 								<Button
 									type="button"
-									variant="secondary"
+									variant="danger"
 									disabled={isSubmitting}
 									onClick={handleDeactivate}
 								>

@@ -125,7 +125,7 @@ export function Calendar({
 					disabled={!canGoPrevious}
 					onClick={() => onVisibleMonthChange(addMonths(visibleMonth, -1))}
 					aria-label="Vorherigen Monat anzeigen"
-					className="inline-flex min-h-11 items-center justify-center bg-primary px-3 py-2 text-sm font-black text-primary-soft transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default! disabled:bg-primary/10 disabled:text-muted disabled:opacity-60"
+					className="inline-flex min-h-11 items-center justify-center bg-primary px-3 py-2 text-sm font-black text-on-primary transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-default! disabled:bg-primary/10 disabled:text-muted disabled:opacity-60"
 				>
 					<ChevronRightIcon className="size-5 rotate-180" aria-hidden="true" />
 					<span className="sr-only sm:not-sr-only sm:ml-2">Zurück</span>
@@ -137,7 +137,7 @@ export function Calendar({
 					type="button"
 					onClick={() => onVisibleMonthChange(addMonths(visibleMonth, 1))}
 					aria-label="Nächsten Monat anzeigen"
-					className="inline-flex min-h-11 items-center justify-center bg-primary px-3 py-2 text-sm font-black text-primary-soft transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+					className="inline-flex min-h-11 items-center justify-center bg-primary px-3 py-2 text-sm font-black text-on-primary transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 				>
 					<span className="sr-only sm:not-sr-only sm:mr-2">Weiter</span>
 					<ChevronRightIcon className="size-5" aria-hidden="true" />

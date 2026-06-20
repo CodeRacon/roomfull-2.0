@@ -49,7 +49,7 @@ const bookingListDayFormatter = new Intl.DateTimeFormat("de-DE", {
 });
 
 const calendarExportButtonClassName =
-	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-secondary bg-background px-3 py-2 text-sm font-black text-secondary transition-colors hover:bg-secondary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-accent bg-background px-3 py-2 text-sm font-black text-accent transition-colors hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 const cancelTriggerButtonClassName =
 	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-danger-text bg-background px-3 py-2 text-sm font-black text-danger-text transition-colors hover:bg-danger-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 const cancelConfirmButtonClassName =
@@ -57,7 +57,7 @@ const cancelConfirmButtonClassName =
 const maxVisibleCalendarLabels = 3;
 const myBookingsCalendarAccent = {
 	containerClassName: "bg-background",
-	weekdayClassName: "bg-primary text-primary-soft",
+	weekdayClassName: "bg-primary text-on-primary",
 };
 
 function isSameLocalDay(start: Date, end: Date): boolean {
@@ -112,13 +112,13 @@ function getBookingAccentClassName(
 ): string {
 	switch (unitTypeName) {
 		case "HOT_DESK":
-			return "bg-feed-teal";
+			return "bg-unit-hot-desk";
 		case "BOOTH":
-			return "bg-feed-pink";
+			return "bg-unit-booth";
 		case "TEAM_ROOM":
-			return "bg-feed-coral";
+			return "bg-unit-team-room";
 		case "MEETING_ROOM":
-			return "bg-feed-amber";
+			return "bg-unit-meeting-room";
 	}
 }
 
@@ -215,7 +215,7 @@ function MyBookingsViewModeSwitch({
 							index > 0 ? "border-l-2" : ""
 						} ${
 							isActive
-								? "bg-primary text-primary-soft"
+								? "bg-primary text-on-primary"
 								: "bg-background text-primary hover:bg-primary/10"
 						}`}
 					>
@@ -232,13 +232,13 @@ function getCalendarMarkerColorClassName(
 ): string {
 	switch (unitTypeName) {
 		case "HOT_DESK":
-			return "border-secondary bg-secondary-soft text-success-text";
+			return "border-unit-hot-desk bg-unit-hot-desk/25 text-success-text";
 		case "BOOTH":
-			return "border-feed-pink bg-danger-bg text-danger-text";
+			return "border-unit-booth bg-danger-bg text-danger-text";
 		case "TEAM_ROOM":
-			return "border-feed-coral bg-feed-coral/25 text-text";
+			return "border-unit-team-room bg-unit-team-room/25 text-text";
 		case "MEETING_ROOM":
-			return "border-feed-amber bg-warning-bg text-warning-text";
+			return "border-unit-meeting-room bg-warning-bg text-warning-text";
 	}
 }
 
@@ -574,14 +574,14 @@ function BookingCalendarView({
 						dayBookings.length - visibleBookings.length;
 					const dayNumberClassName = clsx(
 						"block text-xs font-black",
-						isSelectedDate && "text-primary-soft",
+						isSelectedDate && "text-on-primary",
 						!isSelectedDate && isOutsideMonth && "text-muted",
 						!isSelectedDate && !isOutsideMonth && "text-primary",
 					);
 					const overflowClassName = clsx(
 						"truncate px-1.5 py-1 text-[10px] font-black",
 						isSelectedDate
-							? "bg-primary-soft/15 text-primary-soft"
+							? "bg-on-primary/15 text-on-primary"
 							: "bg-primary/10 text-primary",
 					);
 
@@ -619,7 +619,7 @@ function BookingCalendarView({
 
 					const dayClassName = clsx(
 						"min-h-20 border-2 p-1.5 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus sm:min-h-24",
-						isSelectedDate && "border-primary bg-primary text-primary-soft",
+						isSelectedDate && "border-primary bg-primary text-on-primary",
 						!isSelectedDate &&
 							isOutsideMonth &&
 							"border-primary/10 bg-primary/5 opacity-45",
@@ -651,7 +651,7 @@ function BookingCalendarView({
 			/>
 			{selectedDayBookings.length > 0 && (
 				<div className="mt-4 border-t-4 border-primary pt-4">
-					<p className="inline-flex bg-primary px-3 py-2 text-sm font-black text-primary-soft">
+					<p className="inline-flex bg-primary px-3 py-2 text-sm font-black text-on-primary">
 						{bookingDayFormatter.format(new Date(`${selectedDate}T00:00:00`))}
 					</p>
 					<div className="mt-3 grid gap-3">
@@ -697,7 +697,7 @@ function BookingSection({
 		<details open={defaultOpen} className="group mt-10">
 			<summary className="cursor-pointer list-none border-y-4 border-primary bg-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
 				<div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
-					<div className="flex min-h-16 min-w-0 items-center gap-3 bg-primary px-4 py-3 text-primary-soft">
+					<div className="flex min-h-16 min-w-0 items-center gap-3 bg-primary px-4 py-3 text-on-primary">
 						<h2 className="min-w-0 text-xl font-black leading-tight text-pretty md:text-2xl">
 							{title}
 						</h2>
@@ -706,7 +706,7 @@ function BookingSection({
 							aria-hidden="true"
 						/>
 					</div>
-					<div className="mx-1 mb-0 flex min-h-14 items-center bg-primary-soft px-4 py-3 text-sm font-black text-primary md:mx-0 md:mb-0 md:mr-1">
+					<div className="mx-1 mb-0 flex min-h-14 items-center bg-on-primary px-4 py-3 text-sm font-black text-primary md:mx-0 md:mb-0 md:mr-1">
 						{bookings.length} {bookings.length === 1 ? "Buchung" : "Buchungen"}
 					</div>
 				</div>

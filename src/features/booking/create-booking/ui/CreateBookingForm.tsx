@@ -52,54 +52,56 @@ const CLOSING_MINUTES = 22 * 60;
 
 const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
 	HOT_DESK: {
-		accentClassName: "bg-feed-teal",
-		actionClassName: "bg-feed-teal! text-primary! hover:bg-feed-teal!",
+		accentClassName: "bg-unit-hot-desk",
+		actionClassName: "bg-unit-hot-desk! text-primary! hover:bg-unit-hot-desk!",
 		calendarAccent: {
-			containerClassName: "bg-feed-teal/10",
-			weekdayClassName: "bg-feed-teal/30",
-			availableClassName: "bg-feed-teal/10",
+			containerClassName: "bg-unit-hot-desk/10",
+			weekdayClassName: "bg-unit-hot-desk/30",
+			availableClassName: "bg-unit-hot-desk/10",
 			availableHoverClassName:
-				"md:hover:border-primary md:hover:bg-feed-teal/25",
-			todayBorderClassName: "border-feed-teal!",
+				"md:hover:border-primary md:hover:bg-unit-hot-desk/25",
+			todayBorderClassName: "border-unit-hot-desk!",
 		},
 		sideLabel: "Areas",
 	},
 	BOOTH: {
-		accentClassName: "bg-feed-pink",
-		actionClassName: "bg-feed-pink! text-primary! hover:bg-feed-pink!",
+		accentClassName: "bg-unit-booth",
+		actionClassName: "bg-unit-booth! text-primary! hover:bg-unit-booth!",
 		calendarAccent: {
-			containerClassName: "bg-feed-pink/10",
-			weekdayClassName: "bg-feed-pink/25",
-			availableClassName: "bg-feed-pink/10",
+			containerClassName: "bg-unit-booth/10",
+			weekdayClassName: "bg-unit-booth/25",
+			availableClassName: "bg-unit-booth/10",
 			availableHoverClassName:
-				"md:hover:border-primary md:hover:bg-feed-pink/25",
-			todayBorderClassName: "border-feed-pink!",
+				"md:hover:border-primary md:hover:bg-unit-booth/25",
+			todayBorderClassName: "border-unit-booth!",
 		},
 		sideLabel: "Fokus",
 	},
 	TEAM_ROOM: {
-		accentClassName: "bg-feed-coral",
-		actionClassName: "bg-feed-coral! text-primary! hover:bg-feed-coral!",
+		accentClassName: "bg-unit-team-room",
+		actionClassName:
+			"bg-unit-team-room! text-primary! hover:bg-unit-team-room!",
 		calendarAccent: {
-			containerClassName: "bg-feed-coral/10",
-			weekdayClassName: "bg-feed-coral/25",
-			availableClassName: "bg-feed-coral/10",
+			containerClassName: "bg-unit-team-room/10",
+			weekdayClassName: "bg-unit-team-room/25",
+			availableClassName: "bg-unit-team-room/10",
 			availableHoverClassName:
-				"md:hover:border-primary md:hover:bg-feed-coral/25",
-			todayBorderClassName: "border-feed-coral!",
+				"md:hover:border-primary md:hover:bg-unit-team-room/25",
+			todayBorderClassName: "border-unit-team-room!",
 		},
 		sideLabel: "Team",
 	},
 	MEETING_ROOM: {
-		accentClassName: "bg-feed-amber",
-		actionClassName: "bg-feed-amber! text-primary! hover:bg-feed-amber!",
+		accentClassName: "bg-unit-meeting-room",
+		actionClassName:
+			"bg-unit-meeting-room! text-primary! hover:bg-unit-meeting-room!",
 		calendarAccent: {
-			containerClassName: "bg-feed-amber/10",
-			weekdayClassName: "bg-feed-amber/30",
-			availableClassName: "bg-feed-amber/10",
+			containerClassName: "bg-unit-meeting-room/10",
+			weekdayClassName: "bg-unit-meeting-room/30",
+			availableClassName: "bg-unit-meeting-room/10",
 			availableHoverClassName:
-				"md:hover:border-primary md:hover:bg-feed-amber/25",
-			todayBorderClassName: "border-feed-amber!",
+				"md:hover:border-primary md:hover:bg-unit-meeting-room/25",
+			todayBorderClassName: "border-unit-meeting-room!",
 		},
 		sideLabel: "Meet",
 	},
@@ -541,8 +543,8 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 				</div>
 
 				<dl className="mt-10 grid self-end text-sm font-black sm:grid-cols-3 lg:mt-0">
-					<div className="bg-primary px-4 py-3 text-primary-soft">
-						<dt className="text-primary-soft/70">Auswahl</dt>
+					<div className="bg-primary px-4 py-3 text-on-primary">
+						<dt className="text-on-primary/70">Auswahl</dt>
 						<dd>{selectionModeLabel}</dd>
 					</div>
 					<div className="bg-primary/10 px-4 py-3">
@@ -557,7 +559,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 			</section>
 
 			<section className="mt-10 grid border-y-4 border-primary lg:grid-cols-[18rem_1fr]">
-				<div className="bg-primary p-5 text-primary-soft md:p-6">
+				<div className="bg-primary p-5 text-on-primary md:p-6">
 					<p className="text-sm font-black uppercase tracking-[0.18em]">
 						Datum
 					</p>

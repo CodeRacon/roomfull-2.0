@@ -3,8 +3,11 @@ export { Badge } from "./badge";
 export { Button } from "./button";
 export type { CalendarAccentClasses, CalendarDay } from "./calendar";
 export { Calendar } from "./calendar";
+export { ErrorPage } from "./error-page";
 export { FeedbackBox } from "./feedback-box";
 export { Field } from "./field";
+export type { InfoPageSection } from "./info-page";
+export { InfoPageLayout } from "./info-page";
 export {
 	Menu,
 	MenuButtonItem,

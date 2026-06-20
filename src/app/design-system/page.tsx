@@ -28,9 +28,13 @@ export default function DesignSystemPage() {
 					<div className="mt-5 flex flex-wrap gap-3">
 						<Button>Primary</Button>
 						<Button variant="secondary">Secondary</Button>
+						<Button variant="danger">Danger</Button>
 						<Button disabled>Disabled primary</Button>
 						<Button variant="secondary" disabled>
 							Disabled secondary
+						</Button>
+						<Button variant="danger" disabled>
+							Disabled danger
 						</Button>
 					</div>
 				</section>

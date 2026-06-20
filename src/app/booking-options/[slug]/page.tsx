@@ -37,25 +37,25 @@ function getBookingOptionTheme(key: BookingOptionKey): BookingOptionTheme {
 	switch (key) {
 		case "HOT_DESK":
 			return {
-				backgroundClassName: "bg-feed-teal",
+				backgroundClassName: "bg-unit-hot-desk",
 				sideLabel: "Areas",
 				selectionLabel: "Area-Auswahl",
 			};
 		case "BOOTH":
 			return {
-				backgroundClassName: "bg-feed-pink",
+				backgroundClassName: "bg-unit-booth",
 				sideLabel: "Fokus",
 				selectionLabel: "BookableUnit-Auswahl",
 			};
 		case "TEAM_ROOM":
 			return {
-				backgroundClassName: "bg-feed-coral",
+				backgroundClassName: "bg-unit-team-room",
 				sideLabel: "Team",
 				selectionLabel: "BookableUnit-Auswahl",
 			};
 		case "MEETING_ROOM":
 			return {
-				backgroundClassName: "bg-feed-amber",
+				backgroundClassName: "bg-unit-meeting-room",
 				sideLabel: "Meet",
 				selectionLabel: "BookableUnit-Auswahl",
 			};
@@ -178,7 +178,7 @@ export default async function BookingOptionPage({
 			<div className="mx-auto w-full max-w-7xl">
 				<Link
 					href="/booking-options"
-					className="inline-flex min-h-10 items-center bg-primary px-3 py-2 text-sm font-black text-primary-soft transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+					className="inline-flex min-h-10 items-center bg-primary px-3 py-2 text-sm font-black text-on-primary transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 				>
 					BookingOptions
 				</Link>
@@ -212,8 +212,8 @@ export default async function BookingOptionPage({
 					</div>
 
 					<dl className="mt-10 grid self-end text-sm font-black sm:grid-cols-3 lg:mt-0">
-						<div className="bg-primary px-4 py-3 text-primary-soft">
-							<dt className="text-primary-soft/70">Auswahl</dt>
+						<div className="bg-primary px-4 py-3 text-on-primary">
+							<dt className="text-on-primary/70">Auswahl</dt>
 							<dd>{theme.selectionLabel}</dd>
 						</div>
 						<div className="bg-primary/10 px-4 py-3">
@@ -229,7 +229,7 @@ export default async function BookingOptionPage({
 
 				<section className="mt-10" aria-labelledby="selection-title">
 					<div className="grid border-y-4 border-primary lg:grid-cols-[18rem_1fr]">
-						<div className="bg-primary p-5 text-primary-soft md:p-6">
+						<div className="bg-primary p-5 text-on-primary md:p-6">
 							<p className="text-sm font-black uppercase tracking-[0.18em]">
 								Konkrete Auswahl
 							</p>
@@ -244,7 +244,7 @@ export default async function BookingOptionPage({
 									<Link
 										key={item.id}
 										href={item.href}
-										className="group grid min-h-[13rem] gap-5 bg-background p-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-focus md:grid-cols-[4.5rem_minmax(0,1fr)_12rem] md:p-6 md:hover:bg-primary md:hover:text-primary-soft"
+										className="group grid min-h-[13rem] gap-5 bg-background p-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-focus md:grid-cols-[4.5rem_minmax(0,1fr)_12rem] md:p-6 md:hover:bg-primary md:hover:text-on-primary"
 									>
 										<span className="text-5xl font-black leading-none tabular-nums md:text-6xl">
 											{String(index + 1).padStart(2, "0")}
@@ -253,15 +253,15 @@ export default async function BookingOptionPage({
 											<span className="block text-2xl font-black leading-none md:text-4xl">
 												{item.name}
 											</span>
-											<span className="mt-4 block max-w-2xl text-sm font-semibold leading-6 text-muted md:text-base md:group-hover:text-primary-soft/80">
+											<span className="mt-4 block max-w-2xl text-sm font-semibold leading-6 text-muted md:text-base md:group-hover:text-on-primary/80">
 												{item.description}
 											</span>
 										</span>
 										<span className="flex flex-col items-start justify-between gap-5 md:items-end">
-											<span className="bg-primary/10 px-3 py-2 text-xs font-black md:group-hover:bg-primary-soft/15">
+											<span className="bg-primary/10 px-3 py-2 text-xs font-black md:group-hover:bg-on-primary/15">
 												{item.capacityLabel}
 											</span>
-											<span className="inline-flex min-h-11 items-center bg-primary px-4 py-2 text-sm font-black text-primary-soft transition-transform motion-reduce:transition-none md:group-hover:translate-x-1 md:group-hover:bg-primary-soft md:group-hover:text-primary">
+											<span className="inline-flex min-h-11 items-center bg-primary px-4 py-2 text-sm font-black text-on-primary transition-transform motion-reduce:transition-none md:group-hover:translate-x-1 md:group-hover:bg-on-primary md:group-hover:text-primary">
 												{getBookingCtaLabel(bookingOptionKey)}
 											</span>
 										</span>

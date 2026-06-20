@@ -7,7 +7,7 @@ import { useSession } from "@/entities/session";
 import { formatUnitTypeName } from "@/entities/unit";
 import { RequireAuth } from "@/features/auth/require-auth";
 import { ApiRequestError } from "@/shared/api";
-import { Badge, FeedbackBox, Panel } from "@/shared/ui";
+import { Anchor, Badge, FeedbackBox, Panel } from "@/shared/ui";
 
 function formatRole(role: "CUSTOMER" | "ADMIN"): string {
 	switch (role) {
@@ -96,13 +96,13 @@ function getBookingAccentClassName(
 ) {
 	switch (unitTypeName) {
 		case "HOT_DESK":
-			return "bg-feed-teal";
+			return "bg-unit-hot-desk";
 		case "BOOTH":
-			return "bg-feed-pink";
+			return "bg-unit-booth";
 		case "TEAM_ROOM":
-			return "bg-feed-coral";
+			return "bg-unit-team-room";
 		case "MEETING_ROOM":
-			return "bg-feed-amber";
+			return "bg-unit-meeting-room";
 	}
 }
 
@@ -175,6 +175,22 @@ export function AccountPageClient() {
 								</dd>
 							</div>
 						</dl>
+
+						{user.role === "CUSTOMER" && (
+							<div className="mt-6 border-t-2 border-primary/20 pt-5">
+								<p className="text-sm font-medium text-muted">
+									Fragen, Feedback oder Kritik
+								</p>
+								<div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+									<p className="max-w-md text-sm font-semibold leading-6 text-muted">
+										Schreib uns direkt aus deinem Customer-Konto heraus.
+									</p>
+									<Anchor href="/me/contact" variant="secondary">
+										Kontakt aufnehmen
+									</Anchor>
+								</div>
+							</div>
+						)}
 					</Panel>
 
 					<Panel
@@ -198,7 +214,7 @@ export function AccountPageClient() {
 						{!isLoadingBookings && !bookingErrorMessage && nextBooking && (
 							<Link
 								href={getHighlightedBookingHref(nextBooking.id)}
-								className="group mt-5 block overflow-hidden border-2 border-primary bg-background text-primary transition-colors hover:bg-primary hover:text-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+								className="group mt-5 block overflow-hidden border-2 border-primary bg-background text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 							>
 								<span
 									className={`block h-3 ${getBookingAccentClassName(
@@ -217,7 +233,7 @@ export function AccountPageClient() {
 										{nextBooking.unit.name}
 									</span>
 									<span
-										className={`mt-5 inline-flex border-2 border-primary px-4 py-2 text-base font-black text-primary transition-colors group-hover:border-primary-soft group-hover:text-primary-soft ${getBookingAccentClassName(
+										className={`mt-5 inline-flex border-2 border-primary px-4 py-2 text-base font-black text-primary transition-colors group-hover:border-on-primary group-hover:text-on-primary ${getBookingAccentClassName(
 											nextBooking.unit.unitType.name,
 										)}`}
 									>

@@ -10,7 +10,6 @@ import {
 	Button,
 	FeedbackBox,
 	Field,
-	Panel,
 	PasswordInput,
 	TextInput,
 } from "@/shared/ui";
@@ -62,53 +61,64 @@ export function SignInForm({ nextPath }: SignInFormProps) {
 	const registerHref = `/register?next=${encodeURIComponent(nextPath)}`;
 
 	return (
-		<Panel className="mx-auto w-full max-w-md">
-			<form onSubmit={handleSubmit} className="space-y-2">
-				<div className="px-4 pb-2">
-					<h1 className="text-2xl font-semibold tracking-tight">Einloggen</h1>
-					<p className="mt-2 text-sm leading-6 text-muted">
+		<div className="mx-auto w-full max-w-md overflow-hidden border-2 border-primary bg-background">
+			<form onSubmit={handleSubmit}>
+				<div className="border-b-2 border-primary! bg-primary px-5 py-5 text-on-primary">
+					<h1 className="text-4xl font-black leading-none tracking-normal text-pretty">
+						Einloggen
+					</h1>
+					<p className="mt-3 text-sm font-semibold leading-6 text-on-primary/85">
 						Melde dich an, um mit deiner Buchung fortzufahren.
 					</p>
 				</div>
 
 				{errorMessage && (
-					<FeedbackBox variant="error" className="w-fit! mx-4 ml-auto">
-						{errorMessage}
-					</FeedbackBox>
+					<div className="border-b-2 border-primary! px-5 py-4">
+						<FeedbackBox variant="error">{errorMessage}</FeedbackBox>
+					</div>
 				)}
 
-				<Field label="E-Mail" htmlFor="email">
-					<TextInput
-						id="email"
-						name="email"
-						type="email"
-						autoComplete="email"
-						value={email}
-						onChange={(event) => setEmail(event.target.value)}
-						required
-					/>
-				</Field>
+				<div className="px-5 py-4">
+					<Field label="E-Mail" htmlFor="email" className="py-2">
+						<TextInput
+							id="email"
+							name="email"
+							type="email"
+							autoComplete="email"
+							spellCheck={false}
+							className="border-primary!"
+							value={email}
+							onChange={(event) => setEmail(event.target.value)}
+							required
+						/>
+					</Field>
 
-				<Field label="Passwort" htmlFor="password">
-					<PasswordInput
-						id="password"
-						name="password"
-						autoComplete="current-password"
-						value={password}
-						onChange={(event) => setPassword(event.target.value)}
-						required
-					/>
-				</Field>
+					<Field label="Passwort" htmlFor="password" className="py-2">
+						<PasswordInput
+							id="password"
+							name="password"
+							autoComplete="current-password"
+							className="border-primary!"
+							value={password}
+							onChange={(event) => setPassword(event.target.value)}
+							required
+						/>
+					</Field>
+				</div>
 
-				<div className="flex flex-col gap-3 px-4 pt-2">
+				<div className="flex flex-col gap-3 border-t-2 border-primary! px-5 py-5">
 					<Button type="submit" disabled={isSubmitting}>
-						{isSubmitting ? "Einloggen..." : "Einloggen"}
+						{isSubmitting ? "Einloggen…" : "Einloggen"}
 					</Button>
-					<Anchor variant="secondary" href={registerHref}>
+					<Anchor
+						variant="secondary"
+						href={registerHref}
+						className="justify-center border-2 border-primary! bg-background! text-primary"
+					>
 						Noch kein Konto? Registrieren
 					</Anchor>
 				</div>
 			</form>
-		</Panel>
+		</div>
 	);
 }

@@ -18,7 +18,7 @@ type MenuDisabledItemProps = {
 };
 
 const menuItemClassName =
-	"block px-5 py-4 text-base font-black text-primary transition-colors hover:bg-primary hover:text-primary-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
+	"block px-5 py-4 text-base font-black text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 
 export function Menu({ className, ...props }: MenuProps) {
 	return (

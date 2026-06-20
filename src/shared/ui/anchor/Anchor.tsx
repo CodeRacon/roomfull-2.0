@@ -16,10 +16,10 @@ export function Anchor({
 	const anchorClassName = clsx(
 		"inline-flex min-h-10 items-center text-sm font-black transition-colors",
 		variant === "primary" &&
-			"justify-center bg-primary px-4 py-2 text-primary-soft hover:bg-primary-hover",
+			"justify-center bg-primary px-4 py-2 text-on-primary hover:bg-primary-hover",
 		"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
 		variant === "secondary" &&
-			"bg-primary/10 px-3 py-2 text-primary hover:bg-primary hover:text-primary-soft",
+			"bg-primary/10 px-3 py-2 text-primary hover:bg-primary hover:text-on-primary",
 		className,
 	);
 

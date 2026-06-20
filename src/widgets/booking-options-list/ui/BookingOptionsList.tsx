@@ -30,22 +30,22 @@ const bookingOptionPanelCopy: Record<
 	BookingOptionPanelCopy
 > = {
 	HOT_DESK: {
-		colorClassName: "bg-feed-teal",
+		colorClassName: "bg-unit-hot-desk",
 		label: "Areas",
 		variants: ["Open World", "Quiet Place"],
 	},
 	BOOTH: {
-		colorClassName: "bg-feed-pink",
+		colorClassName: "bg-unit-booth",
 		label: "Fokus",
 		variants: ["Phone Booth", "Focus Booth", "Deep Work Booth"],
 	},
 	TEAM_ROOM: {
-		colorClassName: "bg-feed-coral",
+		colorClassName: "bg-unit-team-room",
 		label: "Team",
 		variants: ["Sprint Room", "Workshop Room", "Project Room"],
 	},
 	MEETING_ROOM: {
-		colorClassName: "bg-feed-amber",
+		colorClassName: "bg-unit-meeting-room",
 		label: "Meet",
 		variants: ["Client Meeting", "Board Room", "Presentation Room"],
 	},
@@ -148,7 +148,7 @@ export function BookingOptionsList({
 								</span>
 							</div>
 
-							<span className="mt-5 inline-flex min-h-11 items-center bg-primary px-4 py-2 text-sm font-black text-primary-soft transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none">
+							<span className="mt-5 inline-flex min-h-11 items-center bg-primary px-4 py-2 text-sm font-black text-on-primary transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none">
 								{getCtaLabel(option)}
 							</span>
 						</div>

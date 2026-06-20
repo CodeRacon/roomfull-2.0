@@ -1,43 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-	--color-feed-cream: #faf0e6;
-	--color-feed-ink: #191919;
-	--color-feed-teal: #8fc7bd;
-	--color-feed-pink: #dc6b8c;
-	--color-feed-coral: #fb7953;
-	--color-feed-amber: #f6ad4f;
-
-	--color-background: var(--color-feed-cream);
-
+	/* Base surfaces */
+	--color-background: #faf0e6;
 	--color-surface: #fff8f1;
 	--color-surface-muted: #f1dfd0;
-
 	--color-border: #d8c9ba;
-	--color-text: var(--color-feed-ink);
+
+	/* Text and primary controls */
+	--color-text: #191919;
 	--color-muted: #6f665f;
-
-	--color-primary: var(--color-feed-ink);
+	--color-primary: #191919;
 	--color-primary-hover: #2b2b2b;
-	--color-primary-soft: var(--color-feed-cream);
+	--color-on-primary: var(--color-background);
+	--color-focus: var(--color-primary);
 
-	--color-secondary: #4f8077;
-	--color-secondary-hover: #3f6b63;
-	--color-secondary-soft: #dceeea;
+	/* General accent */
+	--color-accent: #4f8077;
+	--color-accent-soft: #dceeea;
 
-	--color-success-bg: #dceeea;
-	--color-success-text: #315d55;
+	/* UnitType accents */
+	--color-unit-hot-desk: #8fc7bd;
+	--color-unit-booth: #dc6b8c;
+	--color-unit-team-room: #fb7953;
+	--color-unit-meeting-room: #f6ad4f;
 
+	/* Status colors */
+	--color-success-bg: #dff3d5;
+	--color-success-text: #2f6b35;
 	--color-warning-bg: #ffe2b9;
 	--color-warning-text: #7a4f0d;
-
 	--color-danger-bg: #f7d3df;
 	--color-danger-text: #8a2948;
-
-	--color-focus: var(--color-feed-ink);
 }
 
 :root {
+	--app-header-height: 6.5rem;
+	--app-footer-height: 2.75rem;
+	--app-shell-chrome-height: calc(
+		var(--app-header-height) +
+		var(--app-footer-height)
+	);
+	--app-home-content-offset: calc(var(--app-shell-chrome-height) + 2.5rem);
+
 	color-scheme: light;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 	line-height: 1.5;
@@ -53,9 +58,59 @@ body {
 	padding: 0;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
 body {
 	background: var(--color-background);
 	color: var(--color-text);
+}
+
+.app-header {
+	background-color: var(--color-background);
+}
+
+body:has(.error-page-shell) header,
+body:has(.error-page-shell) footer {
+	display: none;
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: #7f746b var(--color-background);
+}
+
+::-webkit-scrollbar {
+	width: 6px;
+	height: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background-color: var(--color-background);
+	border: 1px solid transparent;
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: #7f746b;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: #5f574f;
+}
+
+::-webkit-scrollbar-corner {
+	background-color: var(--color-background);
+}
+
+.info-page-scroll-area {
+	scrollbar-width: none;
+}
+
+.info-page-scroll-area::-webkit-scrollbar {
+	display: none;
 }
 
 .type-display-hero {
@@ -167,4 +222,26 @@ button {
 
 .booking-card--highlight {
 	animation: booking-card-highlight 0.25s ease-in-out 3;
+}
+
+@keyframes error-code-stretch {
+	0%,
+	100% {
+		transform: scaleY(1);
+	}
+
+	45% {
+		transform: scaleY(1.5);
+	}
+}
+
+.error-page-code {
+	animation: error-code-stretch 1.15s cubic-bezier(0.22, 1, 0.36, 1) 0.1s 1 both;
+	transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.error-page-code {
+		animation: none;
+	}
 }

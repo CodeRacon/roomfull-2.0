@@ -73,7 +73,7 @@ function getDayClassName(input: {
 			baseClassName,
 			"cursor-default!",
 			input.state === "fully-booked" &&
-				"border-feed-pink bg-feed-pink/25 text-danger-text",
+				"border-unit-booth bg-unit-booth/25 text-danger-text",
 			input.state !== "fully-booked" &&
 				input.isOutsideMonth &&
 				"border-transparent bg-primary/5 text-muted opacity-50",
@@ -117,7 +117,7 @@ function getDayClassName(input: {
 	if (input.isSelected) {
 		return clsx(
 			baseClassName,
-			"cursor-pointer! bg-primary text-primary-soft",
+			"cursor-pointer! bg-primary text-on-primary",
 			input.isToday ? input.theme.todayBorderClassName : "border-primary",
 		);
 	}
@@ -125,14 +125,14 @@ function getDayClassName(input: {
 	if (input.state === "fully-booked") {
 		return clsx(
 			baseClassName,
-			"cursor-default! border-feed-pink bg-feed-pink/25 text-danger-text",
+			"cursor-default! border-unit-booth bg-unit-booth/25 text-danger-text",
 		);
 	}
 
 	if (input.state === "partially-booked") {
 		return clsx(
 			baseClassName,
-			"cursor-pointer! border-feed-amber bg-feed-amber/35 text-primary md:hover:bg-feed-amber/55",
+			"cursor-pointer! border-unit-meeting-room bg-unit-meeting-room/35 text-primary md:hover:bg-unit-meeting-room/55",
 		);
 	}
 
