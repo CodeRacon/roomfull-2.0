@@ -43,6 +43,103 @@ Header:
 Authorization: Bearer <token>
 ```
 
+## Customer Contact
+
+### `POST /contact-requests`
+
+Speichert eine Customer Contact Request ohne E-Mail-Versand.
+
+Header:
+
+```txt
+Authorization: Bearer <customer-token>
+```
+
+Body:
+
+```json
+{
+  "type": "QUESTION",
+  "message": "Ich habe eine Frage zu meiner Buchung."
+}
+```
+
+Erlaubte Typen:
+
+- `QUESTION`
+- `FEEDBACK`
+- `CRITICISM`
+
+Response:
+
+```ts
+type ContactRequest = {
+  id: string;
+  userId: string;
+  type: "QUESTION" | "FEEDBACK" | "CRITICISM";
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+};
+```
+
+Regeln:
+
+- nur eingeloggte Customers duerfen Contact Requests absenden
+- Visitors erhalten `401`
+- Admins erhalten `403`
+- `message` darf nicht leer sein
+- neue Contact Requests starten mit `isRead: false`
+
+## Admin Contact
+
+### `GET /admin/contact-requests`
+
+Liefert Customer Contact Requests für die Admin Contact Inbox.
+
+Header:
+
+```txt
+Authorization: Bearer <admin-token>
+```
+
+Query:
+
+- `type=QUESTION|FEEDBACK|CRITICISM`
+- `readState=all|read|unread`
+- `sort=received_desc|received_asc`
+
+Response:
+
+```ts
+type AdminContactRequest = ContactRequest & {
+  user: { id: string; name: string; email: string };
+};
+```
+
+### `PATCH /admin/contact-requests/:contactRequestId/read`
+
+Markiert eine Customer Contact Request global als gelesen.
+
+### `GET /admin/contact-requests/unread-count`
+
+Liefert die globale Anzahl ungelesener Customer Contact Requests fuer dezente Admin-Hinweise.
+
+Response:
+
+```ts
+type AdminContactRequestUnreadCountResponse = {
+  unreadCount: number;
+};
+```
+
+Regeln:
+
+- nur Admins duerfen die Inbox nutzen
+- es gibt keine Antwortfunktion
+- es wird keine E-Mail versendet
+- Lesestatus ist global pro Contact Request, nicht pro Admin
+
 ## Units
 
 ### `GET /public/booking-options`
@@ -315,13 +412,14 @@ Liefert gefilterte Buchungen inklusive minimaler Customer- und Unit-Anzeigedaten
 Query:
 
 ```txt
-GET /admin/bookings?status=upcoming&from=2027-01-01&to=2027-01-31&limit=100
+GET /admin/bookings?status=upcoming&from=2027-01-01&to=2027-01-31&limit=100&search=max@example.com
 ```
 
 `status` ist ein View-Status: `upcoming`, `today`, `completed`, `cancelled` oder `all`.
 `all` umfasst alle Booking-Status im gewählten Zeitraum; ohne explizite `from/to`-Werte nutzt `all` 30 Tage zurück und 30 Tage voraus.
 `from` und `to` sind inklusive Kalendertage im Format `YYYY-MM-DD`.
 `limit` muss zwischen `1` und `500` liegen.
+`search` durchsucht ausschließlich Customer-Name und Customer-E-Mail.
 
 Response:
 
@@ -329,6 +427,40 @@ Response:
 type AdminBooking = Booking & {
   user: { id: string; name: string; email: string; role: "CUSTOMER" | "ADMIN" };
   unit: { id: string; name: string; unitType: { name: UnitTypeName } };
+};
+```
+
+### `GET /admin/analytics/booking-demand`
+
+Liefert den Nachfrageverlauf für das Admin Analytics Dashboard.
+
+Query:
+
+```txt
+GET /admin/analytics/booking-demand?from=2027-01-01&to=2027-01-31
+```
+
+Ohne explizite `from/to`-Werte nutzt der Endpoint 30 Tage zurück und 30 Tage voraus.
+Die Metrik zählt aktive Bookings gruppiert nach Booking-Startdatum.
+Zusätzlich liefert der Endpoint aktive Bookings im gewählten Zeitraum gruppiert nach `UnitType`.
+Die Stornoquote vergleicht aktive und stornierte Bookings im selben Zeitraum.
+Stornierte Bookings zählen nicht als Nachfrage.
+
+Response:
+
+```ts
+type BookingDemandAnalytics = {
+  cancellationStats: {
+    activeBookings: number;
+    cancelledBookings: number;
+    totalBookings: number;
+    cancellationRate: number;
+  };
+  dateRange: { from: string; to: string };
+  granularity: "day";
+  metric: "activeBookingsByStartDate";
+  trend: { date: string; bookingCount: number }[];
+  demandByUnitType: { unitType: UnitTypeName; bookingCount: number }[];
 };
 ```
 

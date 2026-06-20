@@ -12,6 +12,7 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 - `public booking options`
 - `public units`
 - `bookings`
+- `customer contact`
 - `admin units`
 
 ## Endpunkte
@@ -68,6 +69,20 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 
 `GET /me/bookings` liefert eigene Bookings inklusive minimaler Unit-Anzeigedaten (`unit.id`, `unit.name`, `unit.unitType.name`), damit die UI Buchungen typgerecht darstellen kann.
 
+### Customer Contact
+
+- `POST /contact-requests`
+
+`POST /contact-requests` ist Customer-only und speichert eine Customer Contact Request ohne E-Mail-Versand.
+
+Request:
+
+- `type=QUESTION|FEEDBACK|CRITICISM`
+- `message`
+
+Neue Contact Requests starten mit globalem `isRead=false`.
+Visitors erhalten `401`, Admins erhalten `403`.
+
 ### Admin
 
 - `GET /admin/units`
@@ -76,6 +91,10 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 - `PUT /admin/units/:unitId`
 - `PATCH /admin/units/:unitId/deactivate`
 - `GET /admin/bookings`
+- `GET /admin/analytics/booking-demand`
+- `GET /admin/contact-requests`
+- `GET /admin/contact-requests/unread-count`
+- `PATCH /admin/contact-requests/:contactRequestId/read`
 
 `GET /admin/units` liefert BookableUnits für die Admin-Inventaransicht und darf aktive, deaktivierte oder alle Units enthalten.
 
@@ -98,12 +117,34 @@ Unterstützte Query-Parameter:
 - `from=YYYY-MM-DD`
 - `to=YYYY-MM-DD`
 - `limit=1..500`
+- `search=<customer name or email>`
 
 `status=all` umfasst Vergangenheit und Zukunft im gewählten Zeitraum, damit anstehende Bookings nicht aus der Gesamtsicht fallen.
+`search` durchsucht ausschließlich Customer-Name und Customer-E-Mail, nicht Unit-Namen oder sonstige Booking-Felder.
+
+`GET /admin/analytics/booking-demand` liefert den Nachfrageverlauf für das Admin Analytics Dashboard.
+Die Metrik zählt aktive Bookings gruppiert nach Booking-Startdatum.
+Zusätzlich liefert der Endpoint aktive Bookings im gewählten Zeitraum gruppiert nach `UnitType`.
+Die Stornoquote vergleicht aktive und stornierte Bookings im selben Zeitraum.
+Ohne explizite `from/to`-Werte nutzt der Endpoint 30 Tage zurück und 30 Tage voraus.
+
+`GET /admin/contact-requests` liefert Customer Contact Requests inklusive minimaler Customer-Anzeigedaten (`user.name`, `user.email`) für die Admin Contact Inbox.
+
+Unterstützte Query-Parameter:
+
+- `type=QUESTION|FEEDBACK|CRITICISM`
+- `readState=all|read|unread`
+- `sort=received_desc|received_asc`
+
+`GET /admin/contact-requests/unread-count` liefert die globale Anzahl ungelesener Contact Requests für dezente Admin-Hinweise.
+
+`PATCH /admin/contact-requests/:contactRequestId/read` markiert eine Contact Request global als gelesen.
+Der Lesestatus ist nicht pro Admin getrennt.
 
 ## Rollenbezug
 
 - `customer` nutzt Auth, Units und eigene Bookings
+- `customer` darf Customer Contact Requests absenden
 - `admin` nutzt zusätzlich Admin-Endpunkte und darf ebenfalls Bookings anlegen
 
 ## Booking-Modi
@@ -163,6 +204,15 @@ BookingOptions nutzen dieselbe fachliche Unterscheidung:
 - `unitTypeId` muss existieren
 - `areaId` optional, muss bei Angabe existieren
 - `HOT_DESK` braucht immer eine `areaId`
+
+### Customer Contact
+
+- nur eingeloggte Customers duerfen Contact Requests absenden
+- erlaubte Typen sind `QUESTION`, `FEEDBACK`, `CRITICISM`
+- `message` darf nicht leer sein
+- kein E-Mail-Versand
+- Lesestatus startet global ungelesen
+- Admins duerfen Contact Requests lesen, filtern und global als gelesen markieren
 
 ## Fehlerbilder
 

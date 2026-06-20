@@ -89,6 +89,8 @@ Sie zeigt Name, E-Mail, Rolle und "Nutzer seit" aus der Frontend Session.
 
 Ein Einstieg zu `/me/bookings` ist erlaubt, bevorzugt als Anzeige der nächsten anstehenden Buchung statt als generischer Menü-Link. Das bleibt Navigation zur Booking-Liste und kein Account-Inhalt.
 
+Ein Einstieg zu Customer Contact ist für Customers erlaubt, weil Contact fachlich zum Customer Self-Service gehört. Er bleibt account-nah und wird nicht als globale Hauptnavigation platziert.
+
 Logout bleibt in V1 im Header-Profilmenü und wird nicht zusätzlich auf `/me/account` platziert.
 
 Keine sichtbaren Platzhalter für spätere Account-Einstellungen. Profilbearbeitung, Passwortänderung und Booking-Präferenzen werden erst sichtbar, wenn sie als eigene Feature-Slices umgesetzt werden.
@@ -144,11 +146,34 @@ Admin-Navigation ist rollenbasiert von Customer-Navigation getrennt:
 - Customer sehen Customer-Einstiege wie `Buchen` und `Meine Buchungen`
 - Admins sehen im globalen Header nur den Einstieg `Admin`
 
-Admin-Seiten nutzen eine konsistente Admin-Subnavigation für die Arbeitsbereiche `Dashboard`, `Buchungsbetrieb` und `Unit-Inventar`.
+Admin-Seiten nutzen eine konsistente Admin-Subnavigation für die Arbeitsbereiche `Dashboard`, `Buchungsbetrieb`, `Unit-Inventar` und `Contact Inbox`.
+
+Die Admin-Subnavigation darf einen dezenten globalen Unread-Badge am `Contact Inbox`-Link zeigen. Der Count kommt aus dem Backend und ist nicht pro Admin getrennt.
+
+Die Admin Contact Inbox liegt als zusammengesetzter Arbeitsbereich in `widgets/admin-contact-inbox`; Contact-Request-API-Funktionen und Typen liegen in `entities/contact-request`.
 
 Admins dürfen technisch operative Bookings anlegen, nutzen dafür aber bewusst den normalen Customer-Flow über `/booking-options`.
 
 Es gibt in V1 keinen separaten Admin-Einstieg für "Buchungsflow prüfen"; der Header und das Admin-Dashboard halten Admin-Arbeitsbereiche und Customer-Booking-Flow getrennt.
+
+## Admin Analytics Charts
+
+V2-Analytics auf `/admin` nutzt Recharts direkt als Chart-Engine.
+
+Chart-Code wird nach Verantwortung platziert:
+
+- fachlich neutrale Chart-Rahmen, Tooltip-Styles oder Empty States dürfen nach `shared/ui/charts`
+- Admin-Analytics-Komposition gehört in ein Widget wie `widgets/admin-analytics-dashboard`
+- Analytics-API-Funktionen und Types gehören in eine fachliche Entity-Slice, bevorzugt `entities/analytics`
+
+Nicht nach `shared` gehören:
+
+- Admin-spezifische Analytics-Fetches
+- Booking-Demand-Berechnung
+- UnitType- oder Storno-Fachlogik
+- Dashboard-Komposition
+
+Keine Dashboard-Komplettbibliothek als UI-Basis für den ersten Analytics-Ausbau. Recharts liefert nur die Visualisierungs-Engine; RoomFull behält Layout, Farben und UI-Zustände selbst.
 
 ## Shared-Regel
 

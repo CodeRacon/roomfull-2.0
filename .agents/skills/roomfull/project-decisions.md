@@ -153,6 +153,22 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - auth-required UI-Flows nutzen eine Protected Route Boundary statt eigener Page-Tokenchecks
 - Authorization Header für fachliche API-Aufrufe werden über authenticated API-Funktionen in `shared/api` ergänzt
 
+## Admin Analytics Charting
+
+- V2-Analytics auf `/admin` nutzt Recharts direkt als Chart-Engine
+- Recharts wird als Engine verwendet, nicht als eigenes Designsystem
+- Styling, Layout, Empty States und Dashboard-Komposition bleiben RoomFull-eigene UI
+- Keine Dashboard-Komplettbibliothek als Basis für den ersten Analytics-Ausbau
+- Nicht gewählt für den ersten Slice:
+  - Chart.js, weil Canvas weniger gut zur bestehenden React-/Tailwind-Komposition passt
+  - Nivo, weil der Umfang für die ersten RoomFull-Charts zu groß ist
+  - Tremor als UI-Library, weil RoomFull sein eigenes UI-System behält
+  - eigenes D3, weil die ersten Charts keine Low-Level-Visualisierung brauchen
+- Die erste Chart-Ausbaustufe bleibt auf Nachfrageentwicklung fokussiert:
+  - Nachfrageverlauf
+  - Nachfrage nach UnitType
+  - Stornoquote
+
 ## Backend-Architektur
 
 - klassisch modular mit `routes`, `controllers`, `services`, `db`, `middleware`

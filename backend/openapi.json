@@ -15,7 +15,9 @@
 		{ "name": "Public Units" },
 		{ "name": "Admin Units" },
 		{ "name": "Customer Bookings" },
-		{ "name": "Admin Bookings" }
+		{ "name": "Admin Bookings" },
+		{ "name": "Customer Contact" },
+		{ "name": "Admin Contact" }
 	],
 	"paths": {
 		"/auth/register": {
@@ -92,6 +94,39 @@
 					},
 					"401": { "$ref": "#/components/responses/Unauthorized" },
 					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
+		"/contact-requests": {
+			"post": {
+				"tags": ["Customer Contact"],
+				"summary": "Customer Contact Request absenden",
+				"description": "Speichert eine Customer-only Kontaktanfrage ohne E-Mail-Versand. Neue Anfragen starten global ungelesen.",
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateContactRequestRequest"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Contact Request gespeichert",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ContactRequestResponse"
+								}
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" }
 				}
 			}
 		},
@@ -629,6 +664,15 @@
 							"maximum": 500,
 							"default": 100
 						}
+					},
+					{
+						"name": "search",
+						"in": "query",
+						"description": "Sucht ausschließlich nach Customer-Name oder Customer-E-Mail.",
+						"schema": {
+							"type": "string",
+							"example": "max@example.com"
+						}
 					}
 				],
 				"responses": {
@@ -640,6 +684,153 @@
 							}
 						}
 					},
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" }
+				}
+			}
+		},
+		"/admin/contact-requests": {
+			"get": {
+				"tags": ["Admin Contact"],
+				"summary": "Customer Contact Requests laden",
+				"description": "Liefert eingegangene Customer Contact Requests für die Admin Contact Inbox.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "type",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["QUESTION", "FEEDBACK", "CRITICISM"]
+						}
+					},
+					{
+						"name": "readState",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["all", "read", "unread"],
+							"default": "all"
+						}
+					},
+					{
+						"name": "sort",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["received_desc", "received_asc"],
+							"default": "received_desc"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Kontaktanfragen",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdminContactRequestListResponse"
+								}
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" }
+				}
+			}
+		},
+		"/admin/contact-requests/unread-count": {
+			"get": {
+				"tags": ["Admin Contact"],
+				"summary": "Ungelesene Customer Contact Requests zaehlen",
+				"description": "Liefert die globale Anzahl ungelesener Customer Contact Requests fuer dezente Admin-Hinweise.",
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Anzahl ungelesener Kontaktanfragen",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdminContactRequestUnreadCountResponse"
+								}
+							}
+						}
+					},
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" }
+				}
+			}
+		},
+		"/admin/contact-requests/{contactRequestId}/read": {
+			"patch": {
+				"tags": ["Admin Contact"],
+				"summary": "Customer Contact Request als gelesen markieren",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "contactRequestId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Kontaktanfrage aktualisiert",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AdminContactRequestResponse"
+								}
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
+		"/admin/analytics/booking-demand": {
+			"get": {
+				"tags": ["Admin Analytics"],
+				"summary": "Nachfrageverlauf für Admin Analytics laden",
+				"description": "Liefert aktive Bookings gruppiert nach Booking-Startdatum. Ohne Zeitraum nutzt der Endpoint 30 Tage zurück und 30 Tage voraus.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "from",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"example": "2027-01-01"
+						}
+					},
+					{
+						"name": "to",
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"format": "date",
+							"example": "2027-01-31"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Nachfrageverlauf",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookingDemandAnalyticsResponse"
+								}
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
 					"401": { "$ref": "#/components/responses/Unauthorized" },
 					"403": { "$ref": "#/components/responses/Forbidden" }
 				}
@@ -702,6 +893,97 @@
 					"user": { "$ref": "#/components/schemas/PublicUser" }
 				},
 				"required": ["token", "user"]
+			},
+			"CreateContactRequestRequest": {
+				"type": "object",
+				"properties": {
+					"type": {
+						"type": "string",
+						"enum": ["QUESTION", "FEEDBACK", "CRITICISM"],
+						"example": "QUESTION"
+					},
+					"message": {
+						"type": "string",
+						"minLength": 1,
+						"example": "Ich habe eine Frage zu meiner Buchung."
+					}
+				},
+				"required": ["type", "message"]
+			},
+			"ContactRequest": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"userId": { "type": "string" },
+					"type": {
+						"type": "string",
+						"enum": ["QUESTION", "FEEDBACK", "CRITICISM"]
+					},
+					"message": { "type": "string" },
+					"isRead": { "type": "boolean", "example": false },
+					"createdAt": { "type": "string", "format": "date-time" }
+				},
+				"required": ["id", "userId", "type", "message", "isRead", "createdAt"]
+			},
+			"ContactRequestResponse": {
+				"type": "object",
+				"properties": {
+					"contactRequest": {
+						"$ref": "#/components/schemas/ContactRequest"
+					}
+				},
+				"required": ["contactRequest"]
+			},
+			"AdminContactRequestUser": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string" },
+					"email": { "type": "string", "format": "email" }
+				},
+				"required": ["id", "name", "email"]
+			},
+			"AdminContactRequest": {
+				"allOf": [
+					{ "$ref": "#/components/schemas/ContactRequest" },
+					{
+						"type": "object",
+						"properties": {
+							"user": {
+								"$ref": "#/components/schemas/AdminContactRequestUser"
+							}
+						},
+						"required": ["user"]
+					}
+				]
+			},
+			"AdminContactRequestResponse": {
+				"type": "object",
+				"properties": {
+					"contactRequest": {
+						"$ref": "#/components/schemas/AdminContactRequest"
+					}
+				},
+				"required": ["contactRequest"]
+			},
+			"AdminContactRequestListResponse": {
+				"type": "object",
+				"properties": {
+					"contactRequests": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/AdminContactRequest"
+						}
+					}
+				},
+				"required": ["contactRequests"]
+			},
+			"AdminContactRequestUnreadCountResponse": {
+				"type": "object",
+				"properties": {
+					"unreadCount": { "type": "integer", "minimum": 0 }
+				},
+				"required": ["unreadCount"]
 			},
 			"Unit": {
 				"type": "object",
@@ -1205,6 +1487,91 @@
 					}
 				},
 				"required": ["bookings"]
+			},
+			"BookingDemandTrendPoint": {
+				"type": "object",
+				"properties": {
+					"date": { "type": "string", "format": "date" },
+					"bookingCount": { "type": "integer", "minimum": 0 }
+				},
+				"required": ["date", "bookingCount"]
+			},
+			"BookingDemandUnitTypePoint": {
+				"type": "object",
+				"properties": {
+					"unitType": {
+						"type": "string",
+						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+					},
+					"bookingCount": { "type": "integer", "minimum": 0 }
+				},
+				"required": ["unitType", "bookingCount"]
+			},
+			"BookingCancellationStats": {
+				"type": "object",
+				"properties": {
+					"activeBookings": { "type": "integer", "minimum": 0 },
+					"cancelledBookings": { "type": "integer", "minimum": 0 },
+					"totalBookings": { "type": "integer", "minimum": 0 },
+					"cancellationRate": { "type": "number", "minimum": 0, "maximum": 1 }
+				},
+				"required": [
+					"activeBookings",
+					"cancelledBookings",
+					"totalBookings",
+					"cancellationRate"
+				]
+			},
+			"BookingDemandAnalytics": {
+				"type": "object",
+				"properties": {
+					"cancellationStats": {
+						"$ref": "#/components/schemas/BookingCancellationStats"
+					},
+					"dateRange": {
+						"type": "object",
+						"properties": {
+							"from": { "type": "string", "format": "date" },
+							"to": { "type": "string", "format": "date" }
+						},
+						"required": ["from", "to"]
+					},
+					"granularity": {
+						"type": "string",
+						"enum": ["day"]
+					},
+					"metric": {
+						"type": "string",
+						"enum": ["activeBookingsByStartDate"]
+					},
+					"demandByUnitType": {
+						"type": "array",
+						"items": {
+							"$ref": "#/components/schemas/BookingDemandUnitTypePoint"
+						}
+					},
+					"trend": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/BookingDemandTrendPoint" }
+					}
+				},
+				"required": [
+					"cancellationStats",
+					"dateRange",
+					"demandByUnitType",
+					"granularity",
+					"metric",
+					"trend"
+				]
+			},
+			"BookingDemandAnalyticsResponse": {
+				"type": "object",
+				"properties": {
+					"bookingDemand": {
+						"$ref": "#/components/schemas/BookingDemandAnalytics"
+					}
+				},
+				"required": ["bookingDemand"]
 			},
 			"BookedInterval": {
 				"type": "object",

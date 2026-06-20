@@ -258,6 +258,38 @@ _Avoid_: Anfrage, Slot
 In V1 dürfen Customers eigene Bookings erstellen und eigene zukünftige Bookings stornieren.
 _Avoid_: Storno fremder Bookings
 
+**Customer Contact**:
+Ein geschuetzter Customer-Kanal fuer Fragen, Feedback und Kritik zu RoomFull.
+_Avoid_: oeffentliches Visitor-Kontaktformular, Admin-interner Supportkanal
+
+**Customer Contact Request**:
+Eine vom Customer abgesendete und im Backend gespeicherte Kontaktanfrage ohne E-Mail-Versand.
+_Avoid_: reine Frontend-Nachricht, externe E-Mail-Integration im ersten Slice
+
+**Contact Request Type**:
+Die fachliche Kategorie einer Customer Contact Request: Frage, Feedback oder Kritik.
+_Avoid_: freie unstrukturierte Kategorien, technische Ticket-Prioritaet im Customer-Formular
+
+**Customer Contact Entry**:
+Der Einstieg zu Customer Contact liegt im Profilmenue, in Account Settings und optional kontextuell in "Meine Buchungen".
+_Avoid_: Top-Level-Hauptnavigation neben "Meine Buchungen", public Footer-Link
+
+**Admin Contact Inbox**:
+Eine Admin-Sicht auf eingegangene Customer Contact Requests, sortier- und filterbar nach Contact Request Type und Eingang.
+_Avoid_: E-Mail-Postfach als primaerer Admin-Workflow, Kontaktanfragen nur auf dem Dashboard verstecken
+
+**Admin Contact Inbox Scope**:
+Die erste Admin Contact Inbox erlaubt Lesen, Filtern und als gelesen markieren, aber keine Antwortfunktion.
+_Avoid_: Support-Chat, E-Mail-Versand, Customer-Benachrichtigungen im ersten Slice
+
+**Contact Request Read State**:
+Der Lesestatus einer Customer Contact Request ist systemweit `ungelesen` oder `gelesen`, nicht pro Admin getrennt.
+_Avoid_: per-Admin-Lesestatus im ersten Support-Slice
+
+**Admin Unread Contact Indicator**:
+Ein dezenter Admin-Hinweis auf neue ungelesene Customer Contact Requests im Header oder Admin-Einstieg.
+_Avoid_: laute globale Alerts fuer Customers, ungelesene Nachrichten ohne Admin-Kontext
+
 **Admin Booking Permission**:
 In V1 darf Admin ebenfalls Bookings erstellen und Bookings lesen (Übersicht), auch als operative HelpDesk-Rolle.
 _Avoid_: Admin nur als Lesesicht
@@ -330,9 +362,33 @@ _Avoid_: eine globale Sortierung fuer alle operativen Situationen
 Kleine operative Kennzahlen der Admin Booking Operations View fuer Heute, Anstehend und Storniert.
 _Avoid_: Charts oder Analytics-Auswertung in V1
 
+**Admin Analytics Dashboard**:
+Ein V2-Dashboard auf `/admin`, das Buchungs- und Inventardaten als auswertbare Kennzahlen und Charts darstellt.
+_Avoid_: reine Arbeitsbereich-Navigation, V1-Operationsliste, dekorative Graphen ohne Admin-Entscheidungswert
+
+**Admin Analytics Primary Question**:
+Die zentrale V2-Frage des Admin Analytics Dashboard ist, wie sich Nachfrage ueber Zeit entwickelt.
+_Avoid_: Revenue-Auswertung ohne Pricing, reine Inventarverwaltung, Chart-Auswahl ohne Leitfrage
+
+**Admin Booking Demand**:
+Die V2-Nachfrage-Metrik fuer Analytics ist die Anzahl aktiver Bookings gruppiert nach Booking-Startdatum.
+_Avoid_: Availability-Checks, Seitenaufrufe, gebuchte Stunden als erste Nachfrage-Definition
+
+**Admin Analytics Default Window**:
+Das V2-Default-Fenster fuer Analytics umfasst 30 Tage zurueck und 30 Tage voraus, jeweils nach Booking-Startdatum.
+_Avoid_: rein historische Auswertung als Default, Erstellzeitpunkt der Booking als Nachfragezeitpunkt
+
+**Admin Analytics Chart Set**:
+Die erste V2-Ausbaustufe zeigt Nachfrageverlauf, Nachfrage nach UnitType und Stornoquote im gewaehlten Zeitraum.
+_Avoid_: Inventarstatus als Hauptchart, Revenue-Charts ohne Pricing, dekorative Charts ohne Nachfragebezug
+
 **Admin Booking Query**:
 Der Backend-Contract fuer die Admin Booking Operations View mit Query-Filtern fuer Status, Zeitraum und Limit.
 _Avoid_: alle historischen Bookings ungefiltert laden und nur clientseitig sortieren
+
+**Admin Booking Search**:
+Eine operative Suche in der Admin Booking Operations View nach Customer-Name oder Customer-E-Mail.
+_Avoid_: Volltextsuche ueber Unit-Namen, Datumswerte oder alle Booking-Felder
 
 **Admin Booking Date Range**:
 Die `from`- und `to`-Querywerte der Admin Booking Query als inklusive Kalendertage im Format `YYYY-MM-DD`.
@@ -429,6 +485,13 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **API Language Rule** hält die Endpunkt- und Feldnamen konsistent zur Domäne.
 - **Legacy Route Policy** erzwingt einen klaren, einmaligen API-Schnitt.
 - **Customer Booking Permission** erlaubt Self-Service-Booking inkl. eigenem Storno.
+- **Customer Contact** gehoert zum Customer Self-Service und setzt Login mit Customer-Rolle voraus.
+- **Customer Contact Request** wird im Backend gespeichert und ueber die **Admin Contact Inbox** sichtbar.
+- **Contact Request Type** strukturiert Customer-Anliegen, ohne bereits ein vollstaendiges Ticket-System einzufuehren.
+- **Customer Contact Entry** haelt Support account-nah und vermeidet zusaetzliche globale Navigation.
+- **Admin Contact Inbox Scope** haelt den ersten Support-Slice bei Intake und Admin-Lesesicht.
+- **Contact Request Read State** ist global, damit der erste Support-Slice ohne Admin-Collaboration-Modell bleibt.
+- **Admin Unread Contact Indicator** macht neue Customer Contact Requests fuer Admins sichtbar, ohne E-Mail-Versand vorauszusetzen.
 - **Admin Booking Permission** erlaubt operative Booking-Erstellung plus Lesesicht.
 - **Admin Booking Creation Entry** haelt operative/testweise Admin-Buchungen im normalen Customer-Flow.
 - **Admin Booking Operations View** strukturiert Admin-Lesesicht zuerst nach Tagesbetrieb und anstehenden Bookings.
@@ -436,7 +499,13 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Admin Booking Filter** nutzt "Anstehend" als Default; "Heute" ist der operative Tagesfilter.
 - **Admin Booking Sort Order** passt sich dem gewaehlten Filter an.
 - **Admin Booking Summary** zeigt in V1 nur operative Zahlen, keine Graphs.
+- **Admin Analytics Dashboard** ersetzt in V2 die reine `/admin`-Navigation durch entscheidungsorientierte Auswertungen.
+- **Admin Analytics Primary Question** priorisiert Nachfrageentwicklung vor reiner Navigation oder Inventarpflege.
+- **Admin Booking Demand** beantwortet die Nachfragefrage zuerst ueber aktive Bookings nach Startdatum.
+- **Admin Analytics Default Window** verbindet historische Nutzung mit erwarteter Nachfrage.
+- **Admin Analytics Chart Set** operationalisiert Nachfrageentwicklung ueber Verlauf, UnitType-Mix und Stornoquote.
 - **Admin Booking Query** stuetzt Admin-Filter serverseitig, damit simulierte Daily-Traffic-Daten die UI nicht unkontrolliert aufblasen.
+- **Admin Booking Search** ergaenzt die **Admin Booking Query** um Customer-Identitaet, waehrend **Admin Booking Date Range** Zeitraumfragen abbildet.
 - **Admin Booking Date Range** filtert tageweise, nicht nach Uhrzeit.
 - **Admin Booking Query Default Window** verhindert unlimitierte Admin-Listen.
 - **Admin Booking View Status** mappt Admin-Filter auf DB-Status und Zeitlogik: upcoming, today, completed, cancelled, all.
@@ -453,6 +522,12 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Buchungen verwalten" bei Admin war unscharf; aufgelöst: In V1 darf Admin auch Buchungen erstellen (operativer HelpDesk-Fall).
 - "Braucht Admin einen eigenen Einstieg zum Buchungsflow-Pruefen?" war offen; aufgelöst: nein, Admin nutzt den normalen Customer-Flow ueber `/booking-options`.
 - "Admin darf stornieren" war unscharf; aufgelöst: kein Fremd-Storno in V1, aber explizit als späterer Ausbau vorgesehen.
+- "Ist das Kontaktformular public oder role-gated?" war offen; aufgelöst: **Customer Contact** ist nur fuer eingeloggte Customers, nicht fuer Visitors oder Admins.
+- "Wo liegt der Kontakt-Einstieg?" war offen; aufgelöst: Profilmenue, Account Settings und optional kontextuell in "Meine Buchungen", nicht als Top-Level-Hauptnavigation.
+- "Soll Customer Contact E-Mails versenden?" war offen; aufgelöst: nein, Kontaktanfragen werden gespeichert und in einer **Admin Contact Inbox** sichtbar.
+- "Ist der Lesestatus pro Admin oder global?" war offen; aufgelöst: globaler **Contact Request Read State** pro Anfrage.
+- "Kann Admin im ersten Contact-Slice antworten?" war offen; aufgelöst: nein, nur lesen, filtern und als gelesen markieren.
+- "Braucht Admin einen Hinweis auf neue Kontaktanfragen?" war offen; aufgelöst: ja, als **Admin Unread Contact Indicator**.
 - "Open World" als buchbare Einheit war unscharf; aufgelöst: **Area** gruppiert **BookableUnits**, gebucht wird die einzelne **BookableUnit**.
 - "Seat" war zu eng für Booth/Team Room; aufgelöst: kanonischer Oberbegriff ist **BookableUnit**.
 - "Booking zeigt auf Space" war Legacy-Semantik; aufgelöst: fachliches Zielmodell nutzt **Booking -> BookableUnit**.
@@ -490,10 +565,16 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Welche Filter braucht Admin Bookings in V1?" war offen; aufgelöst: **Admin Booking Filter** mit Heute, Anstehend, Abgeschlossen, Storniert und Alle; Default ist Anstehend.
 - "Wie sortiert Admin Bookings?" war offen; aufgelöst: **Admin Booking Sort Order** sortiert Anstehend/Heute nach Startzeit aufsteigend, Abgeschlossen nach Endzeit absteigend und Storniert nach Aktualisierung absteigend.
 - "Braucht Admin Bookings Graphs in V1?" war offen; aufgelöst: nein, V1 nutzt **Admin Booking Summary** mit Heute, Anstehend und Storniert; Analytics/Graphs bleiben spaeter.
+- "Sind Dashboard-Graphen V1-Polish oder V2-Feature?" war offen; aufgelöst: echtes **Admin Analytics Dashboard** als V2-Ausbau.
+- "Welche Entscheidung soll das Admin Analytics Dashboard zuerst unterstuetzen?" war offen; aufgelöst: Nachfrageentwicklung verstehen.
+- "Was zaehlt als Nachfrage im Analytics-Dashboard?" war offen; aufgelöst: Anzahl aktiver Bookings nach Booking-Startdatum.
+- "Welchen Default-Zeitraum nutzt das Analytics-Dashboard?" war offen; aufgelöst: 30 Tage zurueck plus 30 Tage voraus nach Booking-Startdatum.
+- "Welche Charts gehoeren in die erste Analytics-Version?" war offen; aufgelöst: Nachfrageverlauf, Nachfrage nach UnitType und Stornoquote.
 - "Filtert Admin Bookings clientseitig oder backendseitig?" war offen; aufgelöst: backendseitig ueber **Admin Booking Query**, weil simulierte Daily-Traffic-Daten geplant sind.
 - "Sind from/to Uhrzeitfilter?" war offen; aufgelöst: nein, **Admin Booking Date Range** nutzt inklusive Kalendertage im Format `YYYY-MM-DD`.
 - "Welches Default-Fenster nutzt Admin Booking Query?" war offen; aufgelöst: **Admin Booking Query Default Window** nutzt 30 Tage und `limit=100`.
 - "Was bedeutet status in Admin Booking Query?" war offen; aufgelöst: `status` ist **Admin Booking View Status**, nicht roher DB-Status.
+- "Soll Admin Booking Search auch Datum oder Unit-Namen durchsuchen?" war offen; aufgelöst: nein, bewusst nur Customer-Name und Customer-E-Mail.
 - "Zeigen Home und Buchen auf dieselbe Route?" war offen; aufgelöst: nein, `/` wird **Home Page** als Service-Einstieg, `/booking-options` wird **Booking Options Page** als fokussierter Buchungskatalog.
 - "Soll Booking Options alle Varianten direkt zeigen?" war offen; aufgelöst: nein, `/booking-options` bleibt schlanke Kategorie-Übersicht, Details bleiben unter `/booking-options/[slug]`.
 - "Welche CTAs zeigt die Home Page?" war offen; aufgelöst: anonym `Jetzt buchen`, `Registrieren`, `Einloggen`; angemeldet `Jetzt buchen`, `Meine Buchungen`.
