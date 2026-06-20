@@ -77,21 +77,30 @@ export function Header(): ReactElement {
 	const focusClass =
 		"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 	const menuTriggerClass =
-		"border-primary! bg-background! text-primary! hover:bg-primary! hover:text-primary-soft!";
-	const menuTriggerOpenClass = "bg-primary! text-primary-soft!";
+		"border-primary! bg-background! text-primary! hover:bg-primary! hover:text-on-primary!";
+	const menuTriggerOpenClass = "bg-primary! text-on-primary!";
 
 	return (
 		<header
 			ref={headerRef}
-			className="sticky top-0 z-30 flex w-full items-center justify-center border-border border-b bg-background px-4 py-2.5 md:px-6"
+			className="app-header sticky top-0 z-30 flex h-[var(--app-header-height)] w-full shrink-0 items-center justify-center px-4 md:px-6"
 		>
-			<nav className="flex w-full max-w-7xl items-center justify-between gap-8">
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute inset-0 z-0 grid grid-cols-4"
+			>
+				<span className="border-background border-r bg-unit-hot-desk/15" />
+				<span className="border-background border-r bg-unit-booth/15" />
+				<span className="border-background border-r bg-unit-team-room/15" />
+				<span className="bg-unit-meeting-room/15" />
+			</div>
+			<nav className="relative z-10 flex h-full w-full max-w-7xl items-center justify-between gap-8">
 				<Link
 					href="/"
 					aria-label="Zur Startseite"
 					className={clsx(
 						focusClass,
-						"inline-flex shrink-0 items-center gap-3 text-text transition-colors hover:text-secondary",
+						"inline-flex shrink-0 items-center gap-3 text-text transition-colors hover:text-accent",
 					)}
 				>
 					<Image
@@ -109,7 +118,7 @@ export function Header(): ReactElement {
 							href="/booking-options"
 							className={clsx(
 								focusClass,
-								"type-header-link text-text transition-colors hover:text-secondary",
+								"type-header-link text-text transition-colors hover:text-accent",
 							)}
 						>
 							Buchen
@@ -125,7 +134,7 @@ export function Header(): ReactElement {
 									onClick={closeMenus}
 									className={clsx(
 										focusClass,
-										"transition-colors hover:text-secondary",
+										"transition-colors hover:text-accent",
 									)}
 								>
 									Meine Buchungen
@@ -137,7 +146,7 @@ export function Header(): ReactElement {
 									onClick={closeMenus}
 									className={clsx(
 										focusClass,
-										"transition-colors hover:text-secondary",
+										"transition-colors hover:text-accent",
 									)}
 								>
 									Admin
@@ -176,6 +185,11 @@ export function Header(): ReactElement {
 										<MenuLinkItem href="/me/account" onClick={closeMenus}>
 											Mein Account
 										</MenuLinkItem>
+										{isCustomer && (
+											<MenuLinkItem href="/me/contact" onClick={closeMenus}>
+												Kontakt
+											</MenuLinkItem>
+										)}
 										<MenuButtonItem onClick={handleLogout}>
 											Abmelden
 										</MenuButtonItem>
@@ -190,7 +204,7 @@ export function Header(): ReactElement {
 								href="/login"
 								className={clsx(
 									focusClass,
-									"transition-colors hover:text-secondary",
+									"transition-colors hover:text-accent",
 								)}
 							>
 								Einloggen
@@ -199,7 +213,7 @@ export function Header(): ReactElement {
 								href="/register"
 								className={clsx(
 									focusClass,
-									"transition-colors hover:text-secondary",
+									"transition-colors hover:text-accent",
 								)}
 							>
 								Registrieren
@@ -257,6 +271,11 @@ export function Header(): ReactElement {
 							<MenuLinkItem href="/me/account" onClick={closeMenus}>
 								Mein Account
 							</MenuLinkItem>
+							{isCustomer && (
+								<MenuLinkItem href="/me/contact" onClick={closeMenus}>
+									Kontakt
+								</MenuLinkItem>
+							)}
 							<MenuButtonItem onClick={handleLogout}>Abmelden</MenuButtonItem>
 						</>
 					)}
@@ -272,6 +291,15 @@ export function Header(): ReactElement {
 					)}
 				</Menu>
 			)}
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute inset-x-0 bottom-0 grid h-1 grid-cols-4"
+			>
+				<span className="bg-unit-hot-desk" />
+				<span className="bg-unit-booth" />
+				<span className="bg-unit-team-room" />
+				<span className="bg-unit-meeting-room" />
+			</div>
 		</header>
 	);
 }

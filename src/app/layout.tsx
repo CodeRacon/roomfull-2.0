@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import "./styles/globals.css";
+import { Footer } from "@/widgets/footer";
 import { Header } from "@/widgets/header";
 import { AppProviders } from "./providers";
 
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 				<AppProviders>
 					<Header />
 					{children}
+					<Footer />
 				</AppProviders>
 			</body>
 		</html>
