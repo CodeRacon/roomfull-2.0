@@ -1,0 +1,20 @@
+meta {
+  name: Admin Booking Demand
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/admin/analytics/booking-demand
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

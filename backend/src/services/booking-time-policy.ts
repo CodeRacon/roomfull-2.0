@@ -58,7 +58,7 @@ function getBerlinDateTimeParts(date: Date): LocalDateTimeParts {
 	};
 }
 
-function getBerlinDateString(date: Date): string {
+export function getBerlinDateString(date: Date): string {
 	const { year, month, day } = getBerlinDateTimeParts(date);
 	return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
