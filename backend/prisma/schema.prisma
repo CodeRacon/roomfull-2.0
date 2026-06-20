@@ -21,6 +21,14 @@ enum BookingStatus {
   @@map("booking_status")
 }
 
+enum ContactRequestType {
+  QUESTION
+  FEEDBACK
+  CRITICISM
+
+  @@map("contact_request_type")
+}
+
 enum UnitTypeName {
   HOT_DESK
   BOOTH
@@ -35,6 +43,7 @@ model User {
   passwordHash String    @map("password_hash")
   role         UserRole  @default(CUSTOMER)
   bookings     Booking[]
+  contactRequests ContactRequest[]
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
@@ -105,4 +114,22 @@ model Booking {
 
   @@index([unitId, status, startTime, endTime], map: "bookings_unit_status_time_idx")
   @@map("bookings")
+}
+
+model ContactRequest {
+  id String @id @default(cuid())
+
+  user User @relation(fields: [userId], references: [id])
+
+  userId  String             @map("user_id")
+  type    ContactRequestType
+  message String
+  isRead  Boolean            @default(false) @map("is_read")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isRead, createdAt], map: "contact_requests_read_created_idx")
+  @@index([type, createdAt], map: "contact_requests_type_created_idx")
+  @@map("contact_requests")
 }

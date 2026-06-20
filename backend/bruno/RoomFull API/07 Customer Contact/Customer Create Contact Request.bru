@@ -1,0 +1,43 @@
+meta {
+  name: Customer Create Contact Request
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/contact-requests
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "type": "QUESTION",
+    "message": "Ich habe eine Frage zu meiner Buchung."
+  }
+}
+
+script:post-response {
+  let json = res.getBody();
+  if (typeof json === "string") {
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      json = null;
+    }
+  }
+
+  if (json && json.contactRequest && json.contactRequest.id) {
+    bru.setVar("contactRequestId", json.contactRequest.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

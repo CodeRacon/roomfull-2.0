@@ -1,0 +1,20 @@
+meta {
+  name: Admin Mark Contact Request Read
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/admin/contact-requests/{{contactRequestId}}/read
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

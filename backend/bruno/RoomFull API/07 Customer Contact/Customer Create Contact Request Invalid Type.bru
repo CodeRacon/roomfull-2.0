@@ -1,0 +1,28 @@
+meta {
+  name: Customer Create Contact Request Invalid Type
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/contact-requests
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "type": "OTHER",
+    "message": "Dieser Typ ist nicht erlaubt."
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

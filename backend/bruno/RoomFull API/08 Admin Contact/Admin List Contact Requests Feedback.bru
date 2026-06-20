@@ -1,0 +1,20 @@
+meta {
+  name: Admin List Contact Requests Feedback
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/admin/contact-requests?type=FEEDBACK&readState=all&sort=received_asc
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{adminToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
