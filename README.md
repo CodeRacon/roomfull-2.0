@@ -148,8 +148,13 @@ Der Next.js-Dev-Server läuft danach standardmäßig unter:
 
 - `http://localhost:3000`
 
-Next.js nutzt in diesem Projekt im Dev-Mode Turbopack. Wenn Navigation oder
-Kompilierung im lokalen Dev-Server auffällig langsam wird, zuerst prüfen:
+Next.js nutzt in diesem Projekt im Dev-Mode Turbopack. Der persistente
+Turbopack-Dateisystemcache für den Dev-Server ist in `next.config.ts` bewusst
+deaktiviert, da er lokal reproduzierbar zu stark wachsender CPU- und
+Speicherauslastung führte. Turbopacks In-Memory-Cache bleibt dabei aktiv.
+
+Wenn Navigation oder Kompilierung im lokalen Dev-Server auffällig langsam
+wird, zuerst prüfen:
 
 ```bash
 node -v
