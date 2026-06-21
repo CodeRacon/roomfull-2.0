@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { type ComponentPropsWithoutRef, useState } from "react";
 import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
-import { getSafeNextPath } from "@/shared/lib";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes, getSafeLocalizedNextPath } from "@/shared/routing";
 import {
 	Anchor,
 	Button,
@@ -16,6 +17,8 @@ import {
 import { signIn } from "../api";
 
 type SignInFormProps = {
+	copy: Dictionary["auth"]["signIn"];
+	locale: Locale;
 	nextPath: string;
 };
 
@@ -23,7 +26,7 @@ type FormSubmitHandler = NonNullable<
 	ComponentPropsWithoutRef<"form">["onSubmit"]
 >;
 
-export function SignInForm({ nextPath }: SignInFormProps) {
+export function SignInForm({ copy, locale, nextPath }: SignInFormProps) {
 	const router = useRouter();
 
 	const { startSession } = useSession();
@@ -41,34 +44,35 @@ export function SignInForm({ nextPath }: SignInFormProps) {
 		try {
 			const authResponse = await signIn({ email, password });
 			startSession(authResponse);
-			const safeNextPath = getSafeNextPath(nextPath);
+			const homePath = appRoutes.home(locale);
+			const safeNextPath = getSafeLocalizedNextPath(nextPath, locale, homePath);
 			router.replace(
-				authResponse.user.role === "ADMIN" && safeNextPath === "/"
-					? "/admin"
+				authResponse.user.role === "ADMIN" && safeNextPath === homePath
+					? appRoutes.admin(locale)
 					: safeNextPath,
 			);
 		} catch (error) {
 			if (error instanceof ApiRequestError) {
 				setErrorMessage(error.message);
 			} else {
-				setErrorMessage("Login ist fehlgeschlagen. Bitte versuche es erneut.");
+				setErrorMessage(copy.errorFallback);
 			}
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
-	const registerHref = `/register?next=${encodeURIComponent(nextPath)}`;
+	const registerHref = appRoutes.register(locale, nextPath);
 
 	return (
 		<div className="mx-auto w-full max-w-md overflow-hidden border-2 border-primary bg-background">
 			<form onSubmit={handleSubmit}>
 				<div className="border-b-2 border-primary! bg-primary px-5 py-5 text-on-primary">
 					<h1 className="text-4xl font-black leading-none tracking-normal text-pretty">
-						Einloggen
+						{copy.title}
 					</h1>
 					<p className="mt-3 text-sm font-semibold leading-6 text-on-primary/85">
-						Melde dich an, um mit deiner Buchung fortzufahren.
+						{copy.intro}
 					</p>
 				</div>
 
@@ -79,7 +83,7 @@ export function SignInForm({ nextPath }: SignInFormProps) {
 				)}
 
 				<div className="px-5 py-4">
-					<Field label="E-Mail" htmlFor="email" className="py-2">
+					<Field label={copy.emailLabel} htmlFor="email" className="py-2">
 						<TextInput
 							id="email"
 							name="email"
@@ -93,7 +97,7 @@ export function SignInForm({ nextPath }: SignInFormProps) {
 						/>
 					</Field>
 
-					<Field label="Passwort" htmlFor="password" className="py-2">
+					<Field label={copy.passwordLabel} htmlFor="password" className="py-2">
 						<PasswordInput
 							id="password"
 							name="password"
@@ -108,14 +112,14 @@ export function SignInForm({ nextPath }: SignInFormProps) {
 
 				<div className="flex flex-col gap-3 border-t-2 border-primary! px-5 py-5">
 					<Button type="submit" disabled={isSubmitting}>
-						{isSubmitting ? "Einloggen…" : "Einloggen"}
+						{isSubmitting ? copy.submitPending : copy.submit}
 					</Button>
 					<Anchor
 						variant="secondary"
 						href={registerHref}
 						className="justify-center border-2 border-primary! bg-background! text-primary"
 					>
-						Noch kein Konto? Registrieren
+						{copy.registerLink}
 					</Anchor>
 				</div>
 			</form>

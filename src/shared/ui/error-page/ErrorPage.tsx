@@ -4,6 +4,7 @@ import type { ReactElement } from "react";
 type ErrorPageProps = {
 	statusCode: number;
 	title: string;
+	description?: string;
 	actionLabel?: string;
 	actionHref?: string;
 };
@@ -18,6 +19,7 @@ const stripeClassNames = [
 export function ErrorPage({
 	statusCode,
 	title,
+	description,
 	actionLabel = "Zur Startseite",
 	actionHref = "/",
 }: ErrorPageProps): ReactElement {
@@ -31,6 +33,11 @@ export function ErrorPage({
 					<h1 className="text-3xl font-semibold leading-tight tracking-[0] text-primary md:text-4xl">
 						{title}
 					</h1>
+					{description ? (
+						<p className="mt-4 max-w-xl text-base leading-relaxed text-muted md:text-lg">
+							{description}
+						</p>
+					) : null}
 					<Link
 						href={actionHref}
 						className="mt-8 inline-flex min-h-12 items-center justify-center border-2 border-primary bg-transparent px-7 py-3 text-base font-black text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"

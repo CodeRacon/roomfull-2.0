@@ -2,20 +2,22 @@ import { clsx } from "clsx";
 import Link from "next/link";
 import {
 	type BookingOption,
-	getBookingOptionDescription,
 	getBookingOptionHref,
 } from "@/entities/booking-option";
-import { formatUnitTypeName } from "@/entities/unit";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { localizedPath } from "@/shared/routing";
 import { FeedbackBox } from "@/shared/ui";
 
 type BookingOptionsListProps = {
 	bookingOptions: BookingOption[];
+	copy: Dictionary["bookingOptionsPage"];
+	locale: Locale;
 };
 
-type BookingOptionPanelCopy = {
+type BookingOptionsCopy = Dictionary["bookingOptionsPage"];
+
+type BookingOptionPanelStyle = {
 	colorClassName: string;
-	label: string;
-	variants: string[];
 };
 
 const bookingOptionOrder: BookingOption["key"][] = [
@@ -25,65 +27,65 @@ const bookingOptionOrder: BookingOption["key"][] = [
 	"MEETING_ROOM",
 ];
 
-const bookingOptionPanelCopy: Record<
+const bookingOptionPanelStyles: Record<
 	BookingOption["key"],
-	BookingOptionPanelCopy
+	BookingOptionPanelStyle
 > = {
 	HOT_DESK: {
 		colorClassName: "bg-unit-hot-desk",
-		label: "Areas",
-		variants: ["Open World", "Quiet Place"],
 	},
 	BOOTH: {
 		colorClassName: "bg-unit-booth",
-		label: "Fokus",
-		variants: ["Phone Booth", "Focus Booth", "Deep Work Booth"],
 	},
 	TEAM_ROOM: {
 		colorClassName: "bg-unit-team-room",
-		label: "Team",
-		variants: ["Sprint Room", "Workshop Room", "Project Room"],
 	},
 	MEETING_ROOM: {
 		colorClassName: "bg-unit-meeting-room",
-		label: "Meet",
-		variants: ["Client Meeting", "Board Room", "Presentation Room"],
 	},
 };
 
-function getCapacityLabel(option: BookingOption): string {
-	if (option.key === "HOT_DESK") {
-		return "Einzelplatz";
-	}
-
-	return `bis ${option.maxCapacity} Personen`;
+function formatCountTemplate(template: string, count: number): string {
+	return template.replace("{count}", String(count));
 }
 
-function getAvailabilityLabel(option: BookingOption): string {
+function getCapacityLabel(
+	option: BookingOption,
+	copy: BookingOptionsCopy["capacity"],
+): string {
 	if (option.key === "HOT_DESK") {
-		return `${option.totalActiveUnits} Plätze`;
+		return copy.singleSeat;
+	}
+
+	return formatCountTemplate(copy.upToPeople, option.maxCapacity);
+}
+
+function getAvailabilityLabel(
+	option: BookingOption,
+	copy: BookingOptionsCopy["availability"],
+): string {
+	if (option.key === "HOT_DESK") {
+		return formatCountTemplate(copy.seats, option.totalActiveUnits);
 	}
 
 	return option.totalActiveUnits === 1
-		? "1 Raum"
-		: `${option.totalActiveUnits} Räume`;
+		? copy.oneRoom
+		: formatCountTemplate(copy.rooms, option.totalActiveUnits);
 }
 
-function getCtaLabel(option: BookingOption): string {
-	if (option.key === "HOT_DESK") {
-		return "Area wählen";
-	}
-
-	return "Varianten ansehen";
+function getDurationLabel(option: BookingOption, template: string): string {
+	return formatCountTemplate(template, option.unitType.minDurationMinutes);
 }
 
 export function BookingOptionsList({
 	bookingOptions,
+	copy,
+	locale,
 }: BookingOptionsListProps) {
 	if (bookingOptions.length === 0) {
 		return (
 			<FeedbackBox variant="empty" className="mt-8">
-				Gerade sind keine Plätze oder Räume verfügbar.
+				{copy.emptyState}
 			</FeedbackBox>
 		);
 	}
@@ -94,19 +96,20 @@ export function BookingOptionsList({
 
 	return (
 		<section
-			aria-label="Buchungsarten vergleichen"
+			aria-label={copy.listAriaLabel}
 			className="mt-8 grid overflow-hidden sm:grid-cols-2 lg:min-h-[34rem] lg:grid-cols-4"
 		>
 			{orderedBookingOptions.map((option) => {
-				const panelCopy = bookingOptionPanelCopy[option.key];
+				const panelCopy = copy.options[option.key];
+				const panelStyle = bookingOptionPanelStyles[option.key];
 
 				return (
 					<Link
 						key={option.key}
-						href={getBookingOptionHref(option.key)}
+						href={localizedPath(locale, getBookingOptionHref(option.key))}
 						className={clsx(
 							"group flex min-h-[24rem] min-w-0 flex-col justify-between p-5 text-primary transition-[filter] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:z-10 hover:brightness-105 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus motion-reduce:transition-none sm:min-h-[28rem] md:p-6 lg:min-h-0",
-							panelCopy.colorClassName,
+							panelStyle.colorClassName,
 						)}
 					>
 						<div>
@@ -115,15 +118,13 @@ export function BookingOptionsList({
 									{panelCopy.label}
 								</span>
 								<span className="bg-primary/10 px-3 py-1.5 text-xs font-black">
-									{getAvailabilityLabel(option)}
+									{getAvailabilityLabel(option, copy.availability)}
 								</span>
 							</div>
 
-							<h2 className="type-panel-title mt-8">
-								{formatUnitTypeName(option.key)}
-							</h2>
+							<h2 className="type-panel-title mt-8">{panelCopy.title}</h2>
 							<p className="mt-5 text-sm font-semibold leading-6 md:text-base">
-								{getBookingOptionDescription(option.key)}
+								{panelCopy.description}
 							</p>
 						</div>
 
@@ -141,15 +142,15 @@ export function BookingOptionsList({
 
 							<div className="mt-8 flex flex-wrap gap-2">
 								<span className="bg-primary/10 px-3 py-2 text-xs font-black">
-									{getCapacityLabel(option)}
+									{getCapacityLabel(option, copy.capacity)}
 								</span>
 								<span className="bg-primary/10 px-3 py-2 text-xs font-black">
-									ab {option.unitType.minDurationMinutes} Min.
+									{getDurationLabel(option, copy.duration.minimumShort)}
 								</span>
 							</div>
 
 							<span className="mt-5 inline-flex min-h-11 items-center bg-primary px-4 py-2 text-sm font-black text-on-primary transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transition-none">
-								{getCtaLabel(option)}
+								{panelCopy.cta}
 							</span>
 						</div>
 					</Link>

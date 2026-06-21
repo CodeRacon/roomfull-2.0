@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { type ComponentPropsWithoutRef, useState } from "react";
 import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
-import { getSafeNextPath } from "@/shared/lib";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes, getSafeLocalizedNextPath } from "@/shared/routing";
 import {
 	Anchor,
 	Button,
@@ -16,6 +17,8 @@ import {
 import { signUp } from "../api";
 
 type SignUpFormProps = {
+	copy: Dictionary["auth"]["signUp"];
+	locale: Locale;
 	nextPath: string;
 };
 
@@ -23,7 +26,7 @@ type FormSubmitHandler = NonNullable<
 	ComponentPropsWithoutRef<"form">["onSubmit"]
 >;
 
-export function SignUpForm({ nextPath }: SignUpFormProps) {
+export function SignUpForm({ copy, locale, nextPath }: SignUpFormProps) {
 	const router = useRouter();
 
 	const { startSession } = useSession();
@@ -42,31 +45,31 @@ export function SignUpForm({ nextPath }: SignUpFormProps) {
 		try {
 			const authResponse = await signUp({ name, email, password });
 			startSession(authResponse);
-			router.replace(getSafeNextPath(nextPath));
+			router.replace(
+				getSafeLocalizedNextPath(nextPath, locale, appRoutes.home(locale)),
+			);
 		} catch (error) {
 			if (error instanceof ApiRequestError) {
 				setErrorMessage(error.message);
 			} else {
-				setErrorMessage(
-					"Registrierung ist fehlgeschlagen. Bitte versuche es erneut.",
-				);
+				setErrorMessage(copy.errorFallback);
 			}
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
-	const loginHref = `/login?next=${encodeURIComponent(nextPath)}`;
+	const loginHref = appRoutes.login(locale, nextPath);
 
 	return (
 		<div className="mx-auto w-full max-w-md overflow-hidden border-2 border-primary bg-background">
 			<form onSubmit={handleSubmit}>
 				<div className="border-b-2 border-primary! bg-primary px-5 py-5 text-on-primary">
 					<h1 className="text-4xl font-black leading-none tracking-normal text-pretty">
-						Registrieren
+						{copy.title}
 					</h1>
 					<p className="mt-3 text-sm font-semibold leading-6 text-on-primary/85">
-						Erstelle ein Konto, um deine Buchung fortzusetzen.
+						{copy.intro}
 					</p>
 				</div>
 
@@ -77,7 +80,7 @@ export function SignUpForm({ nextPath }: SignUpFormProps) {
 				)}
 
 				<div className="px-5 py-4">
-					<Field label="Name" htmlFor="name" className="py-2">
+					<Field label={copy.nameLabel} htmlFor="name" className="py-2">
 						<TextInput
 							id="name"
 							name="name"
@@ -89,7 +92,7 @@ export function SignUpForm({ nextPath }: SignUpFormProps) {
 						/>
 					</Field>
 
-					<Field label="E-Mail" htmlFor="email" className="py-2">
+					<Field label={copy.emailLabel} htmlFor="email" className="py-2">
 						<TextInput
 							id="email"
 							name="email"
@@ -104,9 +107,9 @@ export function SignUpForm({ nextPath }: SignUpFormProps) {
 					</Field>
 
 					<Field
-						label="Passwort"
+						label={copy.passwordLabel}
 						htmlFor="password"
-						helperText="Mindestens 8 Zeichen"
+						helperText={copy.passwordHelp}
 						className="py-2"
 					>
 						<PasswordInput
@@ -124,14 +127,14 @@ export function SignUpForm({ nextPath }: SignUpFormProps) {
 
 				<div className="flex flex-col gap-3 border-t-2 border-primary! px-5 py-5">
 					<Button type="submit" disabled={isSubmitting}>
-						{isSubmitting ? "Registrieren…" : "Registrieren"}
+						{isSubmitting ? copy.submitPending : copy.submit}
 					</Button>
 					<Anchor
 						variant="secondary"
 						href={loginHref}
 						className="justify-center border-2 border-primary! bg-background! text-primary"
 					>
-						Bereits ein Konto? Einloggen
+						{copy.loginLink}
 					</Anchor>
 				</div>
 			</form>

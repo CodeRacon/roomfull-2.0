@@ -15,6 +15,8 @@ import {
 	getBookingOptionHref,
 } from "@/entities/booking-option";
 import { useSession } from "@/entities/session";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes, localizedPath } from "@/shared/routing";
 import {
 	getPageTransitionOrigin,
 	type PageTransitionOrigin,
@@ -23,6 +25,8 @@ import {
 
 type HomePageClientProps = {
 	bookingOptions: BookingOption[];
+	copy: Dictionary["home"];
+	locale: Locale;
 };
 
 const bookingOptionOrder: BookingOption["key"][] = [
@@ -31,28 +35,6 @@ const bookingOptionOrder: BookingOption["key"][] = [
 	"TEAM_ROOM",
 	"MEETING_ROOM",
 ];
-
-const stripeCopy: Record<
-	BookingOption["key"],
-	{ label: string; titleLines: string[] }
-> = {
-	HOT_DESK: {
-		label: "Work",
-		titleLines: ["Hot", "Desk"],
-	},
-	BOOTH: {
-		label: "Focus",
-		titleLines: ["Booth"],
-	},
-	TEAM_ROOM: {
-		label: "Team",
-		titleLines: ["Team", "Room"],
-	},
-	MEETING_ROOM: {
-		label: "Meet",
-		titleLines: ["Meeting", "Room"],
-	},
-};
 
 const stripeTransitionMs = 1000;
 const stripeTransitionFallbackMs = stripeTransitionMs + 80;
@@ -67,6 +49,9 @@ type StripeLinkStyle = CSSProperties & {
 	"--stripe-flex-grow": string;
 };
 
+type HomeCopy = Dictionary["home"];
+type StripeCopy = HomeCopy["stripes"][BookingOption["key"]];
+
 function getStripeClassName(key: BookingOption["key"]): string {
 	switch (key) {
 		case "HOT_DESK":
@@ -80,27 +65,43 @@ function getStripeClassName(key: BookingOption["key"]): string {
 	}
 }
 
-function getCapacityLabel(option: BookingOption): string {
-	if (option.key === "HOT_DESK") {
-		return "Einzelplatz";
-	}
-
-	return `bis zu ${option.maxCapacity} Personen`;
+function formatCountTemplate(template: string, count: number): string {
+	return template.replace("{count}", String(count));
 }
 
-function getAvailableUnitsLabel(option: BookingOption): string {
+function getCapacityLabel(
+	option: BookingOption,
+	copy: HomeCopy["availability"],
+): string {
 	if (option.key === "HOT_DESK") {
-		return `${option.totalActiveUnits} Plätze verfügbar`;
+		return copy.singleSeat;
+	}
+
+	return formatCountTemplate(copy.upToPeople, option.maxCapacity);
+}
+
+function getAvailableUnitsLabel(
+	option: BookingOption,
+	copy: HomeCopy["availability"],
+): string {
+	if (option.key === "HOT_DESK") {
+		return formatCountTemplate(copy.seatsAvailable, option.totalActiveUnits);
 	}
 
 	return option.totalActiveUnits === 1
-		? "1 Raum verfügbar"
-		: `${option.totalActiveUnits} Räume verfügbar`;
+		? copy.oneRoomAvailable
+		: formatCountTemplate(copy.roomsAvailable, option.totalActiveUnits);
 }
 
-function getStripeTitle(
-	copy: (typeof stripeCopy)[BookingOption["key"]],
-): string {
+function getDurationLabel(option: BookingOption, template: string): string {
+	return formatCountTemplate(template, option.unitType.minDurationMinutes);
+}
+
+function getSelectAriaLabel(title: string, template: string): string {
+	return template.replace("{title}", title);
+}
+
+function getStripeTitle(copy: StripeCopy): string {
 	return copy.titleLines.join(" ");
 }
 
@@ -156,7 +157,11 @@ function getStripeLinkStyle(
 	};
 }
 
-export function HomePageClient({ bookingOptions }: HomePageClientProps) {
+export function HomePageClient({
+	bookingOptions,
+	copy,
+	locale,
+}: HomePageClientProps) {
 	const { status } = useSession();
 	const { startPageTransition } = usePageTransition();
 	const isAuthenticated = status === "authenticated";
@@ -279,7 +284,9 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 	const orderedBookingOptions = bookingOptionOrder
 		.map((key) => bookingOptions.find((option) => option.key === key))
 		.filter((option): option is BookingOption => Boolean(option));
-	const bookingOptionsHref = "/booking-options";
+	const bookingOptionsHref = appRoutes.bookingOptions(locale);
+	const myBookingsHref = appRoutes.myBookings(locale);
+	const loginHref = appRoutes.login(locale);
 
 	return (
 		<main className="min-h-[calc(100svh-var(--app-shell-chrome-height))] bg-background text-text">
@@ -288,14 +295,15 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 					<div className="flex flex-col justify-center gap-10 min-[1328px]:gap-8">
 						<div>
 							<h1 className="type-display-hero mt-0 max-w-5xl min-[1328px]:text-[clamp(6.5rem,13svh,8.5rem)]">
-								<span className="block min-[530px]:inline">Coworking</span>{" "}
-								<span className="block min-[530px]:inline">Spaces</span>{" "}
-								<span className="block min-[530px]:inline">buchen</span>
+								{copy.hero.titleLines.map((titleLine, index) => (
+									<span key={titleLine} className="block min-[530px]:inline">
+										{titleLine}
+										{index < copy.hero.titleLines.length - 1 ? " " : ""}
+									</span>
+								))}
 							</h1>
 							<p className="type-body-lead mt-8 mb-0 max-w-2xl text-muted">
-								Finde schnell den passenden Platz für Fokus, Gespräche oder
-								Teamarbeit. Wähle eine Buchungsart, prüfe die Verfügbarkeit und
-								sichere dir deinen Zeitraum.
+								{copy.hero.intro}
 							</p>
 						</div>
 
@@ -313,22 +321,22 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 								}}
 								className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-primary px-5 py-3 text-sm font-black text-on-primary transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 							>
-								Jetzt buchen
+								{copy.ctas.bookingOptions}
 							</Link>
 							{isAuthenticated && (
 								<Link
-									href="/me/bookings"
+									href={myBookingsHref}
 									className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-background px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 								>
-									Meine Buchungen
+									{copy.ctas.myBookings}
 								</Link>
 							)}
 							{isAnonymous && (
 								<Link
-									href="/login"
+									href={loginHref}
 									className="inline-flex min-h-12 items-center justify-center border-2 border-primary bg-background px-5 py-3 text-sm font-black text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 								>
-									Einloggen
+									{copy.ctas.login}
 								</Link>
 							)}
 						</div>
@@ -336,7 +344,7 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 
 					<nav
 						ref={stripeNavRef}
-						aria-label="Buchungsarten"
+						aria-label={copy.bookingOptionsAriaLabel}
 						className="grid overflow-hidden sm:flex sm:h-[30rem] sm:w-full sm:justify-self-start min-[1328px]:h-[34rem] min-[1328px]:max-h-[calc(100svh-var(--app-home-content-offset))] min-[1328px]:min-h-[28rem]"
 						onBlur={(event) => {
 							if (
@@ -352,15 +360,22 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 						onTransitionEnd={handleStripeTransitionEnd}
 					>
 						{orderedBookingOptions.map((option) => {
-							const copy = stripeCopy[option.key];
+							const stripeCopy = copy.stripes[option.key];
 							const isActive = activeBookingOptionKey === option.key;
-							const href = getBookingOptionHref(option.key);
+							const href = localizedPath(
+								locale,
+								getBookingOptionHref(option.key),
+							);
+							const stripeTitle = getStripeTitle(stripeCopy);
 
 							return (
 								<Link
 									key={option.key}
 									href={href}
-									aria-label={`${getStripeTitle(copy)} auswählen`}
+									aria-label={getSelectAriaLabel(
+										stripeTitle,
+										copy.actions.selectAriaLabel,
+									)}
 									style={getStripeLinkStyle(
 										option.key,
 										activeBookingOptionKey,
@@ -375,7 +390,7 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 										startPageTransition({
 											colorClassName: getStripeClassName(option.key),
 											href,
-											label: getStripeTitle(copy),
+											label: stripeTitle,
 											origin: stripeTransitionOriginRef.current,
 										});
 									}}
@@ -392,10 +407,10 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 									)}
 								>
 									<span className="flex items-center justify-center text-lg font-black leading-none text-white/70 [writing-mode:vertical-rl] rotate-180 min-[530px]:text-2xl sm:hidden">
-										{copy.label}
+										{stripeCopy.label}
 									</span>
 									<span className="text-lg font-black leading-none text-pretty min-[530px]:text-2xl sm:hidden">
-										{copy.titleLines.map((titleLine) => (
+										{stripeCopy.titleLines.map((titleLine) => (
 											<span key={titleLine} className="block">
 												{titleLine}
 											</span>
@@ -410,7 +425,7 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 												"sm:opacity-75",
 										)}
 									>
-										{copy.label}
+										{stripeCopy.label}
 									</span>
 									<span
 										className={clsx(
@@ -418,7 +433,7 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 											isActive ? "sm:opacity-100" : "sm:opacity-0",
 										)}
 									>
-										{copy.titleLines.map((titleLine) => (
+										{stripeCopy.titleLines.map((titleLine) => (
 											<span key={titleLine} className="block">
 												{titleLine}
 											</span>
@@ -432,24 +447,24 @@ export function HomePageClient({ bookingOptions }: HomePageClientProps) {
 									>
 										<span className="min-w-0 space-y-0.5 text-right min-[425px]:text-left min-[530px]:space-y-1">
 											<span className="block min-[530px]:text-base">
-												{getAvailableUnitsLabel(option)}
+												{getAvailableUnitsLabel(option, copy.availability)}
 											</span>
 											<span className="block min-[530px]:text-base">
-												ab {option.unitType.minDurationMinutes} Minuten
+												{getDurationLabel(option, copy.duration.minimum)}
 											</span>
 											<span className="block min-[530px]:text-base">
-												{getCapacityLabel(option)}
+												{getCapacityLabel(option, copy.availability)}
 											</span>
 										</span>
 										<span className="inline-flex w-fit shrink-0 self-end items-center rounded-full border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-black min-[425px]:self-auto min-[530px]:hidden sm:hidden">
-											Auswählen
+											{copy.actions.select}
 										</span>
 										<span className="mt-5 hidden w-fit items-center rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-black sm:inline-flex">
-											Jetzt auswählen
+											{copy.actions.selectNow}
 										</span>
 									</span>
 									<span className="hidden w-fit items-center justify-self-end rounded-full border border-primary/40 bg-primary/10 px-4 py-2 text-sm font-black min-[530px]:inline-flex sm:hidden">
-										Auswählen
+										{copy.actions.select}
 									</span>
 								</Link>
 							);

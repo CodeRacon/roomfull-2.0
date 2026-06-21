@@ -1,2 +1,6 @@
-export type { CalendarAccentClasses, CalendarDay } from "./Calendar";
+export type {
+	CalendarAccentClasses,
+	CalendarCopy,
+	CalendarDay,
+} from "./Calendar";
 export { Calendar } from "./Calendar";

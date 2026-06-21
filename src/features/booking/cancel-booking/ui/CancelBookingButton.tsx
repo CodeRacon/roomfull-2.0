@@ -10,38 +10,53 @@ import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
 
 type CancelBookingButtonProps = {
+	ariaLabel: string;
 	bookingId: string;
 	children?: ReactNode;
 	className?: string;
 	disabled?: boolean;
+	errorCopy: CancelBookingErrorCopy;
 	iconClassName?: string;
 	onCancelled: (booking: Booking) => void;
 	onError: (message: string) => void;
 	onSubmittingChange?: (isSubmitting: boolean) => void;
 };
 
-function getCancelBookingErrorMessage(error: ApiRequestError): string {
+type CancelBookingErrorCopy = {
+	conflict: string;
+	fallback: string;
+	forbidden: string;
+	notFound: string;
+	unauthorized: string;
+};
+
+function getCancelBookingErrorMessage(
+	error: ApiRequestError,
+	copy: CancelBookingErrorCopy,
+): string {
 	if (error.status === 401) {
-		return "Bitte melde dich erneut an.";
+		return copy.unauthorized;
 	}
 	if (error.status === 403) {
-		return "Du darfst diese Buchung nicht stornieren.";
+		return copy.forbidden;
 	}
 	if (error.status === 404) {
-		return "Diese Buchung wurde nicht gefunden.";
+		return copy.notFound;
 	}
 	if (error.status === 409) {
-		return "Diese Buchung kann nicht mehr storniert werden.";
+		return copy.conflict;
 	}
 
-	return error.message;
+	return copy.fallback;
 }
 
 export function CancelBookingButton({
+	ariaLabel,
 	bookingId,
 	children,
 	className,
 	disabled = false,
+	errorCopy,
 	iconClassName,
 	onCancelled,
 	onError,
@@ -70,11 +85,11 @@ export function CancelBookingButton({
 					endSession();
 				}
 
-				onError(getCancelBookingErrorMessage(error));
+				onError(getCancelBookingErrorMessage(error, errorCopy));
 				return;
 			}
 
-			onError("Buchung konnte nicht storniert werden.");
+			onError(errorCopy.fallback);
 		} finally {
 			updateSubmitting(false);
 		}
@@ -85,7 +100,7 @@ export function CancelBookingButton({
 			type="button"
 			onClick={handleClick}
 			disabled={disabled || isSubmitting}
-			aria-label="Buchung stornieren"
+			aria-label={ariaLabel}
 			className={clsx(className ?? "bg-danger-bg rounded-full p-2 shadow-xs")}
 		>
 			<CancelBooking className={iconClassName ?? "size-4 text-danger-text"} />

@@ -19,6 +19,8 @@ import { useSession } from "@/entities/session";
 import type { UnitTypeName } from "@/entities/unit";
 import { formatUnitTypeName } from "@/entities/unit";
 import { ApiRequestError } from "@/shared/api";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes } from "@/shared/routing";
 import { Button, FeedbackBox } from "@/shared/ui";
 import { BookingTimePicker } from "./BookingTimePicker";
 import {
@@ -29,6 +31,8 @@ import {
 
 type CreateBookingFormProps = {
 	bookingContext: BookingContext;
+	copy: Dictionary["createBooking"];
+	locale: Locale;
 };
 
 type FormSubmitHandler = NonNullable<
@@ -44,7 +48,6 @@ type BookingAccentTheme = {
 	accentClassName: string;
 	actionClassName: string;
 	calendarAccent: CustomCalendarAccentClasses;
-	sideLabel: string;
 };
 
 const OPENING_MINUTES = 8 * 60;
@@ -62,7 +65,6 @@ const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
 				"md:hover:border-primary md:hover:bg-unit-hot-desk/25",
 			todayBorderClassName: "border-unit-hot-desk!",
 		},
-		sideLabel: "Areas",
 	},
 	BOOTH: {
 		accentClassName: "bg-unit-booth",
@@ -75,7 +77,6 @@ const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
 				"md:hover:border-primary md:hover:bg-unit-booth/25",
 			todayBorderClassName: "border-unit-booth!",
 		},
-		sideLabel: "Fokus",
 	},
 	TEAM_ROOM: {
 		accentClassName: "bg-unit-team-room",
@@ -89,7 +90,6 @@ const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
 				"md:hover:border-primary md:hover:bg-unit-team-room/25",
 			todayBorderClassName: "border-unit-team-room!",
 		},
-		sideLabel: "Team",
 	},
 	MEETING_ROOM: {
 		accentClassName: "bg-unit-meeting-room",
@@ -103,7 +103,6 @@ const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
 				"md:hover:border-primary md:hover:bg-unit-meeting-room/25",
 			todayBorderClassName: "border-unit-meeting-room!",
 		},
-		sideLabel: "Meet",
 	},
 };
 
@@ -119,13 +118,6 @@ const berlinTimeFormatter = new Intl.DateTimeFormat("en-CA", {
 	hour: "2-digit",
 	minute: "2-digit",
 	hourCycle: "h23",
-});
-
-const bookingSummaryDateFormatter = new Intl.DateTimeFormat("de-DE", {
-	timeZone: "UTC",
-	weekday: "long",
-	day: "2-digit",
-	month: "long",
 });
 
 function getBerlinTodayDate(): string {
@@ -247,28 +239,56 @@ function buildBookingDateTime(date: string, time: string): string | null {
 	return dateTime.toISOString();
 }
 
-function formatDuration(minutes: number): string {
+function formatTemplate(
+	template: string,
+	values: Record<string, string | number>,
+): string {
+	return Object.entries(values).reduce(
+		(result, [key, value]) => result.replace(`{${key}}`, String(value)),
+		template,
+	);
+}
+
+function formatDuration(
+	minutes: number,
+	copy: Dictionary["createBooking"]["summary"]["duration"],
+): string {
 	const hours = Math.floor(minutes / 60);
 	const remainingMinutes = minutes % 60;
 
 	if (hours === 0) {
-		return `${remainingMinutes}min`;
+		return formatTemplate(copy.minutes, { count: remainingMinutes });
 	}
 
 	if (remainingMinutes === 0) {
-		return `${hours}h`;
+		return formatTemplate(copy.hours, { count: hours });
 	}
 
-	return `${hours}h ${remainingMinutes}min`;
+	return formatTemplate(copy.hoursAndMinutes, {
+		hours,
+		minutes: remainingMinutes,
+	});
 }
 
-function formatBookingSummaryDate(date: string): string {
-	return `am ${bookingSummaryDateFormatter.format(parseDate(date))}`;
+function formatBookingSummaryDate(
+	date: string,
+	copy: Dictionary["createBooking"]["summary"],
+): string {
+	const bookingSummaryDateFormatter = new Intl.DateTimeFormat(copy.dateLocale, {
+		timeZone: "UTC",
+		weekday: "long",
+		day: "2-digit",
+		month: "long",
+	});
+	const formattedDate = bookingSummaryDateFormatter.format(parseDate(date));
+
+	return formatTemplate(copy.date, { date: formattedDate });
 }
 
 function formatBookingSummaryDuration(
 	startTime: string,
 	endTime: string,
+	copy: Dictionary["createBooking"]["summary"]["duration"],
 ): string {
 	const durationMinutes =
 		parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
@@ -277,10 +297,22 @@ function formatBookingSummaryDuration(
 		return "";
 	}
 
-	return formatDuration(durationMinutes);
+	return formatDuration(durationMinutes, copy);
 }
 
-export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
+function formatCapacityLabel(
+	count: number,
+	oneTemplate: string,
+	manyTemplate: string,
+): string {
+	return formatTemplate(count === 1 ? oneTemplate : manyTemplate, { count });
+}
+
+export function CreateBookingForm({
+	bookingContext,
+	copy,
+	locale,
+}: CreateBookingFormProps) {
 	const router = useRouter();
 	const { endSession } = useSession();
 	const [date, setDate] = useState("");
@@ -348,18 +380,19 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 					return;
 				}
 
-				setCalendarStatesError(
-					error instanceof Error
-						? error.message
-						: "Kalenderbelegung konnte nicht geladen werden.",
-				);
+				setCalendarStatesError(copy.errors.calendarStatesFallback);
 			} finally {
 				setIsLoadingCalendarStates(false);
 			}
 		}
 
 		void loadCalendarStates();
-	}, [directUnitId, endSession, visibleMonth]);
+	}, [
+		directUnitId,
+		endSession,
+		visibleMonth,
+		copy.errors.calendarStatesFallback,
+	]);
 
 	useEffect(() => {
 		if (date === "") {
@@ -394,18 +427,14 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 					return;
 				}
 
-				setBookingAvailabilityError(
-					error instanceof Error
-						? error.message
-						: "Verfügbarkeit konnte nicht geladen werden.",
-				);
+				setBookingAvailabilityError(copy.errors.availabilityFallback);
 			} finally {
 				setIsLoadingBookingAvailability(false);
 			}
 		}
 
 		void loadBookingAvailability();
-	}, [bookingContext, date, endSession]);
+	}, [bookingContext, date, endSession, copy.errors.availabilityFallback]);
 
 	function handleDateSelect(selectedDate: string): void {
 		setDate(selectedDate);
@@ -423,7 +452,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 		bookingContext.mode === "DIRECT"
 			? bookingContext.unit.description
 			: (bookingContext.area.description ??
-				"Hot-Desk-Area mit buchbaren Einzelplätzen.");
+				copy.context.fallbackAreaDescription);
 
 	const unitType =
 		bookingContext.mode === "DIRECT"
@@ -432,22 +461,40 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 	const accentTheme = bookingAccentThemeByUnitType[unitType.name];
 	const capacityLabel =
 		bookingContext.mode === "DIRECT"
-			? `${bookingContext.unit.capacity} Personen`
-			: `${bookingContext.area.seatCount} Einzelplätze`;
-	const durationLabel = `min. ${formatDuration(
-		unitType.minDurationMinutes,
-	)} - max. ${formatDuration(unitType.maxDurationMinutes)}`;
+			? formatCapacityLabel(
+					bookingContext.unit.capacity,
+					copy.context.capacityLabels.onePerson,
+					copy.context.capacityLabels.people,
+				)
+			: formatCapacityLabel(
+					bookingContext.area.seatCount,
+					copy.context.capacityLabels.oneDesk,
+					copy.context.capacityLabels.desks,
+				);
+	const durationLabel = formatTemplate(copy.context.durationRange, {
+		min: formatDuration(unitType.minDurationMinutes, copy.summary.duration),
+		max: formatDuration(unitType.maxDurationMinutes, copy.summary.duration),
+	});
 	const selectionModeLabel =
-		bookingContext.mode === "DIRECT" ? "Direkte Unit" : "Auto-Assign";
+		bookingContext.mode === "DIRECT"
+			? copy.context.directMode
+			: copy.context.autoAssignMode;
 
 	const isBookingSelectionComplete =
 		date !== "" && startTime !== "" && endTime !== "";
 	const bookingSummary = isBookingSelectionComplete
 		? {
-				date: formatBookingSummaryDate(date),
-				duration: formatBookingSummaryDuration(startTime, endTime),
+				date: formatBookingSummaryDate(date, copy.summary),
+				duration: formatBookingSummaryDuration(
+					startTime,
+					endTime,
+					copy.summary.duration,
+				),
 				target: title,
-				time: `${startTime}-${endTime} Uhr`,
+				time: formatTemplate(copy.summary.timeRange, {
+					start: startTime,
+					end: endTime,
+				}),
 			}
 		: null;
 
@@ -459,7 +506,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 		const end = buildBookingDateTime(date, endTime);
 
 		if (!start || !end) {
-			setSubmitError("Bitte wähle Datum, Start und Ende aus.");
+			setSubmitError(copy.errors.incompleteSelection);
 			return;
 		}
 
@@ -480,11 +527,11 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 		try {
 			setIsSubmitting(true);
 			await createBooking(input);
-			router.replace("/me/bookings?created=1");
+			router.replace(`${appRoutes.myBookings(locale)}?created=1`);
 		} catch (error) {
 			if (error instanceof ApiRequestError) {
 				if (error.status === 400) {
-					setSubmitError("Bitte prüfe Datum und Uhrzeit.");
+					setSubmitError(copy.errors.badRequest);
 					return;
 				}
 				if (error.status === 401) {
@@ -492,18 +539,18 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 					return;
 				}
 				if (error.status === 404) {
-					setSubmitError("Dieses Angebot ist nicht mehr buchbar.");
+					setSubmitError(copy.errors.notFound);
 					return;
 				}
 				if (error.status === 409) {
-					setSubmitError("Der Zeitraum ist inzwischen belegt.");
+					setSubmitError(copy.errors.conflict);
 					return;
 				}
 				setSubmitError(error.message);
 				return;
 			}
 
-			setSubmitError("Buchung konnte nicht erstellt werden.");
+			setSubmitError(copy.errors.createFallback);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -520,7 +567,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 			>
 				<div className="flex items-start justify-between gap-5 lg:col-span-2">
 					<span className="rotate-180 text-3xl font-black leading-none text-white/70 [writing-mode:vertical-rl] md:text-4xl">
-						{accentTheme.sideLabel}
+						{copy.context.sideLabels[unitType.name]}
 					</span>
 					<span className="bg-primary/10 px-3 py-1.5 text-xs font-black md:text-sm">
 						{formatUnitTypeName(unitType.name)}
@@ -529,7 +576,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 
 				<div className="mt-12 self-end lg:mt-16">
 					<p className="text-sm font-black uppercase tracking-[0.18em]">
-						Booking Context
+						{copy.context.eyebrow}
 					</p>
 					<h2
 						id="booking-context-title"
@@ -544,15 +591,15 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 
 				<dl className="mt-10 grid self-end text-sm font-black sm:grid-cols-3 lg:mt-0">
 					<div className="bg-primary px-4 py-3 text-on-primary">
-						<dt className="text-on-primary/70">Auswahl</dt>
+						<dt className="text-on-primary/70">{copy.context.selection}</dt>
 						<dd>{selectionModeLabel}</dd>
 					</div>
 					<div className="bg-primary/10 px-4 py-3">
-						<dt className="text-primary/55">Kapazität</dt>
+						<dt className="text-primary/55">{copy.context.capacity}</dt>
 						<dd>{capacityLabel}</dd>
 					</div>
 					<div className="bg-primary/10 px-4 py-3">
-						<dt className="text-primary/55">Dauer</dt>
+						<dt className="text-primary/55">{copy.context.duration}</dt>
 						<dd>{durationLabel}</dd>
 					</div>
 				</dl>
@@ -561,17 +608,17 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 			<section className="mt-10 grid border-y-4 border-primary lg:grid-cols-[18rem_1fr]">
 				<div className="bg-primary p-5 text-on-primary md:p-6">
 					<p className="text-sm font-black uppercase tracking-[0.18em]">
-						Datum
+						{copy.calendar.sectionEyebrow}
 					</p>
-					<h3 className="type-section-title mt-5">Wähle deinen Werktag</h3>
+					<h3 className="type-section-title mt-5">{copy.calendar.title}</h3>
 				</div>
 				<div className="p-0 lg:p-6 lg:pr-0">
 					<p className="my-4 text-sm font-semibold text-muted lg:mb-4 lg:mt-0">
-						Wähle einen verfügbaren Werktag. Wochenenden und vergangene Tage
-						sind nicht buchbar.
+						{copy.calendar.intro}
 					</p>
 					<CustomCalendar
 						accent={accentTheme.calendarAccent}
+						copy={copy.calendar}
 						dayStates={calendarDayStates}
 						isLoadingStates={isLoadingCalendarStates}
 						onDateSelect={handleDateSelect}
@@ -591,7 +638,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 				<>
 					{isLoadingBookingAvailability && (
 						<p className="mt-6 bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
-							Verfügbarkeit wird geladen…
+							{copy.timePicker.loadingAvailability}
 						</p>
 					)}
 					{bookingAvailabilityError && (
@@ -604,6 +651,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 						bookingAvailability && (
 							<BookingTimePicker
 								availability={bookingAvailability}
+								copy={copy.timePicker}
 								endTime={endTime}
 								mode={bookingContext.mode === "DIRECT" ? "DIRECT" : "HOT_DESK"}
 								onEndTimeChange={setEndTime}
@@ -646,7 +694,7 @@ export function CreateBookingForm({ bookingContext }: CreateBookingFormProps) {
 							isBookingSelectionComplete && accentTheme.actionClassName,
 						)}
 					>
-						{isSubmitting ? "Buchung wird erstellt…" : "Buchung erstellen"}
+						{isSubmitting ? copy.submit.pending : copy.submit.label}
 					</Button>
 				</div>
 			</div>

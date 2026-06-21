@@ -1,7 +1,5 @@
-import { ErrorPage } from "@/shared/ui";
+import { LocalizedErrorPage } from "./LocalizedErrorPage";
 
 export default function NotFound() {
-	return (
-		<ErrorPage statusCode={404} title="Oops! Diese Seite existiert nicht." />
-	);
+	return <LocalizedErrorPage kind="notFound" />;
 }

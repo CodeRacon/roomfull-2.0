@@ -1,0 +1,276 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { listMyBookings, type MyBooking } from "@/entities/booking";
+import { useSession } from "@/entities/session";
+import { formatUnitTypeName } from "@/entities/unit";
+import { RequireAuth } from "@/features/auth/require-auth";
+import { ApiRequestError } from "@/shared/api";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes } from "@/shared/routing";
+import { Anchor, Badge, FeedbackBox, Panel } from "@/shared/ui";
+
+function formatRegistrationDate(createdAt: string, locale: string): string {
+	return new Intl.DateTimeFormat(locale, {
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	}).format(new Date(createdAt));
+}
+
+function isSameLocalDay(start: Date, end: Date): boolean {
+	return (
+		start.getFullYear() === end.getFullYear() &&
+		start.getMonth() === end.getMonth() &&
+		start.getDate() === end.getDate()
+	);
+}
+
+function formatBookingWindow(
+	startTime: string,
+	endTime: string,
+	copy: Dictionary["account"]["nextBooking"]["dateTime"],
+): string {
+	const start = new Date(startTime);
+	const end = new Date(endTime);
+	const bookingDayFormatter = new Intl.DateTimeFormat(copy.locale, {
+		weekday: "long",
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
+	const bookingTimeFormatter = new Intl.DateTimeFormat(copy.locale, {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+	const dateTimeFormatter = new Intl.DateTimeFormat(copy.locale, {
+		weekday: "long",
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+
+	if (isSameLocalDay(start, end)) {
+		return copy.sameDay
+			.replace("{date}", bookingDayFormatter.format(start))
+			.replace("{start}", bookingTimeFormatter.format(start))
+			.replace("{end}", bookingTimeFormatter.format(end));
+	}
+
+	return copy.crossDay
+		.replace("{start}", dateTimeFormatter.format(start))
+		.replace("{end}", dateTimeFormatter.format(end));
+}
+
+function getHighlightedBookingHref(locale: Locale, bookingId: string): string {
+	return appRoutes
+		.myBookings(locale)
+		.concat(`?highlightBookingId=${encodeURIComponent(bookingId)}`);
+}
+
+function findNextBooking(bookings: MyBooking[]): MyBooking | null {
+	const now = Date.now();
+
+	const upcomingBookings = bookings.filter(
+		(booking) =>
+			booking.status === "ACTIVE" && new Date(booking.endTime).getTime() >= now,
+	);
+
+	upcomingBookings.sort(
+		(firstBooking, secondBooking) =>
+			new Date(firstBooking.startTime).getTime() -
+			new Date(secondBooking.startTime).getTime(),
+	);
+
+	return upcomingBookings[0] ?? null;
+}
+
+function getBookingAccentClassName(
+	unitTypeName: MyBooking["unit"]["unitType"]["name"],
+) {
+	switch (unitTypeName) {
+		case "HOT_DESK":
+			return "bg-unit-hot-desk";
+		case "BOOTH":
+			return "bg-unit-booth";
+		case "TEAM_ROOM":
+			return "bg-unit-team-room";
+		case "MEETING_ROOM":
+			return "bg-unit-meeting-room";
+	}
+}
+
+type AccountPageClientProps = {
+	copy: Dictionary["account"];
+	locale: Locale;
+};
+
+export function AccountPageClient({ copy, locale }: AccountPageClientProps) {
+	const { status, user, endSession } = useSession();
+	const [bookings, setBookings] = useState<MyBooking[]>([]);
+	const [isLoadingBookings, setIsLoadingBookings] = useState(false);
+	const [bookingErrorMessage, setBookingErrorMessage] = useState<string | null>(
+		null,
+	);
+
+	const nextBooking = useMemo(() => findNextBooking(bookings), [bookings]);
+
+	useEffect(() => {
+		if (status !== "authenticated") {
+			return;
+		}
+
+		async function loadBookings(): Promise<void> {
+			try {
+				setIsLoadingBookings(true);
+				setBookingErrorMessage(null);
+				const myBookings = await listMyBookings();
+				setBookings(myBookings);
+			} catch (error) {
+				if (error instanceof ApiRequestError && error.status === 401) {
+					endSession();
+					return;
+				}
+
+				setBookingErrorMessage(copy.nextBooking.loadError);
+			} finally {
+				setIsLoadingBookings(false);
+			}
+		}
+
+		void loadBookings();
+	}, [status, endSession, copy.nextBooking.loadError]);
+
+	return (
+		<RequireAuth>
+			{user && (
+				<div className="mt-8 grid gap-4 md:grid-cols-[1fr_0.7fr]">
+					<Panel>
+						<div className="flex flex-wrap items-start justify-between gap-4">
+							<div>
+								<p className="text-sm font-medium text-muted">
+									{copy.profile.signedInAs}
+								</p>
+								<h2 className="mt-1 text-2xl font-semibold">{user.name}</h2>
+							</div>
+							<Badge>{copy.profile.signedIn}</Badge>
+						</div>
+
+						<dl className="mt-6 grid gap-4 sm:grid-cols-2">
+							<div>
+								<dt className="text-sm font-medium text-muted">
+									{copy.profile.email}
+								</dt>
+								<dd className="mt-1 text-base font-semibold">{user.email}</dd>
+							</div>
+							<div>
+								<dt className="text-sm font-medium text-muted">
+									{copy.profile.role}
+								</dt>
+								<dd className="mt-1 text-base font-semibold">
+									{copy.profile.roles[user.role]}
+								</dd>
+							</div>
+							<div>
+								<dt className="text-sm font-medium text-muted">
+									{copy.profile.memberSince}
+								</dt>
+								<dd className="mt-1 text-base font-semibold">
+									{formatRegistrationDate(
+										user.createdAt,
+										copy.nextBooking.dateTime.locale,
+									)}
+								</dd>
+							</div>
+						</dl>
+
+						{user.role === "CUSTOMER" && (
+							<div className="mt-6 border-t-2 border-primary/20 pt-5">
+								<p className="text-sm font-medium text-muted">
+									{copy.contact.title}
+								</p>
+								<div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+									<p className="max-w-md text-sm font-semibold leading-6 text-muted">
+										{copy.contact.description}
+									</p>
+									<Anchor href={appRoutes.contact(locale)} variant="secondary">
+										{copy.contact.action}
+									</Anchor>
+								</div>
+							</div>
+						)}
+					</Panel>
+
+					<Panel
+						variant={
+							!isLoadingBookings && !bookingErrorMessage && !nextBooking
+								? "muted"
+								: "default"
+						}
+					>
+						<h2 className="text-lg font-semibold">{copy.nextBooking.title}</h2>
+						{isLoadingBookings && (
+							<p className="mt-3 text-sm leading-6 text-muted">
+								{copy.nextBooking.loading}
+							</p>
+						)}
+						{bookingErrorMessage && (
+							<FeedbackBox variant="error" className="mt-4">
+								{bookingErrorMessage}
+							</FeedbackBox>
+						)}
+						{!isLoadingBookings && !bookingErrorMessage && nextBooking && (
+							<Link
+								href={getHighlightedBookingHref(locale, nextBooking.id)}
+								className="group mt-5 block overflow-hidden border-2 border-primary bg-background text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+							>
+								<span
+									className={`block h-3 ${getBookingAccentClassName(
+										nextBooking.unit.unitType.name,
+									)}`}
+									aria-hidden="true"
+								/>
+								<span className="block p-5">
+									<span className="block text-lg font-black leading-snug">
+										{formatBookingWindow(
+											nextBooking.startTime,
+											nextBooking.endTime,
+											copy.nextBooking.dateTime,
+										)}
+									</span>
+									<span className="mt-4 block text-2xl font-black leading-none text-pretty">
+										{nextBooking.unit.name}
+									</span>
+									<span
+										className={`mt-5 inline-flex border-2 border-primary px-4 py-2 text-base font-black text-primary transition-colors group-hover:border-on-primary group-hover:text-on-primary ${getBookingAccentClassName(
+											nextBooking.unit.unitType.name,
+										)}`}
+									>
+										{formatUnitTypeName(nextBooking.unit.unitType.name)}
+									</span>
+								</span>
+							</Link>
+						)}
+						{!isLoadingBookings && !bookingErrorMessage && !nextBooking && (
+							<div className="mt-4">
+								<p className="text-sm leading-6 text-muted">
+									{copy.nextBooking.empty}
+								</p>
+								<button
+									type="button"
+									disabled
+									className="mt-4 inline-flex min-h-10 cursor-not-allowed items-center justify-center rounded-md bg-muted px-4 py-2 text-sm font-semibold text-surface-muted"
+								>
+									{copy.nextBooking.emptyAction}
+								</button>
+							</div>
+						)}
+					</Panel>
+				</div>
+			)}
+		</RequireAuth>
+	);
+}

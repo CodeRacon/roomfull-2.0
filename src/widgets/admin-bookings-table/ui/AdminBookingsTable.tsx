@@ -1,10 +1,12 @@
 import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
 import type { AdminBooking } from "@/entities/booking";
 import { formatUnitTypeName } from "@/entities/unit";
+import type { Dictionary } from "@/shared/i18n";
 import { Badge, FeedbackBox } from "@/shared/ui";
 
 type AdminBookingsTableProps = {
 	bookings: AdminBooking[];
+	copy: Dictionary["adminWorkspaces"]["bookings"]["table"];
 	filterLabel: string;
 };
 
@@ -26,20 +28,6 @@ const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
 	day: "2-digit",
 });
 
-const dayLabelFormatter = new Intl.DateTimeFormat("de-DE", {
-	timeZone: "Europe/Berlin",
-	weekday: "long",
-	day: "2-digit",
-	month: "2-digit",
-	year: "numeric",
-});
-
-const timeFormatter = new Intl.DateTimeFormat("de-DE", {
-	timeZone: "Europe/Berlin",
-	hour: "2-digit",
-	minute: "2-digit",
-});
-
 function formatBerlinDateKey(value: string): string {
 	const parts = dateKeyFormatter.formatToParts(new Date(value));
 	const values = new Map(parts.map((part) => [part.type, part.value]));
@@ -47,7 +35,10 @@ function formatBerlinDateKey(value: string): string {
 	return `${values.get("year")}-${values.get("month")}-${values.get("day")}`;
 }
 
-function groupBookingsByDay(bookings: AdminBooking[]): BookingDayGroup[] {
+function groupBookingsByDay(
+	bookings: AdminBooking[],
+	dayLabelFormatter: Intl.DateTimeFormat,
+): BookingDayGroup[] {
 	const groups = new Map<string, BookingDayGroup>();
 
 	for (const booking of bookings) {
@@ -69,9 +60,12 @@ function groupBookingsByDay(bookings: AdminBooking[]): BookingDayGroup[] {
 	return Array.from(groups.values());
 }
 
-function getDisplayStatus(booking: AdminBooking): DisplayStatus {
+function getDisplayStatus(
+	booking: AdminBooking,
+	copy: Dictionary["adminWorkspaces"]["bookings"]["table"]["statuses"],
+): DisplayStatus {
 	if (booking.status === "CANCELLED") {
-		return { label: "Storniert", variant: "danger" };
+		return { label: copy.cancelled, variant: "danger" };
 	}
 
 	const now = new Date();
@@ -79,31 +73,43 @@ function getDisplayStatus(booking: AdminBooking): DisplayStatus {
 	const todayDateKey = formatBerlinDateKey(now.toISOString());
 
 	if (new Date(booking.endTime) < now) {
-		return { label: "Abgeschlossen", variant: "muted" };
+		return { label: copy.completed, variant: "muted" };
 	}
 
 	if (startDateKey === todayDateKey) {
-		return { label: "Heute", variant: "warning" };
+		return { label: copy.today, variant: "warning" };
 	}
 
-	return { label: "Anstehend", variant: "success" };
+	return { label: copy.upcoming, variant: "success" };
 }
 
-function formatTimeRange(booking: AdminBooking): string {
-	return `${timeFormatter.format(new Date(booking.startTime))}-${timeFormatter.format(
-		new Date(booking.endTime),
-	)} Uhr`;
+function formatTimeRange(
+	booking: AdminBooking,
+	timeFormatter: Intl.DateTimeFormat,
+	template: string,
+): string {
+	return template
+		.replace("{start}", timeFormatter.format(new Date(booking.startTime)))
+		.replace("{end}", timeFormatter.format(new Date(booking.endTime)));
 }
 
-function formatBookingCount(count: number): string {
-	return count === 1 ? "1 Buchung" : `${count} Buchungen`;
+function formatBookingCount(
+	count: number,
+	copy: Dictionary["adminWorkspaces"]["bookings"]["table"],
+): string {
+	return count === 1
+		? copy.bookingOne
+		: copy.bookingsMany.replace("{count}", String(count));
 }
 
-function getStatusSummary(bookings: AdminBooking[]): string {
+function getStatusSummary(
+	bookings: AdminBooking[],
+	copy: Dictionary["adminWorkspaces"]["bookings"]["table"],
+): string {
 	const statusCounts = new Map<string, number>();
 
 	for (const booking of bookings) {
-		const displayStatus = getDisplayStatus(booking);
+		const displayStatus = getDisplayStatus(booking, copy.statuses);
 		statusCounts.set(
 			displayStatus.label,
 			(statusCounts.get(displayStatus.label) ?? 0) + 1,
@@ -111,7 +117,10 @@ function getStatusSummary(bookings: AdminBooking[]): string {
 	}
 
 	return Array.from(statusCounts.entries())
-		.map(([label, count]) => `${count} ${label.toLowerCase()}`)
+		.map(
+			([label, count]) =>
+				`${count} ${label.toLocaleLowerCase(copy.dateLocale)}`,
+		)
 		.join(" · ");
 }
 
@@ -123,14 +132,27 @@ function isGroupOpenByDefault(group: BookingDayGroup): boolean {
 
 export function AdminBookingsTable({
 	bookings,
+	copy,
 	filterLabel,
 }: AdminBookingsTableProps) {
-	const bookingGroups = groupBookingsByDay(bookings);
+	const dayLabelFormatter = new Intl.DateTimeFormat(copy.dateLocale, {
+		timeZone: "Europe/Berlin",
+		weekday: "long",
+		day: "2-digit",
+		month: "2-digit",
+		year: "numeric",
+	});
+	const timeFormatter = new Intl.DateTimeFormat(copy.dateLocale, {
+		timeZone: "Europe/Berlin",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+	const bookingGroups = groupBookingsByDay(bookings, dayLabelFormatter);
 
 	if (bookings.length === 0) {
 		return (
 			<FeedbackBox variant="empty" className="mt-8 w-fit!">
-				Keine Buchungen für "{filterLabel}".
+				{copy.empty.replace("{filter}", filterLabel)}
 			</FeedbackBox>
 		);
 	}
@@ -145,7 +167,7 @@ export function AdminBookingsTable({
 						</h2>
 					</div>
 					<div className="mx-1 mb-0 flex min-h-14 items-center bg-on-primary px-4 py-3 text-sm font-black text-primary md:mx-0 md:mr-1">
-						{formatBookingCount(bookings.length)}
+						{formatBookingCount(bookings.length, copy)}
 					</div>
 				</div>
 			</div>
@@ -163,12 +185,12 @@ export function AdminBookingsTable({
 										{group.dayLabel}
 									</p>
 									<p className="mt-1 truncate text-xs font-semibold text-muted">
-										{getStatusSummary(group.bookings)}
+										{getStatusSummary(group.bookings, copy)}
 									</p>
 								</div>
 								<div className="flex min-h-14 items-center gap-3 bg-primary px-4 py-3 text-on-primary md:min-h-16">
 									<span className="bg-on-primary px-3 py-2 text-xs font-black text-primary">
-										{formatBookingCount(group.bookings.length)}
+										{formatBookingCount(group.bookings.length, copy)}
 									</span>
 									<ChevronRightIcon
 										className="size-5 shrink-0 transition-transform duration-200 ease-out group-open:rotate-90 motion-reduce:transition-none"
@@ -179,7 +201,7 @@ export function AdminBookingsTable({
 						</summary>
 						<div className="grid gap-3 p-3">
 							{group.bookings.map((booking) => {
-								const displayStatus = getDisplayStatus(booking);
+								const displayStatus = getDisplayStatus(booking, copy.statuses);
 
 								return (
 									<div
@@ -188,7 +210,11 @@ export function AdminBookingsTable({
 									>
 										<div className="flex items-center gap-3 md:block">
 											<p className="font-black tabular-nums text-primary">
-												{formatTimeRange(booking)}
+												{formatTimeRange(
+													booking,
+													timeFormatter,
+													copy.timeRange,
+												)}
 											</p>
 											<Badge
 												variant={displayStatus.variant}
@@ -214,7 +240,7 @@ export function AdminBookingsTable({
 											</p>
 											{booking.status === "CANCELLED" && (
 												<p className="mt-2 text-xs font-black text-danger-text">
-													Storno vermerkt
+													{copy.cancelledNote}
 												</p>
 											)}
 										</div>

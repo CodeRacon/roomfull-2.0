@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useSession } from "@/entities/session";
 import {
 	type AdminUnitContextArea,
 	type AdminUnitContextUnitType,
@@ -11,12 +12,14 @@ import {
 	updateAdminUnit,
 } from "@/entities/unit";
 import { ApiRequestError } from "@/shared/api";
+import type { Dictionary } from "@/shared/i18n";
 import { Button, FeedbackBox, Field, Panel, TextInput } from "@/shared/ui";
 
 type AdminUnitFormMode = "create" | "edit";
 
 type AdminUnitFormPanelProps = {
 	areas: AdminUnitContextArea[];
+	copy: Dictionary["adminWorkspaces"]["units"]["form"];
 	mode: AdminUnitFormMode;
 	onCancel: () => void;
 	onSaved: (unit: Unit) => void;
@@ -73,6 +76,7 @@ function getUnitTypeNameById(
 }
 
 function validateForm(input: {
+	copy: Dictionary["adminWorkspaces"]["units"]["form"]["validation"];
 	formState: AdminUnitFormState;
 	unitTypes: AdminUnitContextUnitType[];
 }): AdminUnitFormErrors {
@@ -85,27 +89,27 @@ function validateForm(input: {
 	);
 
 	if (input.formState.name.trim().length === 0) {
-		errors.name = "Name darf nicht leer sein.";
+		errors.name = input.copy.name;
 	}
 
 	if (input.formState.description.trim().length === 0) {
-		errors.description = "Beschreibung darf nicht leer sein.";
+		errors.description = input.copy.description;
 	}
 
 	if (!Number.isInteger(capacity) || capacity <= 0) {
-		errors.capacity = "Kapazität muss größer als 0 sein.";
+		errors.capacity = input.copy.capacity;
 	}
 
 	if (input.formState.unitTypeId.length === 0) {
-		errors.unitTypeId = "UnitType ist erforderlich.";
+		errors.unitTypeId = input.copy.unitType;
 	}
 
 	if (unitTypeName === "HOT_DESK" && input.formState.areaId.length === 0) {
-		errors.areaId = "Hot Desk braucht eine Area.";
+		errors.areaId = input.copy.area;
 	}
 
 	if (!Number.isInteger(displayOrder) || displayOrder < 0) {
-		errors.displayOrder = "DisplayOrder muss mindestens 0 sein.";
+		errors.displayOrder = input.copy.displayOrder;
 	}
 
 	return errors;
@@ -117,12 +121,14 @@ function hasErrors(errors: AdminUnitFormErrors): boolean {
 
 export function AdminUnitFormPanel({
 	areas,
+	copy,
 	mode,
 	onCancel,
 	onSaved,
 	unit,
 	unitTypes,
 }: AdminUnitFormPanelProps) {
+	const { endSession } = useSession();
 	const [formState, setFormState] = useState<AdminUnitFormState>(() =>
 		getInitialFormState({ unit, unitTypes }),
 	);
@@ -172,11 +178,31 @@ export function AdminUnitFormPanel({
 			onSaved(savedUnit);
 		} catch (error) {
 			if (error instanceof ApiRequestError) {
-				setSubmitError(error.message);
+				if (error.status === 401) {
+					endSession();
+					return;
+				}
+
+				if (error.status === 400) {
+					setSubmitError(copy.errors.badRequest);
+					return;
+				}
+
+				if (error.status === 404) {
+					setSubmitError(copy.errors.notFound);
+					return;
+				}
+
+				if (error.status === 409) {
+					setSubmitError(copy.errors.conflict);
+					return;
+				}
+
+				setSubmitError(copy.errors.fallback);
 				return;
 			}
 
-			setSubmitError("Die Unit konnte nicht gespeichert werden.");
+			setSubmitError(copy.errors.fallback);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -185,7 +211,11 @@ export function AdminUnitFormPanel({
 	function handleSubmit(event: FormEvent<HTMLFormElement>) {
 		event.preventDefault();
 
-		const nextErrors = validateForm({ formState, unitTypes });
+		const nextErrors = validateForm({
+			copy: copy.validation,
+			formState,
+			unitTypes,
+		});
 		setErrors(nextErrors);
 
 		if (hasErrors(nextErrors)) {
@@ -200,7 +230,7 @@ export function AdminUnitFormPanel({
 		}
 
 		if (!unit) {
-			setSubmitError("Keine Unit zum Bearbeiten ausgewählt.");
+			setSubmitError(copy.errors.noSelection);
 			return;
 		}
 
@@ -236,7 +266,7 @@ export function AdminUnitFormPanel({
 		);
 	}
 
-	const title = mode === "create" ? "Unit anlegen" : "Unit bearbeiten";
+	const title = mode === "create" ? copy.titleCreate : copy.titleEdit;
 
 	return (
 		<Panel className="mt-8">
@@ -244,13 +274,11 @@ export function AdminUnitFormPanel({
 				<div>
 					<h2 className="text-lg font-semibold">{title}</h2>
 					<p className="mt-1 text-sm text-muted">
-						{mode === "create"
-							? "Neue BookableUnit für das Inventar erfassen."
-							: unit?.name}
+						{mode === "create" ? copy.descriptionCreate : unit?.name}
 					</p>
 				</div>
 				<Button variant="secondary" onClick={onCancel}>
-					Schließen
+					{copy.close}
 				</Button>
 			</div>
 
@@ -262,7 +290,11 @@ export function AdminUnitFormPanel({
 
 			<form className="mt-5 grid gap-2" onSubmit={handleSubmit}>
 				<div className="grid gap-2 md:grid-cols-2">
-					<Field label="Name" htmlFor="admin-unit-name" errorText={errors.name}>
+					<Field
+						label={copy.fields.name}
+						htmlFor="admin-unit-name"
+						errorText={errors.name}
+					>
 						<TextInput
 							id="admin-unit-name"
 							value={formState.name}
@@ -271,7 +303,7 @@ export function AdminUnitFormPanel({
 						/>
 					</Field>
 					<Field
-						label="Kapazität"
+						label={copy.fields.capacity}
 						htmlFor="admin-unit-capacity"
 						errorText={errors.capacity}
 					>
@@ -288,7 +320,7 @@ export function AdminUnitFormPanel({
 				</div>
 
 				<Field
-					label="Beschreibung"
+					label={copy.fields.description}
 					htmlFor="admin-unit-description"
 					errorText={errors.description}
 				>
@@ -303,7 +335,7 @@ export function AdminUnitFormPanel({
 
 				<div className="grid gap-2 md:grid-cols-3">
 					<Field
-						label="UnitType"
+						label={copy.fields.unitType}
 						htmlFor="admin-unit-type"
 						errorText={errors.unitTypeId}
 					>
@@ -324,7 +356,7 @@ export function AdminUnitFormPanel({
 						</select>
 					</Field>
 					<Field
-						label="Area"
+						label={copy.fields.area}
 						htmlFor="admin-unit-area"
 						errorText={errors.areaId}
 					>
@@ -337,8 +369,8 @@ export function AdminUnitFormPanel({
 						>
 							<option value="">
 								{selectedUnitTypeName === "HOT_DESK"
-									? "Area auswählen"
-									: "Keine Area"}
+									? copy.areaSelect
+									: copy.noArea}
 							</option>
 							{areas.map((area) => (
 								<option key={area.id} value={area.id}>
@@ -348,7 +380,7 @@ export function AdminUnitFormPanel({
 						</select>
 					</Field>
 					<Field
-						label="DisplayOrder"
+						label={copy.fields.displayOrder}
 						htmlFor="admin-unit-display-order"
 						errorText={errors.displayOrder}
 					>
@@ -376,14 +408,14 @@ export function AdminUnitFormPanel({
 								updateField("isActive", event.target.checked)
 							}
 						/>
-						Aktiv
+						{copy.fields.active}
 					</label>
 				</Field>
 
 				<div className="flex flex-wrap items-center justify-between gap-3 border-border border-t pt-5">
 					<div className="flex flex-wrap gap-2">
 						<Button type="submit" disabled={isSubmitting}>
-							{mode === "create" ? "Unit anlegen" : "Änderungen speichern"}
+							{mode === "create" ? copy.create : copy.save}
 						</Button>
 						<Button
 							type="button"
@@ -391,7 +423,7 @@ export function AdminUnitFormPanel({
 							disabled={isSubmitting}
 							onClick={onCancel}
 						>
-							Abbrechen
+							{copy.cancel}
 						</Button>
 					</div>
 					{mode === "edit" && unit && (
@@ -403,7 +435,7 @@ export function AdminUnitFormPanel({
 									disabled={isSubmitting}
 									onClick={handleDeactivate}
 								>
-									Unit deaktivieren
+									{copy.deactivate}
 								</Button>
 							) : (
 								<Button
@@ -412,7 +444,7 @@ export function AdminUnitFormPanel({
 									disabled={isSubmitting}
 									onClick={handleReactivate}
 								>
-									Unit reaktivieren
+									{copy.reactivate}
 								</Button>
 							)}
 						</div>

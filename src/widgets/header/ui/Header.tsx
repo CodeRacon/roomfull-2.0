@@ -12,6 +12,9 @@ import {
 	useState,
 } from "react";
 import { useSession } from "@/entities/session";
+import { LanguageSwitcher } from "@/features/language/switch-language";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes } from "@/shared/routing";
 import {
 	Button,
 	Menu,
@@ -20,7 +23,17 @@ import {
 	MenuLinkItem,
 } from "@/shared/ui";
 
-export function Header(): ReactElement {
+type HeaderProps = {
+	copy: Dictionary["navigation"];
+	languageSwitcherCopy: Dictionary["languageSwitcher"];
+	locale: Locale;
+};
+
+export function Header({
+	copy,
+	languageSwitcherCopy,
+	locale,
+}: HeaderProps): ReactElement {
 	const router = useRouter();
 	const { status, user, endSession } = useSession();
 	const headerRef = useRef<HTMLElement>(null);
@@ -40,7 +53,7 @@ export function Header(): ReactElement {
 	function handleLogout(): void {
 		endSession();
 		closeMenus();
-		router.replace("/");
+		router.replace(appRoutes.home(locale));
 	}
 
 	useEffect(() => {
@@ -96,8 +109,8 @@ export function Header(): ReactElement {
 			</div>
 			<nav className="relative z-10 flex h-full w-full max-w-7xl items-center justify-between gap-8">
 				<Link
-					href="/"
-					aria-label="Zur Startseite"
+					href={appRoutes.home(locale)}
+					aria-label={copy.homeAriaLabel}
 					className={clsx(
 						focusClass,
 						"inline-flex shrink-0 items-center gap-3 text-text transition-colors hover:text-accent",
@@ -115,13 +128,13 @@ export function Header(): ReactElement {
 				{!isAdmin && (
 					<div className="hidden items-center gap-6 md:flex">
 						<Link
-							href="/booking-options"
+							href={appRoutes.bookingOptions(locale)}
 							className={clsx(
 								focusClass,
 								"type-header-link text-text transition-colors hover:text-accent",
 							)}
 						>
-							Buchen
+							{copy.bookingOptions}
 						</Link>
 					</div>
 				)}
@@ -130,26 +143,26 @@ export function Header(): ReactElement {
 						<>
 							{isCustomer && (
 								<Link
-									href="/me/bookings"
+									href={appRoutes.myBookings(locale)}
 									onClick={closeMenus}
 									className={clsx(
 										focusClass,
 										"transition-colors hover:text-accent",
 									)}
 								>
-									Meine Buchungen
+									{copy.myBookings}
 								</Link>
 							)}
 							{isAdmin && (
 								<Link
-									href="/admin"
+									href={appRoutes.admin(locale)}
 									onClick={closeMenus}
 									className={clsx(
 										focusClass,
 										"transition-colors hover:text-accent",
 									)}
 								>
-									Admin
+									{copy.admin}
 								</Link>
 							)}
 							<div className="relative">
@@ -168,13 +181,13 @@ export function Header(): ReactElement {
 										})
 									}
 								>
-									Profil
+									{copy.profile}
 								</Button>
 								{isProfileMenuOpen && (
 									<Menu className="absolute right-0 z-10 mt-2 min-w-56">
 										<MenuHeader>
 											<p className="text-base font-black">
-												{user?.name ?? "Profil"}
+												{user?.name ?? copy.profile}
 											</p>
 											{user?.email && (
 												<p className="mt-1 truncate text-sm font-semibold text-muted">
@@ -182,16 +195,22 @@ export function Header(): ReactElement {
 												</p>
 											)}
 										</MenuHeader>
-										<MenuLinkItem href="/me/account" onClick={closeMenus}>
-											Mein Account
+										<MenuLinkItem
+											href={appRoutes.account(locale)}
+											onClick={closeMenus}
+										>
+											{copy.account}
 										</MenuLinkItem>
 										{isCustomer && (
-											<MenuLinkItem href="/me/contact" onClick={closeMenus}>
-												Kontakt
+											<MenuLinkItem
+												href={appRoutes.contact(locale)}
+												onClick={closeMenus}
+											>
+												{copy.contact}
 											</MenuLinkItem>
 										)}
 										<MenuButtonItem onClick={handleLogout}>
-											Abmelden
+											{copy.signOut}
 										</MenuButtonItem>
 									</Menu>
 								)}
@@ -201,25 +220,33 @@ export function Header(): ReactElement {
 					{isAnonymous && (
 						<>
 							<Link
-								href="/login"
+								href={appRoutes.login(locale)}
 								className={clsx(
 									focusClass,
 									"transition-colors hover:text-accent",
 								)}
 							>
-								Einloggen
+								{copy.signIn}
 							</Link>
 							<Link
-								href="/register"
+								href={appRoutes.register(locale)}
 								className={clsx(
 									focusClass,
 									"transition-colors hover:text-accent",
 								)}
 							>
-								Registrieren
+								{copy.signUp}
 							</Link>
 						</>
 					)}
+					<LanguageSwitcher
+						activeLocale={locale}
+						ariaLabel={languageSwitcherCopy.label}
+						labels={{
+							de: languageSwitcherCopy.de,
+							en: languageSwitcherCopy.en,
+						}}
+					/>
 				</div>
 				<Button
 					variant="secondary"
@@ -230,7 +257,7 @@ export function Header(): ReactElement {
 					)}
 					aria-haspopup="menu"
 					aria-expanded={isMobileMenuOpen}
-					aria-label="Hauptmenü öffnen"
+					aria-label={copy.mainMenuOpen}
 					onClick={() =>
 						setIsMobileMenuOpen((currentValue) => {
 							setIsProfileMenuOpen(false);
@@ -238,57 +265,89 @@ export function Header(): ReactElement {
 						})
 					}
 				>
-					Menü
+					{copy.mainMenu}
 				</Button>
 			</nav>
 			{isMobileMenuOpen && (
 				<Menu className="absolute inset-x-4 top-full z-20 mt-2 md:hidden">
 					{!isAdmin && (
-						<MenuLinkItem href="/booking-options" onClick={closeMenus}>
-							Buchen
+						<MenuLinkItem
+							href={appRoutes.bookingOptions(locale)}
+							onClick={closeMenus}
+						>
+							{copy.bookingOptions}
 						</MenuLinkItem>
 					)}
 					{isAuthenticated && (
 						<>
 							{isCustomer && (
-								<MenuLinkItem href="/me/bookings" onClick={closeMenus}>
-									Meine Buchungen
+								<MenuLinkItem
+									href={appRoutes.myBookings(locale)}
+									onClick={closeMenus}
+								>
+									{copy.myBookings}
 								</MenuLinkItem>
 							)}
 							{isAdmin && (
-								<MenuLinkItem href="/admin" onClick={closeMenus}>
-									Admin Dashboard
+								<MenuLinkItem
+									href={appRoutes.admin(locale)}
+									onClick={closeMenus}
+								>
+									{copy.adminDashboard}
 								</MenuLinkItem>
 							)}
 							<MenuHeader>
-								<p className="text-base font-black">{user?.name ?? "Profil"}</p>
+								<p className="text-base font-black">
+									{user?.name ?? copy.profile}
+								</p>
 								{user?.email && (
 									<p className="mt-1 truncate text-sm font-semibold text-muted">
 										{user.email}
 									</p>
 								)}
 							</MenuHeader>
-							<MenuLinkItem href="/me/account" onClick={closeMenus}>
-								Mein Account
+							<MenuLinkItem
+								href={appRoutes.account(locale)}
+								onClick={closeMenus}
+							>
+								{copy.account}
 							</MenuLinkItem>
 							{isCustomer && (
-								<MenuLinkItem href="/me/contact" onClick={closeMenus}>
-									Kontakt
+								<MenuLinkItem
+									href={appRoutes.contact(locale)}
+									onClick={closeMenus}
+								>
+									{copy.contact}
 								</MenuLinkItem>
 							)}
-							<MenuButtonItem onClick={handleLogout}>Abmelden</MenuButtonItem>
+							<MenuButtonItem onClick={handleLogout}>
+								{copy.signOut}
+							</MenuButtonItem>
 						</>
 					)}
 					{isAnonymous && (
 						<>
-							<MenuLinkItem href="/login" onClick={closeMenus}>
-								Einloggen
+							<MenuLinkItem href={appRoutes.login(locale)} onClick={closeMenus}>
+								{copy.signIn}
 							</MenuLinkItem>
-							<MenuLinkItem href="/register" onClick={closeMenus}>
-								Registrieren
+							<MenuLinkItem
+								href={appRoutes.register(locale)}
+								onClick={closeMenus}
+							>
+								{copy.signUp}
 							</MenuLinkItem>
 						</>
 					)}
+					<MenuHeader>
+						<LanguageSwitcher
+							activeLocale={locale}
+							ariaLabel={languageSwitcherCopy.label}
+							labels={{
+								de: languageSwitcherCopy.de,
+								en: languageSwitcherCopy.en,
+							}}
+						/>
+					</MenuHeader>
 				</Menu>
 			)}
 			<div

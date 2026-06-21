@@ -6,9 +6,11 @@ import type {
 	UnitTypeName,
 } from "@/entities/unit";
 import { formatUnitTypeName } from "@/entities/unit";
+import type { Dictionary } from "@/shared/i18n";
 import { Badge, FeedbackBox, TextInput } from "@/shared/ui";
 
 type AdminUnitsTableProps = {
+	copy: Dictionary["adminWorkspaces"]["units"]["table"];
 	filters: {
 		status: AdminUnitStatusFilter;
 		unitType: UnitTypeName | "all";
@@ -21,19 +23,17 @@ type AdminUnitsTableProps = {
 };
 
 const statusFilters: {
-	label: string;
 	value: AdminUnitStatusFilter;
-}[] = [
-	{ label: "Aktiv", value: "active" },
-	{ label: "Deaktiviert", value: "deactivated" },
-	{ label: "Alle", value: "all" },
-];
+}[] = [{ value: "active" }, { value: "deactivated" }, { value: "all" }];
 
-function getStatusBadge(unit: Unit) {
+function getStatusBadge(
+	unit: Unit,
+	copy: Dictionary["adminWorkspaces"]["units"]["table"]["status"],
+) {
 	return unit.isActive ? (
-		<Badge variant="success">Aktiv</Badge>
+		<Badge variant="success">{copy.active}</Badge>
 	) : (
-		<Badge variant="danger">Deaktiviert</Badge>
+		<Badge variant="danger">{copy.deactivated}</Badge>
 	);
 }
 
@@ -55,6 +55,7 @@ function getStatusFilterSelectedClassName(
 }
 
 export function AdminUnitsTable({
+	copy,
 	filters,
 	onEditUnit,
 	onFiltersChange,
@@ -73,14 +74,16 @@ export function AdminUnitsTable({
 				<div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
 					<div className="flex min-h-20 min-w-0 flex-col justify-center bg-primary px-4 py-3 text-on-primary">
 						<h2 className="min-w-0 text-xl font-black leading-tight text-pretty md:text-2xl">
-							Unit-Inventar
+							{copy.title}
 						</h2>
 						<p className="mt-1 truncate text-sm font-semibold text-on-primary/75">
-							Filtere nach Status, UnitType oder Name.
+							{copy.description}
 						</p>
 					</div>
 					<div className="mx-1 mb-0 flex min-h-14 items-center bg-on-primary px-4 py-3 text-sm font-black text-primary md:mx-0 md:mr-1">
-						{units.length} Units
+						{units.length === 1
+							? copy.unitOne
+							: copy.unitsMany.replace("{count}", String(units.length))}
 					</div>
 				</div>
 			</div>
@@ -103,14 +106,14 @@ export function AdminUnitsTable({
 									aria-pressed={isSelected}
 									onClick={() => updateFilters({ status: statusFilter.value })}
 								>
-									{statusFilter.label}
+									{copy.status[statusFilter.value]}
 								</button>
 							);
 						})}
 					</div>
 					<label className="block">
 						<span className="mb-1 block text-xs font-semibold text-muted">
-							UnitType
+							{copy.unitType}
 						</span>
 						<select
 							className="h-14 w-full border-2 border-primary/40 bg-background px-3 py-2 text-sm font-semibold text-text transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
@@ -122,7 +125,7 @@ export function AdminUnitsTable({
 								})
 							}
 						>
-							<option value="all">Alle UnitTypes</option>
+							<option value="all">{copy.allUnitTypes}</option>
 							{unitTypes.map((unitType) => (
 								<option key={unitType.id} value={unitType.name}>
 									{formatUnitTypeName(unitType.name)}
@@ -135,14 +138,14 @@ export function AdminUnitsTable({
 							htmlFor="admin-unit-search"
 							className="mb-1 block text-xs font-semibold text-muted"
 						>
-							Name
+							{copy.name}
 						</label>
 						<TextInput
 							id="admin-unit-search"
 							autoComplete="off"
 							name="admin-unit-search"
 							value={filters.search}
-							placeholder="Unit suchen…"
+							placeholder={copy.searchPlaceholder}
 							className="h-14"
 							onChange={(event) =>
 								updateFilters({ search: event.target.value })
@@ -155,7 +158,7 @@ export function AdminUnitsTable({
 			{units.length === 0 ? (
 				<div className="border-2 border-primary border-t-0 bg-background p-5">
 					<FeedbackBox variant="empty" className="w-fit!">
-						Keine Units für die gewählten Filter.
+						{copy.empty}
 					</FeedbackBox>
 				</div>
 			) : (
@@ -163,13 +166,13 @@ export function AdminUnitsTable({
 					<table className="w-full min-w-[52rem] border-collapse text-left text-sm">
 						<thead>
 							<tr className="border-primary border-b-2 bg-primary/10 text-primary text-xs font-black uppercase">
-								<th className="py-3 pr-4 pl-5">Name</th>
-								<th className="px-4 py-3">UnitType</th>
-								<th className="px-4 py-3">Area</th>
-								<th className="px-4 py-3">Kapazität</th>
-								<th className="px-4 py-3">Status</th>
-								<th className="px-4 py-3">DisplayOrder</th>
-								<th className="py-3 pr-5 pl-4">Aktionen</th>
+								<th className="py-3 pr-4 pl-5">{copy.columns.name}</th>
+								<th className="px-4 py-3">{copy.columns.unitType}</th>
+								<th className="px-4 py-3">{copy.columns.area}</th>
+								<th className="px-4 py-3">{copy.columns.capacity}</th>
+								<th className="px-4 py-3">{copy.columns.status}</th>
+								<th className="px-4 py-3">{copy.columns.displayOrder}</th>
+								<th className="py-3 pr-5 pl-4">{copy.columns.actions}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -194,7 +197,7 @@ export function AdminUnitsTable({
 										{unit.capacity}
 									</td>
 									<td className="px-4 py-4 align-top">
-										{getStatusBadge(unit)}
+										{getStatusBadge(unit, copy.status)}
 									</td>
 									<td className="px-4 py-4 align-top tabular-nums">
 										{unit.displayOrder}
@@ -205,7 +208,7 @@ export function AdminUnitsTable({
 											className="border-2 border-primary bg-background px-3 py-2 text-sm font-black text-primary transition-colors hover:bg-primary hover:text-on-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
 											onClick={() => onEditUnit(unit)}
 										>
-											Bearbeiten
+											{copy.edit}
 										</button>
 									</td>
 								</tr>

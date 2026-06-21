@@ -6,11 +6,14 @@ import type { Booking, MyBooking } from "@/entities/booking";
 import { formatUnitTypeName } from "@/entities/unit";
 import { CancelBookingButton } from "@/features/booking/cancel-booking";
 import { ExportBookingCalendarButton } from "@/features/booking/export-booking-calendar";
+import type { Dictionary, Locale } from "@/shared/i18n";
 import { Button, Calendar, FeedbackBox, TextInput } from "@/shared/ui";
 
 type MyBookingsListProps = {
 	bookings: MyBooking[];
+	copy: Dictionary["myBookings"];
 	highlightedBookingId?: string | null;
+	locale: Locale;
 	onBookingCancelError: (message: string) => void;
 	onBookingCancelled: (booking: Booking) => void;
 	onViewModeChange: (viewMode: MyBookingsViewMode) => void;
@@ -19,34 +22,51 @@ type MyBookingsListProps = {
 
 type BookingCardTone = "active" | "past";
 export type MyBookingsViewMode = "cards" | "list" | "calendar";
+type MyBookingsCopy = Dictionary["myBookings"];
 
-const dateTimeFormatter = new Intl.DateTimeFormat("de-DE", {
-	weekday: "long",
-	day: "2-digit",
-	month: "2-digit",
-	year: "numeric",
-	hour: "2-digit",
-	minute: "2-digit",
-});
+const intlLocaleByLocale: Record<Locale, string> = {
+	de: "de-DE",
+	en: "en-US",
+};
 
-const bookingDayFormatter = new Intl.DateTimeFormat("de-DE", {
-	weekday: "long",
-	day: "2-digit",
-	month: "2-digit",
-	year: "numeric",
-});
+function createBookingFormatters(locale: Locale) {
+	const intlLocale = intlLocaleByLocale[locale];
 
-const bookingTimeFormatter = new Intl.DateTimeFormat("de-DE", {
-	hour: "2-digit",
-	minute: "2-digit",
-});
+	return {
+		dateTime: new Intl.DateTimeFormat(intlLocale, {
+			weekday: "long",
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+			hour: "2-digit",
+			minute: "2-digit",
+		}),
+		day: new Intl.DateTimeFormat(intlLocale, {
+			weekday: "long",
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+		}),
+		time: new Intl.DateTimeFormat(intlLocale, {
+			hour: "2-digit",
+			minute: "2-digit",
+		}),
+		listDay: new Intl.DateTimeFormat(intlLocale, {
+			weekday: "short",
+			day: "2-digit",
+			month: "2-digit",
+			year: "numeric",
+		}),
+	};
+}
 
-const bookingListDayFormatter = new Intl.DateTimeFormat("de-DE", {
-	weekday: "short",
-	day: "2-digit",
-	month: "2-digit",
-	year: "numeric",
-});
+const bookingFormattersByLocale: Record<
+	Locale,
+	ReturnType<typeof createBookingFormatters>
+> = {
+	de: createBookingFormatters("de"),
+	en: createBookingFormatters("en"),
+};
 
 const calendarExportButtonClassName =
 	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-accent bg-background px-3 py-2 text-sm font-black text-accent transition-colors hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
@@ -68,42 +88,73 @@ function isSameLocalDay(start: Date, end: Date): boolean {
 	);
 }
 
-function formatBookingWindow(startTime: string, endTime: string): string {
-	const start = new Date(startTime);
-	const end = new Date(endTime);
-
-	if (isSameLocalDay(start, end)) {
-		return `${bookingDayFormatter.format(start)} von ${bookingTimeFormatter.format(
-			start,
-		)} bis ${bookingTimeFormatter.format(end)} Uhr`;
-	}
-
-	return `${dateTimeFormatter.format(start)} Uhr bis ${dateTimeFormatter.format(
-		end,
-	)} Uhr`;
+function formatTemplate(
+	template: string,
+	values: Record<string, string | number>,
+): string {
+	return Object.entries(values).reduce(
+		(result, [key, value]) => result.replace(`{${key}}`, String(value)),
+		template,
+	);
 }
 
-function formatBookingListWindow(startTime: string, endTime: string): string {
+function formatBookingWindow(
+	startTime: string,
+	endTime: string,
+	locale: Locale,
+	copy: MyBookingsCopy["dateTime"],
+): string {
 	const start = new Date(startTime);
 	const end = new Date(endTime);
+	const formatters = bookingFormattersByLocale[locale];
 
 	if (isSameLocalDay(start, end)) {
-		return `${bookingListDayFormatter.format(start)}, ${bookingTimeFormatter.format(
-			start,
-		)}-${bookingTimeFormatter.format(end)} Uhr`;
+		return formatTemplate(copy.sameDay, {
+			date: formatters.day.format(start),
+			start: formatters.time.format(start),
+			end: formatters.time.format(end),
+		});
 	}
 
-	return `${dateTimeFormatter.format(start)} Uhr bis ${dateTimeFormatter.format(
-		end,
-	)} Uhr`;
+	return formatTemplate(copy.crossDay, {
+		start: formatters.dateTime.format(start),
+		end: formatters.dateTime.format(end),
+	});
 }
 
-function formatBookingStatus(status: Booking["status"]): string {
+function formatBookingListWindow(
+	startTime: string,
+	endTime: string,
+	locale: Locale,
+	copy: MyBookingsCopy["dateTime"],
+): string {
+	const start = new Date(startTime);
+	const end = new Date(endTime);
+	const formatters = bookingFormattersByLocale[locale];
+
+	if (isSameLocalDay(start, end)) {
+		return formatTemplate(copy.listSameDay, {
+			date: formatters.listDay.format(start),
+			start: formatters.time.format(start),
+			end: formatters.time.format(end),
+		});
+	}
+
+	return formatTemplate(copy.listCrossDay, {
+		start: formatters.dateTime.format(start),
+		end: formatters.dateTime.format(end),
+	});
+}
+
+function formatBookingStatus(
+	status: Booking["status"],
+	copy: MyBookingsCopy["status"],
+): string {
 	switch (status) {
 		case "ACTIVE":
-			return "Aktiv";
+			return copy.active;
 		case "CANCELLED":
-			return "Storniert";
+			return copy.cancelled;
 	}
 }
 
@@ -188,16 +239,18 @@ function BookingMetaTag({ children }: { children: string }) {
 }
 
 function MyBookingsViewModeSwitch({
+	copy,
 	onViewModeChange,
 	viewMode,
 }: {
+	copy: MyBookingsCopy["views"];
 	onViewModeChange: (viewMode: MyBookingsViewMode) => void;
 	viewMode: MyBookingsViewMode;
 }) {
 	const modes: Array<{ label: string; value: MyBookingsViewMode }> = [
-		{ label: "Karten", value: "cards" },
-		{ label: "Liste", value: "list" },
-		{ label: "Kalender", value: "calendar" },
+		{ label: copy.cards, value: "cards" },
+		{ label: copy.list, value: "list" },
+		{ label: copy.calendar, value: "calendar" },
 	];
 
 	return (
@@ -280,13 +333,17 @@ function MyBookingsCalendarLegend() {
 
 function BookingCard({
 	booking,
+	copy,
 	isHighlighted = false,
+	locale,
 	onBookingCancelError,
 	onBookingCancelled,
 	tone = "active",
 }: {
 	booking: MyBooking;
+	copy: MyBookingsCopy;
 	isHighlighted?: boolean;
+	locale: Locale;
 	onBookingCancelError: (message: string) => void;
 	onBookingCancelled: (booking: Booking) => void;
 	tone?: BookingCardTone;
@@ -298,7 +355,8 @@ function BookingCard({
 	const [isCancelSubmitting, setIsCancelSubmitting] = useState(false);
 	const canExportCalendar = canExportBooking(booking, tone);
 	const canCancelBooking = canCancelMyBooking(booking);
-	const canConfirmCancel = cancelConfirmationInput.trim() === "STORNO";
+	const canConfirmCancel =
+		cancelConfirmationInput.trim() === copy.actions.cancelKeyword;
 
 	return (
 		<article
@@ -322,7 +380,12 @@ function BookingCard({
 						{booking.unit.name}
 					</p>
 					<p className="mt-3 text-sm font-semibold leading-6 text-muted">
-						{formatBookingWindow(booking.startTime, booking.endTime)}
+						{formatBookingWindow(
+							booking.startTime,
+							booking.endTime,
+							locale,
+							copy.dateTime,
+						)}
 					</p>
 				</div>
 
@@ -330,25 +393,30 @@ function BookingCard({
 					<BookingMetaTag>
 						{formatUnitTypeName(booking.unit.unitType.name)}
 					</BookingMetaTag>
-					<BookingMetaTag>{formatBookingStatus(booking.status)}</BookingMetaTag>
-					{isPast && <BookingMetaTag>Vergangen</BookingMetaTag>}
+					<BookingMetaTag>
+						{formatBookingStatus(booking.status, copy.status)}
+					</BookingMetaTag>
+					{isPast && <BookingMetaTag>{copy.status.past}</BookingMetaTag>}
 				</div>
 
 				<div className="mt-auto flex flex-wrap gap-3 pt-8">
 					{canExportCalendar && (
 						<ExportBookingCalendarButton
+							ariaLabel={copy.actions.downloadIcsAriaLabel}
 							booking={booking}
 							className={calendarExportButtonClassName}
 							iconClassName="size-4"
 						>
-							Download .ics
+							{copy.actions.downloadIcs}
 						</ExportBookingCalendarButton>
 					)}
 					{canCancelBooking &&
 						(isCancelConfirmationOpen ? (
 							<div className="w-full border-t-2 border-primary pt-4">
 								<p className="text-danger-text">
-									Zum Stornieren bitte "STORNO" eingeben.
+									{formatTemplate(copy.actions.cancelPrompt, {
+										keyword: copy.actions.cancelKeyword,
+									})}
 								</p>
 								<div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 									<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -358,10 +426,11 @@ function BookingCard({
 												setCancelConfirmationInput(event.target.value)
 											}
 											disabled={isCancelSubmitting}
-											placeholder="STORNO"
+											placeholder={copy.actions.cancelKeyword}
 											className="max-w-48"
 										/>
 										<CancelBookingButton
+											ariaLabel={copy.actions.cancelAriaLabel}
 											bookingId={booking.id}
 											className={cancelConfirmButtonClassName}
 											iconClassName="size-4"
@@ -369,8 +438,9 @@ function BookingCard({
 											onError={onBookingCancelError}
 											onSubmittingChange={setIsCancelSubmitting}
 											disabled={!canConfirmCancel}
+											errorCopy={copy.cancelErrors}
 										>
-											Stornieren
+											{copy.actions.cancelConfirm}
 										</CancelBookingButton>
 									</div>
 									<Button
@@ -382,7 +452,7 @@ function BookingCard({
 											setCancelConfirmationInput("");
 										}}
 									>
-										Abbrechen
+										{copy.actions.cancelAbort}
 									</Button>
 								</div>
 							</div>
@@ -393,7 +463,7 @@ function BookingCard({
 								className={cancelTriggerButtonClassName}
 							>
 								<TrashIcon className="size-4" aria-hidden="true" />
-								Buchung stornieren
+								{copy.actions.cancelBooking}
 							</button>
 						))}
 				</div>
@@ -404,13 +474,17 @@ function BookingCard({
 
 function BookingListRow({
 	booking,
+	copy,
 	isHighlighted = false,
+	locale,
 	onBookingCancelError,
 	onBookingCancelled,
 	tone,
 }: {
 	booking: MyBooking;
+	copy: MyBookingsCopy;
 	isHighlighted?: boolean;
+	locale: Locale;
 	onBookingCancelError: (message: string) => void;
 	onBookingCancelled: (booking: Booking) => void;
 	tone: BookingCardTone;
@@ -422,7 +496,8 @@ function BookingListRow({
 	const [isCancelSubmitting, setIsCancelSubmitting] = useState(false);
 	const canExportCalendar = canExportBooking(booking, tone);
 	const canCancelBooking = canCancelMyBooking(booking);
-	const canConfirmCancel = cancelConfirmationInput.trim() === "STORNO";
+	const canConfirmCancel =
+		cancelConfirmationInput.trim() === copy.actions.cancelKeyword;
 
 	return (
 		<article
@@ -446,25 +521,31 @@ function BookingListRow({
 							{booking.unit.name}
 						</p>
 						<p className="text-sm font-semibold text-muted">
-							{formatBookingListWindow(booking.startTime, booking.endTime)}
+							{formatBookingListWindow(
+								booking.startTime,
+								booking.endTime,
+								locale,
+								copy.dateTime,
+							)}
 						</p>
 						<BookingMetaTag>
 							{formatUnitTypeName(booking.unit.unitType.name)}
 						</BookingMetaTag>
 						<BookingMetaTag>
-							{formatBookingStatus(booking.status)}
+							{formatBookingStatus(booking.status, copy.status)}
 						</BookingMetaTag>
-						{isPast && <BookingMetaTag>Vergangen</BookingMetaTag>}
+						{isPast && <BookingMetaTag>{copy.status.past}</BookingMetaTag>}
 					</div>
 					{(canExportCalendar || canCancelBooking) && (
 						<div className="flex shrink-0 flex-wrap items-center gap-2">
 							{canExportCalendar && (
 								<ExportBookingCalendarButton
+									ariaLabel={copy.actions.downloadIcsAriaLabel}
 									booking={booking}
 									className={calendarExportButtonClassName}
 									iconClassName="size-4"
 								>
-									.ics
+									{copy.actions.downloadIcsShort}
 								</ExportBookingCalendarButton>
 							)}
 							{canCancelBooking && (
@@ -474,7 +555,7 @@ function BookingListRow({
 									className={cancelTriggerButtonClassName}
 								>
 									<TrashIcon className="size-4" aria-hidden="true" />
-									Stornieren
+									{copy.actions.cancelShort}
 								</button>
 							)}
 						</div>
@@ -483,7 +564,9 @@ function BookingListRow({
 				{canCancelBooking && isCancelConfirmationOpen && (
 					<div className="border-primary border-t-2 px-4 pb-4 pt-4 text-sm font-semibold">
 						<p className="text-danger-text">
-							Zum Stornieren bitte "STORNO" eingeben.
+							{formatTemplate(copy.actions.cancelPrompt, {
+								keyword: copy.actions.cancelKeyword,
+							})}
 						</p>
 						<div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 							<div className="flex items-center gap-3">
@@ -493,10 +576,11 @@ function BookingListRow({
 										setCancelConfirmationInput(event.target.value)
 									}
 									disabled={isCancelSubmitting}
-									placeholder="STORNO"
+									placeholder={copy.actions.cancelKeyword}
 									className="max-w-48"
 								/>
 								<CancelBookingButton
+									ariaLabel={copy.actions.cancelAriaLabel}
 									bookingId={booking.id}
 									className={cancelConfirmButtonClassName}
 									iconClassName="size-4"
@@ -504,8 +588,9 @@ function BookingListRow({
 									onError={onBookingCancelError}
 									onSubmittingChange={setIsCancelSubmitting}
 									disabled={!canConfirmCancel}
+									errorCopy={copy.cancelErrors}
 								>
-									Stornieren
+									{copy.actions.cancelConfirm}
 								</CancelBookingButton>
 							</div>
 							<Button
@@ -517,7 +602,7 @@ function BookingListRow({
 									setCancelConfirmationInput("");
 								}}
 							>
-								Abbrechen
+								{copy.actions.cancelAbort}
 							</Button>
 						</div>
 					</div>
@@ -529,13 +614,17 @@ function BookingListRow({
 
 function BookingCalendarView({
 	bookings,
+	copy,
 	highlightedBookingId,
+	locale,
 	onBookingCancelError,
 	onBookingCancelled,
 	tone,
 }: {
 	bookings: MyBooking[];
+	copy: MyBookingsCopy;
 	highlightedBookingId?: string | null;
+	locale: Locale;
 	onBookingCancelError: (message: string) => void;
 	onBookingCancelled: (booking: Booking) => void;
 	tone: BookingCardTone;
@@ -560,6 +649,14 @@ function BookingCalendarView({
 			<MyBookingsCalendarLegend />
 			<Calendar
 				accent={myBookingsCalendarAccent}
+				copy={{
+					nextMonth: copy.calendar.nextMonth,
+					nextMonthAriaLabel: copy.calendar.nextMonthAriaLabel,
+					previousMonth: copy.calendar.previousMonth,
+					previousMonthAriaLabel: copy.calendar.previousMonthAriaLabel,
+					weekdayLabels: copy.calendar.weekdayLabels,
+				}}
+				monthLocale={copy.calendar.monthLocale}
 				visibleMonth={visibleMonth}
 				onVisibleMonthChange={setVisibleMonth}
 				renderDay={({ date, dayNumber, isOutsideMonth }) => {
@@ -640,9 +737,14 @@ function BookingCalendarView({
 							onClick={() => setSelectedDate(date)}
 							className={dayClassName}
 							aria-pressed={isSelectedDate}
-							aria-label={`${date}: ${dayBookings.length} ${
-								dayBookings.length === 1 ? "Buchung" : "Buchungen"
-							} anzeigen`}
+							aria-label={formatTemplate(copy.calendar.showBookings, {
+								date,
+								count: dayBookings.length,
+								bookingLabel:
+									dayBookings.length === 1
+										? copy.calendar.bookingOne
+										: copy.calendar.bookingsMany,
+							})}
 						>
 							{dayContent}
 						</button>
@@ -652,14 +754,18 @@ function BookingCalendarView({
 			{selectedDayBookings.length > 0 && (
 				<div className="mt-4 border-t-4 border-primary pt-4">
 					<p className="inline-flex bg-primary px-3 py-2 text-sm font-black text-on-primary">
-						{bookingDayFormatter.format(new Date(`${selectedDate}T00:00:00`))}
+						{bookingFormattersByLocale[locale].day.format(
+							new Date(`${selectedDate}T00:00:00`),
+						)}
 					</p>
 					<div className="mt-3 grid gap-3">
 						{selectedDayBookings.map((booking) => (
 							<BookingListRow
 								key={booking.id}
 								booking={booking}
+								copy={copy}
 								isHighlighted={booking.id === highlightedBookingId}
+								locale={locale}
 								onBookingCancelled={onBookingCancelled}
 								onBookingCancelError={onBookingCancelError}
 								tone={tone}
@@ -674,9 +780,11 @@ function BookingCalendarView({
 
 function BookingSection({
 	bookings,
+	copy,
 	defaultOpen = true,
 	emptyText,
 	highlightedBookingId,
+	locale,
 	onBookingCancelError,
 	onBookingCancelled,
 	tone,
@@ -684,9 +792,11 @@ function BookingSection({
 	viewMode,
 }: {
 	bookings: MyBooking[];
+	copy: MyBookingsCopy;
 	defaultOpen?: boolean;
 	emptyText: string;
 	highlightedBookingId?: string | null;
+	locale: Locale;
 	onBookingCancelError: (message: string) => void;
 	onBookingCancelled: (booking: Booking) => void;
 	tone: BookingCardTone;
@@ -707,7 +817,10 @@ function BookingSection({
 						/>
 					</div>
 					<div className="mx-1 mb-0 flex min-h-14 items-center bg-on-primary px-4 py-3 text-sm font-black text-primary md:mx-0 md:mb-0 md:mr-1">
-						{bookings.length} {bookings.length === 1 ? "Buchung" : "Buchungen"}
+						{bookings.length}{" "}
+						{bookings.length === 1
+							? copy.sections.bookingOne
+							: copy.sections.bookingsMany}
 					</div>
 				</div>
 			</summary>
@@ -718,7 +831,9 @@ function BookingSection({
 			) : viewMode === "calendar" ? (
 				<BookingCalendarView
 					bookings={bookings}
+					copy={copy}
 					highlightedBookingId={highlightedBookingId}
+					locale={locale}
 					onBookingCancelled={onBookingCancelled}
 					onBookingCancelError={onBookingCancelError}
 					tone={tone}
@@ -729,7 +844,9 @@ function BookingSection({
 						<BookingListRow
 							key={booking.id}
 							booking={booking}
+							copy={copy}
 							isHighlighted={booking.id === highlightedBookingId}
+							locale={locale}
 							onBookingCancelled={onBookingCancelled}
 							onBookingCancelError={onBookingCancelError}
 							tone={tone}
@@ -742,7 +859,9 @@ function BookingSection({
 						<BookingCard
 							key={booking.id}
 							booking={booking}
+							copy={copy}
 							isHighlighted={booking.id === highlightedBookingId}
+							locale={locale}
 							onBookingCancelled={onBookingCancelled}
 							onBookingCancelError={onBookingCancelError}
 							tone={tone}
@@ -756,7 +875,9 @@ function BookingSection({
 
 export function MyBookingsList({
 	bookings,
+	copy,
 	highlightedBookingId,
+	locale,
 	onBookingCancelError,
 	onBookingCancelled,
 	onViewModeChange,
@@ -765,7 +886,7 @@ export function MyBookingsList({
 	if (bookings.length === 0) {
 		return (
 			<FeedbackBox variant="empty" className="mt-8">
-				Keine Buchung vorhanden.
+				{copy.sections.noBookings}
 			</FeedbackBox>
 		);
 	}
@@ -787,28 +908,33 @@ export function MyBookingsList({
 	return (
 		<div>
 			<MyBookingsViewModeSwitch
+				copy={copy.views}
 				onViewModeChange={onViewModeChange}
 				viewMode={viewMode}
 			/>
 			<BookingSection
-				title="Anstehende Buchungen"
 				bookings={upcomingBookings}
-				emptyText="Keine anstehenden Buchungen."
+				copy={copy}
+				emptyText={copy.sections.upcomingEmpty}
 				highlightedBookingId={highlightedBookingId}
+				locale={locale}
 				onBookingCancelled={onBookingCancelled}
 				onBookingCancelError={onBookingCancelError}
 				tone="active"
+				title={copy.sections.upcomingTitle}
 				viewMode={viewMode}
 			/>
 			<BookingSection
-				title="Frühere Buchungen & Stornierungen"
 				bookings={pastBookings}
+				copy={copy}
 				defaultOpen={false}
-				emptyText="Keine früheren Buchungen oder Stornierungen."
+				emptyText={copy.sections.pastEmpty}
 				highlightedBookingId={highlightedBookingId}
+				locale={locale}
 				onBookingCancelled={onBookingCancelled}
 				onBookingCancelError={onBookingCancelError}
 				tone="past"
+				title={copy.sections.pastTitle}
 				viewMode={viewMode}
 			/>
 		</div>

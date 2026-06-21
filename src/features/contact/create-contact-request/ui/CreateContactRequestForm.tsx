@@ -7,6 +7,7 @@ import {
 } from "@/entities/contact-request";
 import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
+import type { Dictionary } from "@/shared/i18n";
 import { Button, FeedbackBox, Field } from "@/shared/ui";
 
 type FormSubmitHandler = NonNullable<
@@ -14,17 +15,22 @@ type FormSubmitHandler = NonNullable<
 >;
 
 type ContactRequestTypeOption = {
-	label: string;
 	value: ContactRequestType;
 };
 
 const contactRequestTypeOptions: ContactRequestTypeOption[] = [
-	{ label: "Frage", value: "QUESTION" },
-	{ label: "Feedback", value: "FEEDBACK" },
-	{ label: "Kritik", value: "CRITICISM" },
+	{ value: "QUESTION" },
+	{ value: "FEEDBACK" },
+	{ value: "CRITICISM" },
 ];
 
-export function CreateContactRequestForm() {
+type CreateContactRequestFormProps = {
+	copy: Dictionary["contact"]["form"];
+};
+
+export function CreateContactRequestForm({
+	copy,
+}: CreateContactRequestFormProps) {
 	const { endSession } = useSession();
 	const [type, setType] = useState<ContactRequestType>("QUESTION");
 	const [message, setMessage] = useState("");
@@ -42,7 +48,7 @@ export function CreateContactRequestForm() {
 		const trimmedMessage = message.trim();
 
 		if (trimmedMessage.length === 0) {
-			setErrorMessage("Bitte schreibe kurz, worum es geht.");
+			setErrorMessage(copy.emptyMessage);
 			return;
 		}
 
@@ -56,20 +62,24 @@ export function CreateContactRequestForm() {
 
 			setMessage("");
 			setType("QUESTION");
-			setSuccessMessage("Deine Nachricht ist angekommen.");
+			setSuccessMessage(copy.success);
 		} catch (error) {
 			if (error instanceof ApiRequestError && error.status === 401) {
 				endSession();
 				return;
 			}
 
-			if (error instanceof ApiRequestError) {
-				setErrorMessage(error.message);
-			} else {
-				setErrorMessage(
-					"Deine Nachricht konnte nicht gespeichert werden. Bitte versuche es erneut.",
-				);
+			if (error instanceof ApiRequestError && error.status === 400) {
+				setErrorMessage(copy.errors.badRequest);
+				return;
 			}
+
+			if (error instanceof ApiRequestError && error.status === 403) {
+				setErrorMessage(copy.errors.forbidden);
+				return;
+			}
+
+			setErrorMessage(copy.errors.fallback);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -82,10 +92,10 @@ export function CreateContactRequestForm() {
 		>
 			<div className="border-b-2 border-primary! bg-primary px-5 py-5 text-on-primary">
 				<h2 className="text-3xl font-black leading-none tracking-normal text-pretty">
-					Kontakt aufnehmen
+					{copy.title}
 				</h2>
 				<p className="mt-3 text-sm font-semibold leading-6 text-on-primary/85">
-					Schreib uns, was zu deiner Buchung oder deinem Account wichtig ist.
+					{copy.description}
 				</p>
 			</div>
 
@@ -102,7 +112,7 @@ export function CreateContactRequestForm() {
 			)}
 
 			<div className="px-5 py-4">
-				<Field label="Anliegen-Typ">
+				<Field label={copy.typeLabel}>
 					<div className="grid gap-2 sm:grid-cols-3">
 						{contactRequestTypeOptions.map((option) => (
 							<label
@@ -117,19 +127,17 @@ export function CreateContactRequestForm() {
 									onChange={() => setType(option.value)}
 									className="size-4 accent-current"
 								/>
-								<span>{option.label}</span>
+								<span>{copy.types[option.value]}</span>
 							</label>
 						))}
 					</div>
 				</Field>
 
 				<Field
-					label="Nachricht"
+					label={copy.messageLabel}
 					htmlFor="contact-message"
 					errorText={
-						isMessageInvalid && errorMessage
-							? "Die Nachricht darf nicht leer sein."
-							: undefined
+						isMessageInvalid && errorMessage ? copy.messageRequired : undefined
 					}
 				>
 					<textarea
@@ -140,7 +148,7 @@ export function CreateContactRequestForm() {
 						required
 						rows={7}
 						className="min-h-40 w-full resize-y border-2 border-primary/40 bg-background px-3 py-2 text-sm font-semibold leading-6 text-text transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70"
-						placeholder="Worum geht es?"
+						placeholder={copy.messagePlaceholder}
 						disabled={isSubmitting}
 					/>
 				</Field>
@@ -148,7 +156,7 @@ export function CreateContactRequestForm() {
 
 			<div className="flex justify-end border-t-2 border-primary! px-5 py-5">
 				<Button type="submit" disabled={isSubmitting}>
-					{isSubmitting ? "Senden..." : "Nachricht senden"}
+					{isSubmitting ? copy.submitPending : copy.submit}
 				</Button>
 			</div>
 		</form>

@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import type { Dictionary } from "@/shared/i18n";
 import type { CalendarAccentClasses } from "@/shared/ui";
 import { Calendar } from "@/shared/ui";
 
@@ -9,6 +10,7 @@ export type CalendarDayState =
 
 type CustomCalendarProps = {
 	accent?: CustomCalendarAccentClasses;
+	copy: Dictionary["createBooking"]["calendar"];
 	dayStates: Record<string, CalendarDayState>;
 	isLoadingStates?: boolean;
 	onDateSelect: (date: string) => void;
@@ -152,19 +154,23 @@ function getDayClassName(input: {
 	);
 }
 
-function getDayStateLabel(state: CalendarDayState): string | null {
+function getDayStateLabel(
+	state: CalendarDayState,
+	copy: Dictionary["createBooking"]["calendar"]["states"],
+): string | null {
 	switch (state) {
 		case "available":
 			return null;
 		case "partially-booked":
-			return "teils belegt";
+			return copy.partiallyBooked;
 		case "fully-booked":
-			return "belegt";
+			return copy.fullyBooked;
 	}
 }
 
 export function CustomCalendar({
 	accent = defaultCustomCalendarAccentClasses,
+	copy,
 	dayStates,
 	isLoadingStates = false,
 	onDateSelect,
@@ -180,8 +186,16 @@ export function CustomCalendar({
 		<Calendar
 			accent={accent}
 			canGoPrevious={canGoPrevious}
+			copy={{
+				nextMonth: copy.nextMonth,
+				nextMonthAriaLabel: copy.nextMonthAriaLabel,
+				previousMonth: copy.previousMonth,
+				previousMonthAriaLabel: copy.previousMonthAriaLabel,
+				weekdayLabels: copy.weekdayLabels,
+			}}
 			isLoading={isLoadingStates}
-			loadingLabel="Belegung wird geladen…"
+			loadingLabel={copy.loadingLabel}
+			monthLocale={copy.locale}
 			onVisibleMonthChange={onVisibleMonthChange}
 			visibleMonth={visibleMonth}
 			renderDay={({ date, dayNumber, isOutsideMonth }) => {
@@ -191,7 +205,7 @@ export function CustomCalendar({
 				const isWeekendDay = isWeekend(date);
 				const isDisabled =
 					isOutsideMonth || isPast || isWeekendDay || state === "fully-booked";
-				const stateLabel = getDayStateLabel(state);
+				const stateLabel = getDayStateLabel(state, copy.states);
 
 				return (
 					<button
@@ -209,7 +223,7 @@ export function CustomCalendar({
 							state,
 							theme: accent,
 						})}
-						aria-label={`${date}${isToday ? ", heute" : ""}${stateLabel ? `, ${stateLabel}` : ""}`}
+						aria-label={`${date}${isToday ? `, ${copy.todayLabel}` : ""}${stateLabel ? `, ${stateLabel}` : ""}`}
 						aria-pressed={selectedDate === date}
 					>
 						<span>{dayNumber}</span>

@@ -13,46 +13,26 @@ import {
 import { useSession } from "@/entities/session";
 import { RequireAuth } from "@/features/auth/require-auth";
 import { ApiRequestError } from "@/shared/api";
+import type { Dictionary } from "@/shared/i18n";
 import { Badge, Button, FeedbackBox } from "@/shared/ui";
 
 type TypeFilter = "all" | ContactRequestType;
 
-const typeFilters: { label: string; value: TypeFilter }[] = [
-	{ label: "Alle Typen", value: "all" },
-	{ label: "Frage", value: "QUESTION" },
-	{ label: "Feedback", value: "FEEDBACK" },
-	{ label: "Kritik", value: "CRITICISM" },
+const typeFilters: { value: TypeFilter }[] = [
+	{ value: "all" },
+	{ value: "QUESTION" },
+	{ value: "FEEDBACK" },
+	{ value: "CRITICISM" },
 ];
 
 const readStateFilters: {
-	label: string;
 	value: AdminContactRequestReadState;
-}[] = [
-	{ label: "Ungelesen", value: "unread" },
-	{ label: "Gelesen", value: "read" },
-	{ label: "Alle", value: "all" },
+}[] = [{ value: "unread" }, { value: "read" }, { value: "all" }];
+
+const sortOptions: { value: AdminContactRequestSort }[] = [
+	{ value: "received_desc" },
+	{ value: "received_asc" },
 ];
-
-const sortOptions: { label: string; value: AdminContactRequestSort }[] = [
-	{ label: "Neueste zuerst", value: "received_desc" },
-	{ label: "Älteste zuerst", value: "received_asc" },
-];
-
-const receivedAtFormatter = new Intl.DateTimeFormat("de-DE", {
-	dateStyle: "medium",
-	timeStyle: "short",
-});
-
-function formatContactRequestType(type: ContactRequestType): string {
-	switch (type) {
-		case "QUESTION":
-			return "Frage";
-		case "FEEDBACK":
-			return "Feedback";
-		case "CRITICISM":
-			return "Kritik";
-	}
-}
 
 function getTypeBadgeVariant(
 	type: ContactRequestType,
@@ -67,19 +47,16 @@ function getTypeBadgeVariant(
 	}
 }
 
-function getReadStateLabel(readState: AdminContactRequestReadState): string {
-	return (
-		readStateFilters.find((filter) => filter.value === readState)?.label ??
-		"Ungelesen"
-	);
-}
-
 function getUnreadCount(contactRequests: AdminContactRequest[]): number {
 	return contactRequests.filter((contactRequest) => !contactRequest.isRead)
 		.length;
 }
 
-export function AdminContactInbox() {
+type AdminContactInboxProps = {
+	copy: Dictionary["adminWorkspaces"]["contactInbox"];
+};
+
+export function AdminContactInbox({ copy }: AdminContactInboxProps) {
 	const { status, endSession } = useSession();
 	const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
 	const [readStateFilter, setReadStateFilter] =
@@ -97,6 +74,14 @@ export function AdminContactInbox() {
 	const unreadCount = useMemo(
 		() => getUnreadCount(contactRequests),
 		[contactRequests],
+	);
+	const receivedAtFormatter = useMemo(
+		() =>
+			new Intl.DateTimeFormat(copy.dateLocale, {
+				dateStyle: "medium",
+				timeStyle: "short",
+			}),
+		[copy.dateLocale],
 	);
 
 	useEffect(() => {
@@ -124,22 +109,27 @@ export function AdminContactInbox() {
 					}
 
 					if (error.status === 403) {
-						setErrorMessage("Du hast keine Berechtigung für diesen Bereich.");
+						setErrorMessage(copy.errors.forbidden);
 						return;
 					}
-
-					setErrorMessage(error.message);
-					return;
 				}
 
-				setErrorMessage("Die Kontaktanfragen konnten nicht geladen werden.");
+				setErrorMessage(copy.errors.loadFallback);
 			} finally {
 				setIsLoading(false);
 			}
 		}
 
 		void loadContactRequests();
-	}, [status, typeFilter, readStateFilter, sort, endSession]);
+	}, [
+		status,
+		typeFilter,
+		readStateFilter,
+		sort,
+		endSession,
+		copy.errors.forbidden,
+		copy.errors.loadFallback,
+	]);
 
 	async function handleMarkAsRead(contactRequestId: string): Promise<void> {
 		try {
@@ -163,11 +153,21 @@ export function AdminContactInbox() {
 					return;
 				}
 
-				setErrorMessage(error.message);
+				if (error.status === 403) {
+					setErrorMessage(copy.errors.forbidden);
+					return;
+				}
+
+				if (error.status === 404) {
+					setErrorMessage(copy.errors.notFound);
+					return;
+				}
+
+				setErrorMessage(copy.errors.updateFallback);
 				return;
 			}
 
-			setErrorMessage("Die Kontaktanfrage konnte nicht aktualisiert werden.");
+			setErrorMessage(copy.errors.updateFallback);
 		} finally {
 			setUpdatingContactRequestId(null);
 		}
@@ -177,21 +177,25 @@ export function AdminContactInbox() {
 		<RequireAuth allowedRoles={["ADMIN"]}>
 			<div className="mt-8 grid gap-3 sm:grid-cols-2 md:inline-grid md:grid-cols-[10rem_10rem]">
 				<div className="border-2 border-primary bg-background p-3">
-					<p className="text-xs font-black uppercase text-muted">Aktuell</p>
+					<p className="text-xs font-black uppercase text-muted">
+						{copy.summary.current}
+					</p>
 					<p className="mt-2 text-3xl font-black leading-none tabular-nums text-primary">
 						{contactRequests.length}
 					</p>
 					<p className="mt-2 text-xs font-semibold text-muted">
-						{getReadStateLabel(readStateFilter)}
+						{copy.filters.readState[readStateFilter]}
 					</p>
 				</div>
 				<div className="border-2 border-primary bg-background p-3">
-					<p className="text-xs font-black uppercase text-muted">Ungelesen</p>
+					<p className="text-xs font-black uppercase text-muted">
+						{copy.summary.unread}
+					</p>
 					<p className="mt-2 text-3xl font-black leading-none tabular-nums text-warning-text">
 						{unreadCount}
 					</p>
 					<p className="mt-2 text-xs font-semibold text-muted">
-						Im geladenen Filter
+						{copy.summary.loadedFilter}
 					</p>
 				</div>
 			</div>
@@ -199,7 +203,7 @@ export function AdminContactInbox() {
 			<div className="mt-6 grid gap-4 border-2 border-primary bg-background p-5">
 				<div>
 					<p className="mb-2 text-xs font-black uppercase text-muted">
-						Lesestatus
+						{copy.filters.readStateLabel}
 					</p>
 					<div className="grid border-2 border-primary sm:grid-cols-3">
 						{readStateFilters.map((filter) => {
@@ -218,7 +222,7 @@ export function AdminContactInbox() {
 									aria-pressed={isSelected}
 									onClick={() => setReadStateFilter(filter.value)}
 								>
-									{filter.label}
+									{copy.filters.readState[filter.value]}
 								</button>
 							);
 						})}
@@ -227,7 +231,7 @@ export function AdminContactInbox() {
 
 				<div>
 					<p className="mb-2 text-xs font-black uppercase text-muted">
-						Anliegen-Typ
+						{copy.filters.typeLabel}
 					</p>
 					<div className="grid border-2 border-primary sm:grid-cols-4">
 						{typeFilters.map((filter) => {
@@ -246,7 +250,7 @@ export function AdminContactInbox() {
 									aria-pressed={isSelected}
 									onClick={() => setTypeFilter(filter.value)}
 								>
-									{filter.label}
+									{copy.filters.types[filter.value]}
 								</button>
 							);
 						})}
@@ -255,7 +259,7 @@ export function AdminContactInbox() {
 
 				<div>
 					<p className="mb-2 text-xs font-black uppercase text-muted">
-						Sortierung
+						{copy.filters.sortLabel}
 					</p>
 					<div className="grid border-2 border-primary sm:grid-cols-2">
 						{sortOptions.map((option) => {
@@ -274,7 +278,7 @@ export function AdminContactInbox() {
 									aria-pressed={isSelected}
 									onClick={() => setSort(option.value)}
 								>
-									{option.label}
+									{copy.filters.sort[option.value]}
 								</button>
 							);
 						})}
@@ -284,7 +288,7 @@ export function AdminContactInbox() {
 
 			{isLoading && (
 				<p className="mt-8 bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
-					Kontaktanfragen werden geladen...
+					{copy.loading}
 				</p>
 			)}
 			{errorMessage && (
@@ -294,7 +298,7 @@ export function AdminContactInbox() {
 			)}
 			{!isLoading && !errorMessage && contactRequests.length === 0 && (
 				<FeedbackBox variant="empty" className="mt-8 w-fit!">
-					Keine Kontaktanfragen im gewählten Filter.
+					{copy.empty}
 				</FeedbackBox>
 			)}
 			{!isLoading && !errorMessage && contactRequests.length > 0 && (
@@ -303,7 +307,7 @@ export function AdminContactInbox() {
 						<div className="grid md:grid-cols-[minmax(0,1fr)_auto]">
 							<div className="flex min-h-16 min-w-0 items-center bg-primary px-4 py-3 text-on-primary">
 								<h2 className="min-w-0 text-xl font-black leading-tight text-pretty md:text-2xl">
-									Kontaktanfragen
+									{copy.listTitle}
 								</h2>
 							</div>
 							<div className="mx-1 mb-0 flex min-h-14 items-center bg-on-primary px-4 py-3 text-sm font-black text-primary md:mx-0 md:mr-1">
@@ -324,12 +328,12 @@ export function AdminContactInbox() {
 								<div className="min-w-0">
 									<div className="flex flex-wrap items-center gap-2">
 										<Badge variant={getTypeBadgeVariant(contactRequest.type)}>
-											{formatContactRequestType(contactRequest.type)}
+											{copy.filters.types[contactRequest.type]}
 										</Badge>
 										<Badge
 											variant={contactRequest.isRead ? "muted" : "warning"}
 										>
-											{contactRequest.isRead ? "Gelesen" : "Ungelesen"}
+											{contactRequest.isRead ? copy.read : copy.unread}
 										</Badge>
 									</div>
 									<p className="mt-4 truncate text-sm font-black text-text">
@@ -360,8 +364,8 @@ export function AdminContactInbox() {
 										onClick={() => void handleMarkAsRead(contactRequest.id)}
 									>
 										{updatingContactRequestId === contactRequest.id
-											? "Speichern..."
-											: "Als gelesen markieren"}
+											? copy.markingAsRead
+											: copy.markAsRead}
 									</Button>
 								</div>
 							</article>

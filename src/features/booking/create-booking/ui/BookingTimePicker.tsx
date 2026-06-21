@@ -1,11 +1,13 @@
 import { clsx } from "clsx";
 import type { BookingAvailability } from "@/entities/booking";
+import type { Dictionary } from "@/shared/i18n";
 import { FeedbackBox } from "@/shared/ui";
 
 type BookingTimePickerMode = "DIRECT" | "HOT_DESK";
 
 type BookingTimePickerProps = {
 	availability: BookingAvailability;
+	copy: Dictionary["createBooking"]["timePicker"];
 	endTime: string;
 	mode: BookingTimePickerMode;
 	onEndTimeChange: (endTime: string) => void;
@@ -157,8 +159,19 @@ function getTimeButtonClassName(
 	);
 }
 
+function formatTemplate(
+	template: string,
+	values: Record<string, string | number>,
+): string {
+	return Object.entries(values).reduce(
+		(result, [key, value]) => result.replace(`{${key}}`, String(value)),
+		template,
+	);
+}
+
 export function BookingTimePicker({
 	availability,
+	copy,
 	endTime,
 	mode,
 	onEndTimeChange,
@@ -180,18 +193,20 @@ export function BookingTimePicker({
 		<section className="mt-8 border-t-4 border-primary pt-6">
 			<div>
 				<h3 className="text-xs font-black uppercase tracking-[0.18em] text-primary">
-					Zeit
+					{copy.sectionEyebrow}
 				</h3>
 				<p className="mt-2 text-sm font-semibold text-muted">
-					Öffnungszeiten: {availability.openingHours.start}-
-					{availability.openingHours.end} Uhr
+					{formatTemplate(copy.openingHours, {
+						start: availability.openingHours.start,
+						end: availability.openingHours.end,
+					})}
 				</p>
 			</div>
 
 			{availability.blockedIntervals.length > 0 && (
 				<div className="mt-4">
 					<p className="text-xs font-black uppercase tracking-[0.18em] text-primary">
-						Bereits belegt
+						{copy.blockedIntervals}
 					</p>
 					<ul className="mt-2 flex flex-wrap gap-2 text-sm text-muted">
 						{availability.blockedIntervals.map((interval) => (
@@ -199,7 +214,10 @@ export function BookingTimePicker({
 								key={`${interval.start}-${interval.end}`}
 								className="bg-primary/10 px-3 py-1.5 text-xs font-black text-primary"
 							>
-								{interval.start}-{interval.end} Uhr
+								{formatTemplate(copy.blockedInterval, {
+									start: interval.start,
+									end: interval.end,
+								})}
 							</li>
 						))}
 					</ul>
@@ -208,13 +226,13 @@ export function BookingTimePicker({
 
 			{!hasStartOptions && (
 				<FeedbackBox variant="empty" className="mt-4">
-					Für diesen Tag sind keine passenden Zeiträume verfügbar.
+					{copy.noSlots}
 				</FeedbackBox>
 			)}
 
 			<div className="mt-5">
 				<p className="text-xs font-black uppercase tracking-[0.18em] text-primary">
-					Startzeit
+					{copy.startTime}
 				</p>
 				<div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
 					{startTimeGridItems.map((item) => {
@@ -224,7 +242,10 @@ export function BookingTimePicker({
 									key={`${item.start}-${item.end}`}
 									className="col-span-3 border-2 border-dashed border-primary/25 bg-primary/5 px-3 py-2 text-center text-sm font-semibold text-muted sm:col-span-4 lg:col-span-6"
 								>
-									{item.start}-{item.end} Uhr nicht verfügbar
+									{formatTemplate(copy.unavailableRange, {
+										start: item.start,
+										end: item.end,
+									})}
 								</div>
 							);
 						}
@@ -245,7 +266,9 @@ export function BookingTimePicker({
 								<span>{item.time}</span>
 								{mode === "HOT_DESK" && availableUnitCount > 0 && (
 									<span className="mt-0.5 block text-[10px] font-semibold leading-tight">
-										{availableUnitCount} frei
+										{formatTemplate(copy.availableCount, {
+											count: availableUnitCount,
+										})}
 									</span>
 								)}
 							</button>
@@ -257,7 +280,7 @@ export function BookingTimePicker({
 			{startTime !== "" && (
 				<div className="mt-5">
 					<p className="text-xs font-black uppercase tracking-[0.18em] text-primary">
-						Endzeit
+						{copy.endTime}
 					</p>
 					<div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
 						{endOptions.map((option) => {
@@ -274,7 +297,9 @@ export function BookingTimePicker({
 									<span>{option.time}</span>
 									{mode === "HOT_DESK" && option.availableUnitCount && (
 										<span className="mt-0.5 block text-[10px] font-semibold leading-tight">
-											{option.availableUnitCount} frei
+											{formatTemplate(copy.availableCount, {
+												count: option.availableUnitCount,
+											})}
 										</span>
 									)}
 								</button>

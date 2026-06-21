@@ -9,6 +9,7 @@ import {
 } from "../lib/ics";
 
 type ExportBookingCalendarButtonProps = {
+	ariaLabel: string;
 	booking: MyBooking;
 	children?: ReactNode;
 	className?: string;
@@ -16,6 +17,7 @@ type ExportBookingCalendarButtonProps = {
 };
 
 export function ExportBookingCalendarButton({
+	ariaLabel,
 	booking,
 	children,
 	className,
@@ -41,7 +43,7 @@ export function ExportBookingCalendarButton({
 			type="button"
 			onClick={handleClick}
 			className={className}
-			aria-label="Buchung als ICS herunterladen"
+			aria-label={ariaLabel}
 		>
 			<DownloadIcs className={iconClassName ?? "size-4"} />
 			{children}

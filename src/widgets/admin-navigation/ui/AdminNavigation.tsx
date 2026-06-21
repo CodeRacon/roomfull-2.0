@@ -7,13 +7,15 @@ import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { getAdminContactRequestUnreadCount } from "@/entities/contact-request";
 import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
+import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes } from "@/shared/routing";
 
 const adminNavigationItems = [
-	{ href: "/admin", label: "Dashboard" },
-	{ href: "/admin/bookings", label: "Buchungsbetrieb" },
-	{ href: "/admin/units", label: "Unit-Inventar" },
-	{ href: "/admin/contact-requests", label: "Contact Inbox" },
-];
+	{ route: appRoutes.admin, labelKey: "dashboard" },
+	{ route: appRoutes.adminBookings, labelKey: "bookings" },
+	{ route: appRoutes.adminUnits, labelKey: "units" },
+	{ route: appRoutes.adminContactRequests, labelKey: "contactRequests" },
+] as const;
 
 let shouldScrollAdminPageTopAfterNavigation = false;
 
@@ -60,7 +62,12 @@ function scrollAdminPageStartIntoView(adminNavigation: HTMLElement): void {
 	});
 }
 
-export function AdminNavigation() {
+type AdminNavigationProps = {
+	copy: Dictionary["adminShell"]["navigation"];
+	locale: Locale;
+};
+
+export function AdminNavigation({ copy, locale }: AdminNavigationProps) {
 	const pathname = usePathname();
 	const { status, user, endSession } = useSession();
 	const navigationRef = useRef<HTMLElement>(null);
@@ -110,15 +117,16 @@ export function AdminNavigation() {
 		<nav
 			ref={navigationRef}
 			className="mt-6 grid border-2 border-primary bg-background sm:grid-cols-4"
-			aria-label="Admin Navigation"
+			aria-label={copy.ariaLabel}
 		>
 			{adminNavigationItems.map((item) => {
-				const isActive = pathname === item.href;
+				const href = item.route(locale);
+				const isActive = pathname === href;
 
 				return (
 					<Link
-						key={item.href}
-						href={item.href}
+						key={href}
+						href={href}
 						aria-current={isActive ? "page" : undefined}
 						onClick={(event) => {
 							if (!isActive && isPlainNavigationClick(event)) {
@@ -140,8 +148,8 @@ export function AdminNavigation() {
 							aria-hidden="true"
 						/>
 						<span className="flex min-w-0 items-center justify-between gap-2 pt-1">
-							<span className="truncate">{item.label}</span>
-							{item.href === "/admin/contact-requests" &&
+							<span className="truncate">{copy[item.labelKey]}</span>
+							{item.route === appRoutes.adminContactRequests &&
 							unreadContactRequestCount > 0 ? (
 								<span
 									className={clsx(
@@ -151,7 +159,7 @@ export function AdminNavigation() {
 											: "border-warning-text text-warning-text",
 									)}
 								>
-									<span className="sr-only">Ungelesene Kontaktanfragen: </span>
+									<span className="sr-only">{copy.unreadContactRequests} </span>
 									{unreadContactRequestCount > 99
 										? "99+"
 										: unreadContactRequestCount}

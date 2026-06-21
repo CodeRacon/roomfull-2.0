@@ -9,8 +9,14 @@ import type {
 import { getBookingContext } from "@/entities/booking";
 import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
+import type { Dictionary, Locale } from "@/shared/i18n";
 import { FeedbackBox, Panel } from "@/shared/ui";
 import { CreateBookingForm } from "./CreateBookingForm";
+
+type CreateBookingContextGateProps = {
+	copy: Dictionary["createBooking"];
+	locale: Locale;
+};
 
 function parseBookingContextInput(
 	searchParams: URLSearchParams,
@@ -30,7 +36,10 @@ function parseBookingContextInput(
 	return null;
 }
 
-export function CreateBookingContextGate() {
+export function CreateBookingContextGate({
+	copy,
+	locale,
+}: CreateBookingContextGateProps) {
 	const searchParams = useSearchParams();
 	const { status, endSession } = useSession();
 	const searchParamsString = searchParams.toString();
@@ -56,7 +65,7 @@ export function CreateBookingContextGate() {
 			try {
 				setIsLoading(true);
 				setErrorMessage(null);
-				const context = await getBookingContext(input);
+				const context = await getBookingContext(input, locale);
 
 				setBookingContext(context);
 			} catch (error) {
@@ -66,9 +75,19 @@ export function CreateBookingContextGate() {
 						return;
 					}
 
-					setErrorMessage(error.message);
+					if (error.status === 400) {
+						setErrorMessage(copy.gate.invalidContext);
+						return;
+					}
+
+					if (error.status === 404) {
+						setErrorMessage(copy.gate.contextUnavailable);
+						return;
+					}
+
+					setErrorMessage(copy.gate.contextError);
 				} else {
-					setErrorMessage("Ein unbekannter Fehler ist aufgetreten.");
+					setErrorMessage(copy.gate.unknownError);
 				}
 			} finally {
 				setIsLoading(false);
@@ -76,18 +95,27 @@ export function CreateBookingContextGate() {
 		}
 
 		void loadBookingContext();
-	}, [status, endSession, bookingContextInput]);
+	}, [
+		status,
+		endSession,
+		bookingContextInput,
+		locale,
+		copy.gate.unknownError,
+		copy.gate.invalidContext,
+		copy.gate.contextUnavailable,
+		copy.gate.contextError,
+	]);
 
 	if (bookingContextInput === null) {
 		return (
 			<FeedbackBox variant="error" className="mt-8">
-				Ungültiger Buchungskontext.
+				{copy.gate.invalidContext}
 			</FeedbackBox>
 		);
 	}
 
 	if (isLoading) {
-		return <Panel className="mt-8">Booking Context wird geladen…</Panel>;
+		return <Panel className="mt-8">{copy.gate.loadingContext}</Panel>;
 	}
 
 	if (errorMessage) {
@@ -99,8 +127,14 @@ export function CreateBookingContextGate() {
 	}
 
 	if (bookingContext === null) {
-		return <Panel className="mt-8">Booking Context wird vorbereitet…</Panel>;
+		return <Panel className="mt-8">{copy.gate.preparingContext}</Panel>;
 	}
 
-	return <CreateBookingForm bookingContext={bookingContext} />;
+	return (
+		<CreateBookingForm
+			bookingContext={bookingContext}
+			copy={copy}
+			locale={locale}
+		/>
+	);
 }

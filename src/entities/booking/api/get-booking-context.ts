@@ -1,4 +1,5 @@
 import { apiGetAuthenticated } from "@/shared/api";
+import type { Locale } from "@/shared/i18n";
 import type {
 	BookingContext,
 	BookingContextResponse,
@@ -7,8 +8,13 @@ import type {
 
 export async function getBookingContext(
 	input: GetBookingContextInput,
+	locale?: Locale,
 ): Promise<BookingContext> {
 	const searchParams = new URLSearchParams();
+
+	if (locale) {
+		searchParams.set("locale", locale);
+	}
 
 	if (input.unitId !== undefined) {
 		searchParams.set("unitId", input.unitId);

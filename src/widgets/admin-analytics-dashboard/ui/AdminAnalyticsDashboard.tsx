@@ -20,17 +20,8 @@ import {
 import { useSession } from "@/entities/session";
 import { formatUnitTypeName, type UnitTypeName } from "@/entities/unit";
 import { ApiRequestError } from "@/shared/api";
+import type { Dictionary } from "@/shared/i18n";
 import { FeedbackBox } from "@/shared/ui";
-
-const dateLabelFormatter = new Intl.DateTimeFormat("de-DE", {
-	day: "2-digit",
-	month: "2-digit",
-});
-
-const percentFormatter = new Intl.NumberFormat("de-DE", {
-	maximumFractionDigits: 1,
-	style: "percent",
-});
 
 const unitTypeChartColors: Record<UnitTypeName, string> = {
 	HOT_DESK: "var(--color-unit-hot-desk)",
@@ -39,9 +30,13 @@ const unitTypeChartColors: Record<UnitTypeName, string> = {
 	MEETING_ROOM: "var(--color-unit-meeting-room)",
 };
 
-function formatDateLabel(date: string): string {
+function parseAnalyticsDate(date: string): Date {
 	const [year, month, day] = date.split("-").map(Number);
-	return dateLabelFormatter.format(new Date(Date.UTC(year, month - 1, day)));
+	return new Date(Date.UTC(year, month - 1, day));
+}
+
+function formatDateLabel(date: string, formatter: Intl.DateTimeFormat): string {
+	return formatter.format(parseAnalyticsDate(date));
 }
 
 function getDemandTotal(analytics: BookingDemandAnalytics): number {
@@ -59,11 +54,23 @@ function getUnitTypeDemandData(analytics: BookingDemandAnalytics) {
 	}));
 }
 
-function formatCancellationRate(rate: number): string {
-	return percentFormatter.format(rate);
+function formatTemplate(
+	template: string,
+	values: Record<string, string | number>,
+): string {
+	return Object.entries(values).reduce(
+		(result, [key, value]) => result.replace(`{${key}}`, String(value)),
+		template,
+	);
 }
 
-export function AdminAnalyticsDashboard() {
+type AdminAnalyticsDashboardProps = {
+	copy: Dictionary["adminShell"]["analytics"];
+};
+
+export function AdminAnalyticsDashboard({
+	copy,
+}: AdminAnalyticsDashboardProps) {
 	const { status, endSession } = useSession();
 	const [analytics, setAnalytics] = useState<BookingDemandAnalytics | null>(
 		null,
@@ -91,22 +98,45 @@ export function AdminAnalyticsDashboard() {
 					}
 
 					if (error.status === 403) {
-						setErrorMessage("Du hast keine Berechtigung für diesen Bereich.");
+						setErrorMessage(copy.errors.forbidden);
 						return;
 					}
-
-					setErrorMessage(error.message);
-					return;
 				}
 
-				setErrorMessage("Die Analytics-Daten konnten nicht geladen werden.");
+				setErrorMessage(copy.errors.fallback);
 			} finally {
 				setIsLoading(false);
 			}
 		}
 
 		void loadAnalytics();
-	}, [status, endSession]);
+	}, [status, endSession, copy.errors.forbidden, copy.errors.fallback]);
+
+	const dateLabelFormatter = useMemo(
+		() =>
+			new Intl.DateTimeFormat(copy.dateLocale, {
+				day: "2-digit",
+				month: "2-digit",
+			}),
+		[copy.dateLocale],
+	);
+	const dateRangeFormatter = useMemo(
+		() =>
+			new Intl.DateTimeFormat(copy.dateLocale, {
+				day: "2-digit",
+				month: "2-digit",
+				year: "numeric",
+			}),
+		[copy.dateLocale],
+	);
+	const percentFormatter = useMemo(
+		() =>
+			new Intl.NumberFormat(copy.dateLocale, {
+				maximumFractionDigits: 1,
+				style: "percent",
+			}),
+		[copy.dateLocale],
+	);
 
 	const demandTotal = useMemo(
 		() => (analytics ? getDemandTotal(analytics) : 0),
@@ -122,36 +152,47 @@ export function AdminAnalyticsDashboard() {
 			<div className="grid gap-4 border-primary border-b-2 p-5 md:grid-cols-[minmax(0,1fr)_auto_auto] md:items-stretch">
 				<div className="flex min-w-0 flex-col justify-end">
 					<p className="text-xs font-black uppercase text-muted">
-						Admin Analytics
+						{copy.eyebrow}
 					</p>
 					<h2 className="mt-2 text-3xl font-black leading-none text-text">
-						Nachfrageverlauf
+						{copy.title}
 					</h2>
 					{analytics && (
 						<p className="mt-3 text-sm font-semibold text-muted">
-							{analytics.dateRange.from} bis {analytics.dateRange.to}
+							{formatTemplate(copy.dateRange, {
+								from: dateRangeFormatter.format(
+									parseAnalyticsDate(analytics.dateRange.from),
+								),
+								to: dateRangeFormatter.format(
+									parseAnalyticsDate(analytics.dateRange.to),
+								),
+							})}
 						</p>
 					)}
 				</div>
 				<div className="flex h-full flex-col border-2 border-primary bg-primary px-4 py-3 text-on-primary">
-					<p className="text-xs font-black uppercase">Aktive Bookings</p>
+					<p className="text-xs font-black uppercase">{copy.activeBookings}</p>
 					<p className="mt-2 text-4xl font-black leading-none tabular-nums">
 						{demandTotal}
 					</p>
 				</div>
 				<div className="flex h-full flex-col border-2 border-primary bg-background px-4 py-3 text-primary">
-					<p className="text-xs font-black uppercase">Stornoquote</p>
+					<p className="text-xs font-black uppercase">
+						{copy.cancellationRate}
+					</p>
 					<p className="mt-2 text-4xl font-black leading-none tabular-nums">
 						{analytics
-							? formatCancellationRate(
+							? percentFormatter.format(
 									analytics.cancellationStats.cancellationRate,
 								)
-							: "0 %"}
+							: percentFormatter.format(0)}
 					</p>
 					{analytics && (
 						<p className="mt-2 text-xs font-semibold text-muted">
-							{analytics.cancellationStats.cancelledBookings} von{" "}
-							{analytics.cancellationStats.totalBookings} storniert
+							{formatTemplate(copy.cancellationSummary, {
+								cancelled: analytics.cancellationStats.cancelledBookings,
+								total: analytics.cancellationStats.totalBookings,
+							})}
 						</p>
 					)}
 				</div>
@@ -160,7 +201,7 @@ export function AdminAnalyticsDashboard() {
 			<div className="p-5">
 				{isLoading && (
 					<p className="bg-primary/10 px-3 py-2 text-sm font-semibold text-muted">
-						Analytics werden geladen…
+						{copy.loading}
 					</p>
 				)}
 
@@ -169,16 +210,14 @@ export function AdminAnalyticsDashboard() {
 				)}
 
 				{!isLoading && !errorMessage && analytics && demandTotal === 0 && (
-					<FeedbackBox variant="empty">
-						Keine aktiven Buchungen im Analytics-Zeitraum.
-					</FeedbackBox>
+					<FeedbackBox variant="empty">{copy.empty}</FeedbackBox>
 				)}
 
 				{!isLoading && !errorMessage && analytics && demandTotal > 0 && (
 					<div className="grid gap-8 xl:grid-cols-[minmax(0,2fr)_minmax(20rem,1fr)]">
 						<div className="min-w-0">
 							<h3 className="text-sm font-black uppercase text-muted">
-								Entwicklung
+								{copy.trendTitle}
 							</h3>
 							<div className="mt-4 h-72">
 								<ResponsiveContainer width="100%" height="100%">
@@ -192,7 +231,9 @@ export function AdminAnalyticsDashboard() {
 										/>
 										<XAxis
 											dataKey="date"
-											tickFormatter={formatDateLabel}
+											tickFormatter={(date) =>
+												formatDateLabel(date, dateLabelFormatter)
+											}
 											tickMargin={10}
 											stroke="var(--color-muted)"
 											tick={{ fill: "var(--color-muted)", fontSize: 12 }}
@@ -204,7 +245,9 @@ export function AdminAnalyticsDashboard() {
 											width={32}
 										/>
 										<Tooltip
-											labelFormatter={(date) => formatDateLabel(String(date))}
+											labelFormatter={(date) =>
+												formatDateLabel(String(date), dateLabelFormatter)
+											}
 											contentStyle={{
 												background: "var(--color-background)",
 												border: "2px solid var(--color-primary)",
@@ -216,7 +259,7 @@ export function AdminAnalyticsDashboard() {
 										<Line
 											type="monotone"
 											dataKey="bookingCount"
-											name="Buchungen"
+											name={copy.bookingSeriesName}
 											stroke="var(--color-accent)"
 											strokeWidth={3}
 											dot={{ r: 3, strokeWidth: 2 }}
@@ -229,7 +272,7 @@ export function AdminAnalyticsDashboard() {
 
 						<div className="min-w-0">
 							<h3 className="text-sm font-black uppercase text-muted">
-								Nachfrage nach UnitType
+								{copy.unitTypeDemandTitle}
 							</h3>
 							<div className="mt-4 h-72">
 								<ResponsiveContainer width="100%" height="100%">
@@ -265,7 +308,11 @@ export function AdminAnalyticsDashboard() {
 												fontWeight: 700,
 											}}
 										/>
-										<Bar dataKey="bookingCount" name="Buchungen" radius={0}>
+										<Bar
+											dataKey="bookingCount"
+											name={copy.bookingSeriesName}
+											radius={0}
+										>
 											{unitTypeDemandData.map((unitTypePoint) => (
 												<Cell
 													key={unitTypePoint.unitType}
