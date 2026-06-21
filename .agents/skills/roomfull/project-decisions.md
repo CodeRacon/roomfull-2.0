@@ -80,6 +80,8 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`, auch wenn konkrete Units intern Area-Zuordnungen haben
 - Ein fehlender Allowlist-`UnitType` ist ein System-/Seed-Fehler und soll hart sichtbar werden
 - UI-Labels, Descriptions und Color-Schemes bleiben Frontend-Presentation-Mapping und sind keine Backend-Fachlogik
+- DB-Content wie konkrete Unit- und Area-Beschreibungen darf lokalisiert im Datenmodell liegen (`descriptionDe`, `descriptionEn`), wird in Public-/Booking-Context-Responses aber weiterhin als simples `description` ausgeliefert
+- Public Content-Lokalisierung wird explizit per `locale=de|en` angefordert; unbekannte Locale-Werte fallen auf Deutsch zurück
 
 ## Zeitmodell
 

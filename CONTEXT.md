@@ -38,6 +38,54 @@ _Avoid_: separater Endpoint pro Buchungsmodus
 Die öffentliche Startseite `/` erklärt RoomFull als Service und zeigt ansprechende Angebots-Teaser mit auth-aware CTAs in den Buchungseinstieg.
 _Avoid_: reine interne Unit-Liste oder fokussierter Buchungskatalog
 
+**Localized Route**:
+Eine sharebare RoomFull-URL mit explizitem Sprachsegment `de` oder `en`, die dieselbe fachliche Seite in der gewählten Sprache adressiert.
+_Avoid_: Sprache nur als unsichtbarer Browser- oder Session-Zustand
+
+**Canonical Localized Route Tree**:
+Der einzige kanonische Frontend-Routenbaum unter `de` oder `en`; unlokalisierte Pfade dienen nur als Redirect-Einstiege.
+_Avoid_: parallele lokalisierte und unlokalisierte Page-Baeume mit derselben Funktion
+
+**Language Switch**:
+Eine UI-Aktion, die zwischen `de` und `en` wechselt, den aktuellen Pfad inklusive Query erhaelt und die gewaehlte Locale fuer spaetere Root-Besuche speichert.
+_Avoid_: Sprachwechsel als Navigation zur Startseite oder Verlust von fachlichem UI-Zustand
+
+**Localized Auth Redirect**:
+Ein Auth-Redirect, dessen `next`-Ziel ein sicherer interner App-Pfad mit explizitem Locale-Segment ist.
+_Avoid_: externe `next`-URLs, API-Pfade als Login-Ziel, Sprachverlust nach Login oder Register
+
+**HTTP Error Page**:
+Eine globale Fehlerseite, die einen HTTP-Statuscode wie `404` oder `500` sichtbar darstellt und die begleitende UI-Copy per Locale uebersetzt.
+_Avoid_: deutsche feste Error-Page-Copy ohne Locale, API-Fehlerdetails als Page-Titel
+
+**Localized API Error Copy**:
+Frontend-Copy fuer bekannte API- und Formularfehler, abgeleitet aus stabilen Status- oder Fehlercodes statt aus Backend-Message-Strings.
+_Avoid_: Backend-Fehlermeldungen als fertige UI-Uebersetzungsquelle, sprachabhaengige API-Contracts
+
+**RoomFull UI Dictionary**:
+Ein typisiertes Frontend-Woerterbuch fuer sichtbare RoomFull-UI-Texte pro Locale.
+_Avoid_: verteilte Hardcoded-UI-Texte ohne Locale-Bezug, fruehe i18n-Library-Abhaengigkeit ohne Bedarf
+
+**Copy Workbench**:
+Die typisierten Locale-Dictionaries dienen zugleich als kompakte Arbeitsflaeche, um sichtbare UI-Copy gemeinsam zu pruefen und zu schaerfen.
+_Avoid_: separate Copy-Listen neben der technischen Uebersetzungsquelle, flache unsortierte Textsammlungen
+
+**UI Localization Scope**:
+Die erste i18n-Ausbaustufe uebersetzt sichtbare Frontend-Texte und Metadaten, waehrend Backend-Contracts, Enum-Werte und gespeicherte Daten sprachstabil bleiben.
+_Avoid_: uebersetzte API-Codes, lokalisierte Datenbankinhalte im ersten Slice, Backend-Fehlertexte als fertige UI-Copy
+
+**UI Copy Voice**:
+Die sichtbare Frontend-Copy darf nutzerorientierter und produktiger sein als Code-, API- und Domaenenbegriffe, wird aber je UI-Flaeche bewusst entschieden.
+_Avoid_: Backend-Fachbegriffe ungefiltert als Customer-Copy, vorab festgelegte Marketing-Sprache ohne Kontext
+
+**I18n Slice 1**:
+Der erste i18n-Lieferschnitt umfasst technische Locale-Infrastruktur, kanonische lokalisierte Routen und den oeffentlichen Booking-Einstieg bis zur Auth-Kante.
+_Avoid_: komplette Admin-, Account- und Booking-Historie-Uebersetzung im ersten Schritt
+
+**I18n Translation Transition**:
+Ein bewusster Zwischenzustand, in dem alle Frontend-Routen unter `de` und `en` funktionieren, aber noch nicht migrierte Bereiche voruebergehend deutsche UI-Copy behalten duerfen.
+_Avoid_: Blockieren lokalisierter Routen fuer noch nicht uebersetzte Bereiche, Mischsprache als Zielzustand
+
 **Booking Options Page**:
 Die schlanke Buchungsübersicht `/booking-options`, auf der Customers eine BookingOption-Kategorie auswählen und in die passende Detailauswahl einsteigen.
 _Avoid_: Marketing-Seite, allgemeine Service-Erklärung, alle konkreten Varianten gleichzeitig anzeigen
@@ -576,6 +624,24 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Was bedeutet status in Admin Booking Query?" war offen; aufgelöst: `status` ist **Admin Booking View Status**, nicht roher DB-Status.
 - "Soll Admin Booking Search auch Datum oder Unit-Namen durchsuchen?" war offen; aufgelöst: nein, bewusst nur Customer-Name und Customer-E-Mail.
 - "Zeigen Home und Buchen auf dieselbe Route?" war offen; aufgelöst: nein, `/` wird **Home Page** als Service-Einstieg, `/booking-options` wird **Booking Options Page** als fokussierter Buchungskatalog.
+- "Ist Sprache Teil der URL oder nur UI-Zustand?" war offen; aufgelöst: RoomFull nutzt **Localized Routes** mit explizitem `de`- oder `en`-Segment und `de` als Default Locale.
+- "Welche Sprache nutzt `/` ohne Sprachsegment?" war offen; aufgelöst: Root-Redirect nutzt aktive Sprachauswahl per Cookie vor Browserpräferenz vor Default Locale `de`.
+- "Bleiben alte unlokalisierte Routes als zweiter Page-Baum bestehen?" war offen; aufgelöst: nein, RoomFull nutzt einen **Canonical Localized Route Tree**; unlokalisierte Pfade redirecten locale-aware.
+- "Werden Route-Pfade und Slugs uebersetzt?" war offen; aufgelöst: nein, nur das Locale-Segment wird lokalisiert; restliche Route-Pfade und Slugs bleiben technisch stabil.
+- "Duerfen interne Links rohe App-Pfade nutzen?" war offen; aufgelöst: nein, interne Links und programmatic navigation nutzen zentrale locale-aware Route-Helper.
+- "Was passiert beim Sprachwechsel?" war offen; aufgelöst: **Language Switch** erhaelt aktuellen Pfad und Query und speichert die gewaehlte Locale.
+- "Wie behandeln Auth-Flows den `next`-Parameter?" war offen; aufgelöst: **Localized Auth Redirect** erlaubt nur sichere interne lokalisierte App-Pfade und erhaelt die aktive Locale.
+- "Wer liefert sichtbare Fehlertexte?" war offen; aufgelöst: globale **HTTP Error Pages** uebersetzen ihre Page-Copy per Locale; API-/Formfehler nutzen **Localized API Error Copy** im Frontend statt Backend-Messages als UI-Quelle.
+- "Braucht der erste i18n-Slice stabile Backend-Application-Error-Codes?" war offen; aufgelöst: nein, Application Error Codes bleiben ein spaeteres Backend-Contract-Slice; i18n Slice 1 nutzt HTTP-Status, Flow-Kontext und Fallback-Copy.
+- "Wo liegt i18n-Code im FSD?" war offen; aufgelöst: technische i18n- und Routing-Basis liegt in `shared`, der **Language Switch** als Nutzeraktion in einer Feature-Slice.
+- "Eigene Dictionaries oder i18n-Library?" war offen; aufgelöst: RoomFull startet mit einem eigenen typisierten **RoomFull UI Dictionary** nach Next.js-App-Router-Muster statt `next-intl`.
+- "Wie wird Dictionary-Vollstaendigkeit gesichert?" war offen; aufgelöst: `de` ist die strukturelle Dictionary-Quelle, `en` muss dieselbe Shape per TypeScript `satisfies typeof de` erfuellen.
+- "Sollen Locale-Dateien JSON oder TypeScript sein?" war offen; aufgelöst: RoomFull nutzt TypeScript-Dictionaries, weil sie als typgepruefte **Copy Workbench** fuer Mensch und Agent dienen.
+- "Wie werden Dictionary-Keys gruppiert?" war offen; aufgelöst: nach UI-Flaechen wie Home, Header, Footer, Booking Options, Auth und Errors statt nach technischen Domaenenobjekten.
+- "Was wird im ersten i18n-Slice uebersetzt?" war offen; aufgelöst: **UI Localization Scope** umfasst Frontend-UI-Texte und Metadaten, nicht Backend-Contracts, Enum-Werte oder gespeicherte Daten.
+- "Muss UI-Copy die Backend-Fachbegriffe spiegeln?" war offen; aufgelöst: nein, **UI Copy Voice** darf produktiger und nutzernaeher sein; konkreter Sprech wird situativ pro UI-Flaeche entschieden.
+- "Soll i18n Slice 1 die komplette App uebersetzen?" war offen; aufgelöst: nein, **I18n Slice 1** liefert Infrastruktur und den oeffentlichen Booking-Einstieg; Admin, Account und weitere Booking-Ansichten folgen in kleineren Slices.
+- "Was passiert mit noch nicht uebersetzten Bereichen unter `/en`?" war offen; aufgelöst: waehrend **I18n Translation Transition** bleiben sie erreichbar und duerfen temporaer deutsche UI-Copy zeigen.
 - "Soll Booking Options alle Varianten direkt zeigen?" war offen; aufgelöst: nein, `/booking-options` bleibt schlanke Kategorie-Übersicht, Details bleiben unter `/booking-options/[slug]`.
 - "Welche CTAs zeigt die Home Page?" war offen; aufgelöst: anonym `Jetzt buchen`, `Registrieren`, `Einloggen`; angemeldet `Jetzt buchen`, `Meine Buchungen`.
 - "Duerfen Home-Angebote direkt buchen?" war offen; aufgelöst: nein, Home-Angebots-Teaser verlinken auf `/booking-options/[slug]`; erst dort beginnt die konkrete Area- oder Unit-Auswahl.

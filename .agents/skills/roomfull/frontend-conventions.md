@@ -81,6 +81,12 @@ import { BookingCard } from "@/entities/booking/ui/BookingCard";
 - keine unnötig generischen Monster-Komponenten
 - Seiten bauen zusammen, implementieren aber nicht alles selbst
 
+## UI Copy
+
+Sichtbare Frontend-Copy muss nicht die technischen Code-, API- oder Domaenenbegriffe spiegeln. Customer-facing Copy darf produktiger, konkreter und nutzernaeher formuliert sein.
+
+Konkrete Tonalitaet und Wortwahl werden pro UI-Flaeche situativ entschieden. Dabei bleibt die fachliche Bedeutung konsistent mit Backend und Domaenenmodell.
+
 ## Account Overview
 
 `/me/account` ist in V1 eine geschützte Nur-Lese-Page für Session-User-Daten aller angemeldeten Rollen.
@@ -115,6 +121,38 @@ Nicht erlaubt:
 - `localStorage` außerhalb der Session-Entity lesen
 - Header oder geschützte Pages als eigene Auth-Quelle behandeln
 
+## Locale-Aware Navigation
+
+RoomFull nutzt kanonische lokalisierte Frontend-Routen mit explizitem `de`- oder `en`-Segment.
+
+Nur das Locale-Segment wird lokalisiert. Route-Pfade und Slugs bleiben technisch stabil und werden nicht pro Sprache uebersetzt.
+
+Technische i18n-Basis wie Locale-Konfiguration, Dictionaries, Cookie-Helfer und locale-aware Route-Builder gehoert nach `shared`.
+
+RoomFull UI Dictionaries sind typisierte TypeScript-Objekt-Dictionaries. `de` ist die strukturelle Quelle; `en` muss dieselbe Shape per TypeScript `satisfies typeof de` erfuellen.
+
+Komponenten bekommen bevorzugt den jeweils benoetigten Dictionary-Ausschnitt statt ein globales Dictionary-Objekt durchgereicht.
+
+Die Dictionary-Dateien dienen auch als Copy-Workbench fuer Mensch und Agent. Sie werden nach UI-Flaechen gruppiert, nicht als flache globale Textsammlung.
+
+Der sichtbare Sprachwechsel ist eine Nutzeraktion und gehoert als Feature-Slice nach `features/language/switch-language`.
+
+Interne Links und programmatic navigation bauen App-Pfade ueber zentrale locale-aware Route-Helper statt rohe Pfade wie `/booking-options` oder `/me/bookings` direkt in UI-Code zu schreiben.
+
+Erlaubt bleiben rohe externe URLs, Asset-Pfade und Backend-API-Pfade.
+
+Der Language Switcher erhaelt beim Wechsel zwischen `de` und `en` den aktuellen Pfad inklusive Query-Parameter und speichert die aktive Locale als Cookie.
+
+Globale Error-Pages duerfen HTTP-Statuscodes wie `404` und `500` sichtbar darstellen; Titel, Beschreibung und Aktionen kommen aus dem Locale-Dictionary.
+
+API- und Formularfehler werden im Frontend ueber stabile Status- oder Fehlercodes auf lokalisierte Copy gemappt. Backend-Message-Strings sind technische Fallbacks und keine kanonische UI-Copy.
+
+Der erste i18n-Slice fuehrt keine neuen Backend-Application-Error-Codes ein. Solche Codes sind ein eigenes Backend-Contract-Slice mit Tests, OpenAPI und Bruno-Folgearbeit.
+
+Der erste i18n-Slice umfasst technische Locale-Infrastruktur, kanonische lokalisierte Routen, Header/Footer mit Language Switcher, Home, Booking Options, Booking Option Detail, locale-aware Auth-Kanten und lokalisierte globale Error-Pages. Admin, Account und weitere Booking-Ansichten folgen in kleineren Slices.
+
+In der i18n-Uebergangsphase bleiben alle Routen unter `de` und `en` erreichbar. Noch nicht uebersetzte Bereiche duerfen voruebergehend deutsche UI-Copy behalten; das ist kein Zielzustand.
+
 ## Session Boundary
 
 Die Frontend Session liegt in `entities/session`.
@@ -136,6 +174,8 @@ Beispiele:
 - Login/Register rufen `startSession(authResponse)` auf
 - Logout ruft `endSession()` auf
 - geschützte UI-Flows nutzen `RequireAuth`
+
+Auth-Redirects erhalten die aktive Locale. `next`-Parameter duerfen nur sichere interne App-Pfade mit explizitem Locale-Segment enthalten; externe URLs, API-Pfade und unlokalisierte Pfade werden ignoriert oder auf einen rollenpassenden lokalisierten Fallback ersetzt.
 
 ## Admin Area
 

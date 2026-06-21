@@ -55,6 +55,7 @@ Der Contract enthält:
 `GET /public/units` bleibt für konkrete Unit-Auswahl und Unit-Details bestehen.
 `Unit.unitType` enthält ebenfalls `minDurationMinutes` und `maxDurationMinutes`.
 Der Endpoint ist optional nach `unitType` filterbar, z. B. `GET /public/units?unitType=BOOTH`.
+Der Endpoint unterstützt `locale=de|en` für lokalisierte DB-Content-Felder wie `description`; der Response-Contract bleibt ein einfaches `description`.
 Ungültige `unitType`-Werte liefern `400 Bad Request`.
 
 ### Bookings
@@ -159,6 +160,7 @@ Der Lesestatus ist nicht pro Admin getrennt.
 - direkt: `unitId`
 - auto-assign: `unitType=HOT_DESK + areaId`
 
+Der Endpoint unterstützt `locale=de|en` für lokalisierte Unit-/Area-Beschreibungen.
 Der Endpoint liefert Anzeige- und Dauerregel-Kontext, aber keine zeitbezogene Verfügbarkeit.
 
 `GET /bookings/availability` liefert nach Datumsauswahl die gemeinsame Availability-Basis fuer Direct Booking und Hot-Desk-Auto-Assign:

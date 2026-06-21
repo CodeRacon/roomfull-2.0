@@ -193,6 +193,16 @@ Optional filterbar nach `unitType`:
 GET /public/units?unitType=BOOTH
 ```
 
+Optional lokalisierbar nach `locale`:
+
+```txt
+GET /public/units?unitType=BOOTH&locale=en
+GET /public/units/:unitId?locale=de
+```
+
+`locale` darf `de` oder `en` sein. Unbekannte Locale-Werte fallen auf `de` zurück.
+Lokalisierte DB-Content-Felder wie Unit- und Area-Beschreibungen werden weiterhin als einfaches `description` zurückgegeben.
+
 Erlaubte Werte:
 
 - `HOT_DESK`
@@ -219,13 +229,13 @@ Liefert auth-required den Backend-validierten Booking Context fuer `/bookings/ne
 Direkter Modus:
 
 ```txt
-GET /bookings/context?unitId=cmxxxxx
+GET /bookings/context?unitId=cmxxxxx&locale=en
 ```
 
 Auto-Assign-Modus:
 
 ```txt
-GET /bookings/context?unitType=HOT_DESK&areaId=cmyyyyy
+GET /bookings/context?unitType=HOT_DESK&areaId=cmyyyyy&locale=de
 ```
 
 Response:
@@ -257,6 +267,7 @@ type BookingContext =
 Regeln:
 
 - akzeptiert entweder `unitId` oder `unitType=HOT_DESK&areaId=...`
+- `locale=de|en` lokalisiert Unit-/Area-Beschreibungen im `description`-Feld
 - gemischte oder unvollständige Query-Kontexte liefern `400`
 - unbekannte oder nicht buchbare Unit/Area liefert `404`
 - liefert keine zeitbezogene Verfügbarkeit und keinen `409`
