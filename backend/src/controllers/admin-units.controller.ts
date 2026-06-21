@@ -1,3 +1,4 @@
+import type { Area, BookableUnit } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
 import {
@@ -25,8 +26,42 @@ const INVALID_BODY_MESSAGE = "Ungültiger Request Body";
 const INVALID_QUERY_MESSAGE = "Ungültige Query-Parameter";
 const INVALID_ROUTE_PARAMS_MESSAGE = "Ungültige Route-Parameter";
 
+type LocalizedDescriptionFields = {
+	descriptionDe?: string | null;
+	descriptionEn?: string | null;
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
+}
+
+function omitLocalizedDescriptionFields<T extends object>(
+	value: T,
+): Omit<T, "descriptionDe" | "descriptionEn"> {
+	const {
+		descriptionDe: _descriptionDe,
+		descriptionEn: _descriptionEn,
+		...rest
+	} = value as T & LocalizedDescriptionFields;
+
+	return rest;
+}
+
+function serializeAdminUnit<
+	T extends BookableUnit & {
+		area?: (Area & LocalizedDescriptionFields) | null;
+	},
+>(unit: T) {
+	const { area, ...unitWithoutArea } = unit;
+
+	if (!("area" in unit)) {
+		return omitLocalizedDescriptionFields(unit);
+	}
+
+	return {
+		...omitLocalizedDescriptionFields(unitWithoutArea),
+		area: area ? omitLocalizedDescriptionFields(area) : area,
+	};
 }
 
 function fail(next: NextFunction, statusCode: number, message: string): void {
@@ -178,7 +213,7 @@ export async function listAdminUnitsController(
 
 	try {
 		const units = await listAdminUnits(query);
-		res.status(200).json({ units });
+		res.status(200).json({ units: units.map(serializeAdminUnit) });
 	} catch (error) {
 		next(error);
 	}
@@ -191,7 +226,10 @@ export async function getAdminUnitContextController(
 ): Promise<void> {
 	try {
 		const context = await getAdminUnitContext();
-		res.status(200).json(context);
+		res.status(200).json({
+			...context,
+			areas: context.areas.map(omitLocalizedDescriptionFields),
+		});
 	} catch (error) {
 		next(error);
 	}
@@ -211,7 +249,7 @@ export async function createAdminUnitController(
 
 	try {
 		const newUnit = await createNewUnit(input);
-		res.status(201).json({ unit: newUnit });
+		res.status(201).json({ unit: serializeAdminUnit(newUnit) });
 	} catch (error) {
 		next(error);
 	}
@@ -236,7 +274,7 @@ export async function updateAdminUnitController(
 
 	try {
 		const updatedUnit = await updateExistingUnit({ id: unitId, ...input });
-		res.status(200).json({ unit: updatedUnit });
+		res.status(200).json({ unit: serializeAdminUnit(updatedUnit) });
 	} catch (error) {
 		next(error);
 	}
@@ -255,7 +293,7 @@ export async function deactivateAdminUnitController(
 
 	try {
 		const deactivatedUnit = await deactivateExistingUnit(unitId);
-		res.status(200).json({ unit: deactivatedUnit });
+		res.status(200).json({ unit: serializeAdminUnit(deactivatedUnit) });
 	} catch (error) {
 		next(error);
 	}

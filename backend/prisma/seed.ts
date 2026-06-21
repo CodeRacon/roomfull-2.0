@@ -49,11 +49,15 @@ async function main(): Promise<void> {
 		where: { name: "Open World" },
 		update: {
 			description: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
+			descriptionDe: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
+			descriptionEn: "Open area with a lively coworking atmosphere",
 			isActive: true,
 		},
 		create: {
 			name: "Open World",
 			description: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
+			descriptionDe: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
+			descriptionEn: "Open area with a lively coworking atmosphere",
 		},
 	});
 
@@ -61,11 +65,15 @@ async function main(): Promise<void> {
 		where: { name: "Quiet Place" },
 		update: {
 			description: "Ruhiger Bereich für konzentriertes Arbeiten",
+			descriptionDe: "Ruhiger Bereich für konzentriertes Arbeiten",
+			descriptionEn: "Quiet area for focused work",
 			isActive: true,
 		},
 		create: {
 			name: "Quiet Place",
 			description: "Ruhiger Bereich für konzentriertes Arbeiten",
+			descriptionDe: "Ruhiger Bereich für konzentriertes Arbeiten",
+			descriptionEn: "Quiet area for focused work",
 		},
 	});
 
@@ -107,6 +115,8 @@ async function main(): Promise<void> {
 			id: `seed-hot-desk-open-world-${index + 1}`,
 			name: `Open World Desk ${index + 1}`,
 			description: "Flexibler Einzelplatz im Open-World-Bereich",
+			descriptionDe: "Flexibler Einzelplatz im Open-World-Bereich",
+			descriptionEn: "Flexible single desk in the Open World area",
 			capacity: 1,
 			displayOrder: 10 + index,
 			unitTypeId: hotDeskType.id,
@@ -116,6 +126,8 @@ async function main(): Promise<void> {
 			id: `seed-hot-desk-quiet-place-${index + 1}`,
 			name: `Quiet Place Desk ${index + 1}`,
 			description: "Ruhiger Einzelplatz im Quiet-Place-Bereich",
+			descriptionDe: "Ruhiger Einzelplatz im Quiet-Place-Bereich",
+			descriptionEn: "Quiet single desk in the Quiet Place area",
 			capacity: 1,
 			displayOrder: 100 + index,
 			unitTypeId: hotDeskType.id,
@@ -129,6 +141,8 @@ async function main(): Promise<void> {
 			id: "seed-booth-b1",
 			name: "Booth B1",
 			description: "Kompakte Booth für fokussierte Arbeit im kleinen Team",
+			descriptionDe: "Kompakte Booth für fokussierte Arbeit im kleinen Team",
+			descriptionEn: "Compact booth for focused work in a small team",
 			capacity: 4,
 			displayOrder: 30,
 			unitTypeId: boothType.id,
@@ -138,6 +152,8 @@ async function main(): Promise<void> {
 			id: "seed-team-room-c1",
 			name: "Team Room C1",
 			description: "Meetingraum für kleine Teams und Workshops",
+			descriptionDe: "Meetingraum für kleine Teams und Workshops",
+			descriptionEn: "Meeting room for small teams and workshops",
 			capacity: 6,
 			displayOrder: 40,
 			unitTypeId: teamRoomType.id,
@@ -147,6 +163,8 @@ async function main(): Promise<void> {
 			id: "seed-meeting-room-d1",
 			name: "Meeting Room D1",
 			description: "Großer Meeting Room für Workshops und Abstimmungen",
+			descriptionDe: "Großer Meeting Room für Workshops und Abstimmungen",
+			descriptionEn: "Large meeting room for workshops and alignment",
 			capacity: 16,
 			displayOrder: 50,
 			unitTypeId: meetingRoomType.id,
@@ -161,6 +179,8 @@ async function main(): Promise<void> {
 				update: {
 					name: unit.name,
 					description: unit.description,
+					descriptionDe: unit.descriptionDe,
+					descriptionEn: unit.descriptionEn,
 					capacity: unit.capacity,
 					displayOrder: unit.displayOrder,
 					unitTypeId: unit.unitTypeId,

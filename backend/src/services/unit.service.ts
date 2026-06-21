@@ -26,6 +26,11 @@ import {
 } from "../db/unit.repository.js";
 import { AppError } from "../lib/app-error.js";
 import {
+	type ContentLocale,
+	defaultContentLocale,
+	resolveLocalizedDescription,
+} from "../lib/content-locale.js";
+import {
 	assertBookableDateTimeRange,
 	parseDateTime,
 } from "./booking-time-policy.js";
@@ -45,6 +50,21 @@ export type BookingOptionArea = {
 	id: string;
 	name: string;
 	activeUnitCount: number;
+};
+
+type PublicUnitArea = Omit<
+	NonNullable<UnitWithRelations["area"]>,
+	"description" | "descriptionDe" | "descriptionEn"
+> & {
+	description: string | null;
+};
+
+export type PublicUnit = Omit<
+	UnitWithRelations,
+	"description" | "descriptionDe" | "descriptionEn" | "area"
+> & {
+	description: string;
+	area: PublicUnitArea | null;
 };
 
 export type BookingOption = {
@@ -191,6 +211,51 @@ function buildBookingOption(unitType: UnitTypeForBookingOption): BookingOption {
 		totalActiveUnits,
 		maxCapacity,
 		areas,
+	};
+}
+
+function localizeArea(
+	area: UnitWithRelations["area"],
+	locale: ContentLocale,
+): PublicUnitArea | null {
+	if (!area) {
+		return null;
+	}
+
+	const { descriptionDe, descriptionEn, ...areaWithoutLocalizedDescriptions } =
+		area;
+
+	return {
+		...areaWithoutLocalizedDescriptions,
+		description: resolveLocalizedDescription(
+			{
+				description: area.description,
+				descriptionDe,
+				descriptionEn,
+			},
+			locale,
+		),
+	};
+}
+
+function localizeUnit(
+	unit: UnitWithRelations,
+	locale: ContentLocale,
+): PublicUnit {
+	const { area, descriptionDe, descriptionEn, ...unitWithoutArea } = unit;
+
+	return {
+		...unitWithoutArea,
+		description:
+			resolveLocalizedDescription(
+				{
+					description: unit.description,
+					descriptionDe,
+					descriptionEn,
+				},
+				locale,
+			) ?? unit.description,
+		area: localizeArea(area, locale),
 	};
 }
 
@@ -360,15 +425,17 @@ export async function createNewUnit(
 }
 
 export async function getPublicUnits(input?: {
+	locale?: ContentLocale;
 	unitType?: string;
-}): Promise<UnitWithRelations[]> {
+}): Promise<PublicUnit[]> {
 	const unitType = parseOptionalUnitType(input?.unitType);
+	const locale = input?.locale ?? defaultContentLocale;
 
-	if (unitType) {
-		return listActiveUnitsWithRelationsByUnitType(unitType);
-	}
+	const units = unitType
+		? await listActiveUnitsWithRelationsByUnitType(unitType)
+		: await listActiveUnitsWithRelations();
 
-	return listActiveUnitsWithRelations();
+	return units.map((unit) => localizeUnit(unit, locale));
 }
 
 export async function listAdminUnits(
@@ -413,7 +480,8 @@ export async function getPublicBookingOptions(): Promise<BookingOption[]> {
 
 export async function getPublicUnitById(
 	unitId: string,
-): Promise<UnitWithRelations> {
+	locale = defaultContentLocale,
+): Promise<PublicUnit> {
 	const normalizedUnitId = unitId.trim();
 
 	if (normalizedUnitId.length === 0) {
@@ -426,7 +494,7 @@ export async function getPublicUnitById(
 		throw new AppError(404, "Unit wurde nicht gefunden");
 	}
 
-	return existingUnit;
+	return localizeUnit(existingUnit, locale);
 }
 
 export async function getPublicUnitAvailability(input: {

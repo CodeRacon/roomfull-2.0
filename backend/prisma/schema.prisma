@@ -54,6 +54,8 @@ model Area {
   id          String         @id @default(cuid())
   name        String         @unique
   description String?
+  descriptionDe String?       @map("description_de")
+  descriptionEn String?       @map("description_en")
   isActive    Boolean        @default(true) @map("is_active")
   units       BookableUnit[]
   createdAt   DateTime       @default(now()) @map("created_at")
@@ -78,6 +80,8 @@ model BookableUnit {
   id          String    @id @default(cuid())
   name        String
   description String
+  descriptionDe String? @map("description_de")
+  descriptionEn String? @map("description_en")
   capacity    Int
   isActive    Boolean   @default(true) @map("is_active")
   displayOrder Int      @default(0) @map("display_order")

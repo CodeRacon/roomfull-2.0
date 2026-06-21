@@ -144,6 +144,17 @@
 							"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
 						},
 						"description": "Optionaler Filter nach UnitType"
+					},
+					{
+						"name": "locale",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": ["de", "en"],
+							"default": "de"
+						},
+						"description": "Optionales Locale fuer lokalisierte Unit-/Area-Beschreibungen. Der Response liefert weiterhin `description`."
 					}
 				],
 				"responses": {
@@ -186,6 +197,17 @@
 						"in": "path",
 						"required": true,
 						"schema": { "type": "string" }
+					},
+					{
+						"name": "locale",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": ["de", "en"],
+							"default": "de"
+						},
+						"description": "Optionales Locale fuer lokalisierte Unit-/Area-Beschreibungen. Der Response liefert weiterhin `description`."
 					}
 				],
 				"responses": {
@@ -435,6 +457,17 @@
 						"required": false,
 						"schema": { "type": "string" },
 						"description": "Area für Hot-Desk-Auto-Assign"
+					},
+					{
+						"name": "locale",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": ["de", "en"],
+							"default": "de"
+						},
+						"description": "Optionales Locale fuer lokalisierte Unit-/Area-Beschreibungen. Der Response liefert weiterhin `description`."
 					}
 				],
 				"responses": {

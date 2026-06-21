@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
+import { parseContentLocale } from "../lib/content-locale.js";
 import {
 	cancelBookingForUser,
 	createBookingForUser,
@@ -75,12 +76,14 @@ function parseBookingContextQuery(query: Request["query"]): {
 	unitId?: string;
 	areaId?: string;
 	unitType?: string;
+	locale?: ReturnType<typeof parseContentLocale>;
 } {
 	const unitId = readStringQuery(query.unitId);
 	const areaId = readStringQuery(query.areaId);
 	const unitType = readStringQuery(query.unitType);
+	const locale = parseContentLocale(readStringQuery(query.locale));
 
-	return { unitId, areaId, unitType };
+	return { unitId, areaId, unitType, locale };
 }
 
 function parseBookingAvailabilityQuery(query: Request["query"]): {

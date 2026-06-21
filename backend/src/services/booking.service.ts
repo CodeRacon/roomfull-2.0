@@ -20,6 +20,11 @@ import {
 } from "../db/unit.repository.js";
 import { AppError } from "../lib/app-error.js";
 import {
+	type ContentLocale,
+	defaultContentLocale,
+	resolveLocalizedDescription,
+} from "../lib/content-locale.js";
+import {
 	addBerlinCalendarDays,
 	assertBookableDateTimeRange,
 	getBerlinCalendarDayRange,
@@ -70,6 +75,7 @@ type GetBookingContextInput = {
 	unitId?: string;
 	areaId?: string;
 	unitType?: string;
+	locale?: ContentLocale;
 };
 
 type BookingContextEntry =
@@ -259,6 +265,7 @@ function assertDurationForType(
 
 async function getDirectBookingContext(
 	unitId: string,
+	locale: ContentLocale,
 ): Promise<DirectBookingContext> {
 	const unit = await findActiveUnitByIdWithRelations(unitId);
 
@@ -271,7 +278,15 @@ async function getDirectBookingContext(
 		unit: {
 			id: unit.id,
 			name: unit.name,
-			description: unit.description,
+			description:
+				resolveLocalizedDescription(
+					{
+						description: unit.description,
+						descriptionDe: unit.descriptionDe,
+						descriptionEn: unit.descriptionEn,
+					},
+					locale,
+				) ?? unit.description,
 			capacity: unit.capacity,
 			unitType: mapUnitTypePolicy(
 				unit.unitType.name,
@@ -285,6 +300,7 @@ async function getDirectBookingContext(
 async function getAutoAssignBookingContext(input: {
 	areaId: string;
 	unitType: UnitTypeName;
+	locale: ContentLocale;
 }): Promise<AutoAssignBookingContext> {
 	const area = await findActiveAreaById(input.areaId);
 
@@ -317,7 +333,7 @@ async function getAutoAssignBookingContext(input: {
 		area: {
 			id: area.id,
 			name: area.name,
-			description: area.description,
+			description: resolveLocalizedDescription(area, input.locale),
 			seatCount,
 		},
 	};
@@ -327,14 +343,16 @@ export async function getBookingContext(
 	input: GetBookingContextInput,
 ): Promise<BookingContext> {
 	const entry = resolveBookingContextEntry(input);
+	const locale = input.locale ?? defaultContentLocale;
 
 	if (entry.mode === "DIRECT") {
-		return getDirectBookingContext(entry.unitId);
+		return getDirectBookingContext(entry.unitId, locale);
 	}
 
 	return getAutoAssignBookingContext({
 		areaId: entry.areaId,
 		unitType: entry.unitType,
+		locale,
 	});
 }
 

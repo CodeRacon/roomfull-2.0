@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
+import { parseContentLocale } from "../lib/content-locale.js";
 import {
 	getPublicBookingOptions,
 	getPublicUnitAvailability,
@@ -21,9 +22,12 @@ export async function listPublicUnitsController(
 		typeof req.query.unitType === "string"
 			? req.query.unitType.trim()
 			: undefined;
+	const locale = parseContentLocale(
+		typeof req.query.locale === "string" ? req.query.locale.trim() : undefined,
+	);
 
 	try {
-		const units = await getPublicUnits({ unitType });
+		const units = await getPublicUnits({ unitType, locale });
 		res.status(200).json({ units });
 	} catch (error) {
 		next(error);
@@ -56,7 +60,14 @@ export async function getPublicUnitByIdController(
 	}
 
 	try {
-		const unit = await getPublicUnitById(unitId);
+		const unit = await getPublicUnitById(
+			unitId,
+			parseContentLocale(
+				typeof req.query.locale === "string"
+					? req.query.locale.trim()
+					: undefined,
+			),
+		);
 		res.status(200).json({ unit });
 	} catch (error) {
 		next(error);
