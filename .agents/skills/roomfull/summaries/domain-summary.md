@@ -60,6 +60,7 @@ Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem
 ## Zeitmodell
 
 - keine festen Slots
+- Booking-Erstellung nutzt `date` plus lokale `startTime`/`endTime` in `Europe/Berlin`
 - globale Öffnungszeiten: Mo-Fr, 08:00-22:00
 - nur zukünftige Zeiträume
 - `start_time < end_time`
@@ -74,8 +75,8 @@ Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem
 
 ## Hot-Desk-Auto-Assign
 
-- Request: `areaId + unitType + start + end`
-- in V1 nur `HOT_DESK`
+- Request: `areaId + unitType + date + startTime + endTime`
+- dauerhaft nur `HOT_DESK`
 - Area-Auswahl ist für Hot Desk im Customer-Flow erforderlich
 - freie Unit deterministisch nach `displayOrder`, dann `id`
 - race-sicher über Transaktion/Konflikt-Retry

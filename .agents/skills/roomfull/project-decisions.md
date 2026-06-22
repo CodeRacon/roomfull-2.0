@@ -87,6 +87,7 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 
 - keine gespeicherten TimeSlot-Objekte
 - Bookings arbeiten mit `start_time` und `end_time`
+- Der Create-Contract nutzt `date + startTime + endTime` als lokale Coworking-Zeit in `Europe/Berlin`; Browser-Zeitzonen bestimmen keine Fachzeit
 - Verfügbarkeit wird aus bestehenden Bookings berechnet
 - alle Bookings müssen auf dem globalen 15-Minuten-Booking-Time-Grid liegen
 - Availability Slots sind berechnete Preview-Ergebnisse, keine gespeicherten Fachobjekte
@@ -113,8 +114,8 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - `Open World` und `Quiet Space` sind Areas, keine buchbaren Einheiten
 - `HOT_DESK` braucht immer eine `areaId`
 - Auto-Assign-Modus:
-  - Request: `areaId + unitType + start + end`
-  - in V1 nur für `HOT_DESK`
+  - Request: `areaId + unitType + date + startTime + endTime`
+  - dauerhaft nur für `HOT_DESK`
   - Auswahl deterministisch nach `displayOrder`, dann `id`
   - race-sicher über Transaktion/Konflikt-Retry
 
@@ -131,6 +132,7 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - nur Montag bis Freitag
 - nur innerhalb globaler Öffnungszeiten (08:00-22:00)
 - Start und Ende müssen auf dem 15-Minuten-Booking-Time-Grid liegen
+- Zeit- und Kalenderumrechnung liegt zentral hinter der Coworking-Calendar-Seam; Tests verwenden einen Fixed-Clock-Adapter
 - Overlap-Regel: `new_start < existing_end AND new_end > existing_start`
 - Customers dürfen nur eigene zukünftige Bookings stornieren
 - Admin darf Bookings lesen und ebenfalls Bookings anlegen

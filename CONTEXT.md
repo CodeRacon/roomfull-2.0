@@ -31,8 +31,12 @@ Eine Booking referenziert fachlich genau eine **BookableUnit** (nicht mehr `Spac
 _Avoid_: `spaceId` als langfristige Fachsprache
 
 **Booking Request Modes**:
-`POST /bookings` unterstützt zwei Modi: direkt (`unitId + start + end`) und auto-assign (`areaId + unitType + start + end`).
-_Avoid_: separater Endpoint pro Buchungsmodus
+Booking-Flow-Anfragen für Context, Availability und Erstellung wählen genau einen von zwei Modi: `DIRECT` (`unitId`) oder `AUTO_ASSIGN` (`areaId + unitType=HOT_DESK`).
+_Avoid_: separater Endpoint pro Buchungsmodus, abweichende Modusnamen oder Zielregeln zwischen Flow-Schritten
+
+**Booking Time Input**:
+Eine Booking-Erstellung übermittelt `date` sowie lokale `HH:mm`-Werte für `startTime` und `endTime`, die das Backend verbindlich als Coworking-Zeit in `Europe/Berlin` interpretiert.
+_Avoid_: vom Browser erzeugte ISO-Zeitpunkte, Browser-Zeitzone als fachliche Zeitquelle
 
 **Home Page**:
 Die öffentliche Startseite `/` erklärt RoomFull als Service und zeigt ansprechende Angebots-Teaser mit auth-aware CTAs in den Buchungseinstieg.
@@ -131,8 +135,8 @@ Nach gewählter Startzeit bietet die Create Booking Page nur Endzeiten an, die d
 _Avoid_: Endzeiten, die einen belegten Zeitraum überspringen oder eine nicht zusammenhängende Verfügbarkeit suggerieren
 
 **Booking Availability Contract**:
-Die Create Booking Page nutzt einen gemeinsamen Availability-Contract für Direct Booking und Hot-Desk-Auto-Assign. Der Request beschreibt entweder eine konkrete Unit oder einen Area-/UnitType-Kontext; die Response liefert Tagesraster, Öffnungszeiten, Availability Slots und blockierende Intervalle. Availability Slots und blockierende Intervalle nutzen lokale `HH:mm`-Zeiten; das Datum steht separat im Contract.
-_Avoid_: Frontend rekonstruiert Modus-spezifische Verfügbarkeit aus unterschiedlichen Rohdaten
+Die Create Booking Page nutzt den einzigen zeitbezogenen, auth-required Availability-Contract für Direct Booking und Hot-Desk-Auto-Assign; lokale `HH:mm`-Slots und blockierende Intervalle werden getrennt vom Datum geliefert.
+_Avoid_: parallele Public-Unit-Availability, Frontend rekonstruiert Modus-spezifische Verfügbarkeit aus unterschiedlichen Rohdaten
 
 **Availability Slot**:
 Ein berechnetes, nicht gespeichertes verfügbares Zeitfenster im Booking Availability Contract. Ein Availability Slot hat lokale `HH:mm`-Start-/Endzeiten, verfügbare Unit-Anzahl und reserviert nichts; das zugehörige Datum steht separat im Contract.
@@ -147,8 +151,8 @@ Die wiederverwendbare Kalenderbasis liegt fachlich neutral in `shared/ui`; Booki
 _Avoid_: Feature-interne Kalenderkomponenten zwischen Slices importieren oder fachliche Booking-Regeln in `shared` verlagern
 
 **Direct Booking Calendar State**:
-Der Custom Calendar kann bei direkter Unit-Buchung belegte und voll belegte Tage anhand der Unit-Belegung markieren.
-_Avoid_: belegte Direct-Booking-Tage erst nach versteckter Datumsauswahl sichtbar machen
+Eine backendberechnete Monatsübersicht markiert direkte Unit-Tage als verfügbar, teilweise belegt oder voll belegt, wobei voll belegt keine freie Duration-Policy-gültige Zeitspanne mehr bedeutet.
+_Avoid_: Request pro Kalendertag, Frontend-Ableitung aus rohen Intervallen, belegte Tage erst nach versteckter Datumsauswahl sichtbar machen
 
 **Auto-Assign Calendar Scope**:
 Bei Hot-Desk-Auto-Assign blockiert der Custom Calendar fachlich unmoegliche Tage; zeitbezogene Area-Verfügbarkeit wird erst nach Datumsauswahl als Tagesraster geprüft.
@@ -246,12 +250,16 @@ _Avoid_: Kalender als neue Availability-Pruefung oder als anderer Booking-Contra
 Karten-, Listen- und Kalenderansicht bieten fuer eine eigene Booking dieselben verfuegbaren Customer-Aktionen; Unterschiede liegen nur in Navigation und visueller Dichte.
 _Avoid_: Aktionen nur in einer Ansicht auffindbar machen
 
+**Cancel Booking Confirmation Workflow**:
+In "Meine Buchungen" ist hoechstens eine Storno-Bestaetigung gleichzeitig geoeffnet. Das Cancel-Booking-Feature besitzt dafuer mit `CancelBookingWorkflow` eine gemeinsame Workflow-Instanz, die von der My Bookings View genau einmal um alle dargestellten Bookings gesetzt wird; Karten-, Listen- und Kalenderdarstellung greifen auf denselben Zustand zu. Das Workflow-Interface erhaelt Copy sowie Erfolgs- und Fehlercallbacks einmalig. Das Feature besitzt Oeffnen, Keyword-Pruefung, Abbruch, Submit-Zustand, Fehlerzuordnung und Session-Ende bei `401`; die Page kennt nur die Ergebnisse und aktualisiert die Booking oder zeigt Feedback. Das Feature stellt mit `CancelBookingCardAction` eine explizite Kartenvariante und mit `CancelBookingCompactAction` eine explizite kompakte Variante der Storno-Aktion bereit; beide benoetigen von ihrem Caller nur die `bookingId`, und die Kalenderdarstellung verwendet ebenfalls die kompakte Variante. Beide Varianten teilen denselben Workflow, duerfen ihn aber unterschiedlich darstellen. Ein Wechsel des View Mode setzt die Workflow-Instanz zurueck, schliesst damit die offene Bestaetigung und verwirft die Keyword-Eingabe. Nach erfolgreichem Storno schliesst das Feature die Bestaetigung und setzt die Eingabe zurueck. Bei `403`, `404`, `409` oder einem technischen Fehler bleiben Bestaetigung und Keyword fuer einen moeglichen Retry erhalten; bei `401` endet die Frontend Session.
+_Avoid_: mehrere Workflow-Instanzen pro Darstellung, parallele Storno-Bestaetigungen, Workflow-State in der Page, ein einzelnes Darstellungsmodul mit kombinierbaren Varianten-Booleans, versteckten Confirmation-State nach einem View-Mode-Wechsel, verlorenen Retry-State nach behebbaren Fehlern, duplizierten Workflow-State in den Darstellungen oder unterschiedliche Storno-Regeln je View Mode
+
 **Booking Context Delivery Order**:
 Der Backend-Endpoint fuer Booking Context wird vor der Create Booking Page umgesetzt.
 _Avoid_: temporaere Frontend-Rekonstruktion gegen Public Unit APIs
 
 **Auto-Assign Scope**:
-Der Auto-Assign-Modus ist in V1 ausschließlich für `HOT_DESK` erlaubt.
+Der Auto-Assign-Modus ist dauerhaft ausschließlich für `HOT_DESK` erlaubt.
 _Avoid_: automatische Zuordnung für `BOOTH` oder `TEAM_ROOM`
 
 **Hot Desk Allocation Mode**:
@@ -283,8 +291,8 @@ UnitTypes werden als eigener Katalog geführt (`HOT_DESK`, `BOOTH`, `TEAM_ROOM`)
 _Avoid_: Dauerregeln als harte If-Else-Logik ohne Datenquelle
 
 **Duration Policy**:
-Dauergrenzen werden pro UnitType in Minuten geführt und vom Booking-Service dynamisch ausgewertet.
-_Avoid_: global harte Dauerkonstante im Service
+Dauergrenzen werden pro UnitType in Minuten geführt und gemeinsam mit den übrigen zeitlichen Booking-Regeln durch die Booking Time Policy ausgewertet.
+_Avoid_: globale harte Dauerkonstante oder separate Duration-Prüfung außerhalb der Booking Time Policy
 
 **Hot Desk**:
 Ein UnitType für Einzelplatzbuchung innerhalb einer Area.
@@ -407,7 +415,7 @@ Die Sortierung je Admin Booking Filter: Anstehend und Heute nach Startzeit aufst
 _Avoid_: eine globale Sortierung fuer alle operativen Situationen
 
 **Admin Booking Summary**:
-Kleine operative Kennzahlen der Admin Booking Operations View fuer Heute, Anstehend und Storniert.
+Kleine operative Kennzahlen der Admin Booking Operations View fuer Heute, Anstehend, Storniert und die meistgebuchte aktive BookableUnit. Sie folgen Zeitraum und Customer-Suche, aber nicht dem gewählten View-Status oder Listenlimit.
 _Avoid_: Charts oder Analytics-Auswertung in V1
 
 **Admin Analytics Dashboard**:
@@ -431,15 +439,19 @@ Die erste V2-Ausbaustufe zeigt Nachfrageverlauf, Nachfrage nach UnitType und Sto
 _Avoid_: Inventarstatus als Hauptchart, Revenue-Charts ohne Pricing, dekorative Charts ohne Nachfragebezug
 
 **Admin Booking Query**:
-Der Backend-Contract fuer die Admin Booking Operations View mit Query-Filtern fuer Status, Zeitraum und Limit.
+Der Backend-Contract fuer die Admin Booking Operations View mit Query-Filtern fuer Status, Zeitraum, Customer-Suche und Limit. Er liefert Bookings, effektiven Zeitraum und Admin Booking Summary gemeinsam.
 _Avoid_: alle historischen Bookings ungefiltert laden und nur clientseitig sortieren
+
+**Admin Booking Range Preset**:
+Ein rollierender Berliner Kalenderzeitraum fuer die Admin Booking Query: Woche, Monat, Quartal oder Jahr. Das Backend löst seine Richtung passend zum Admin Booking View Status auf; explizite `from/to`-Werte ersetzen das Preset.
+_Avoid_: Browser-Clock als fachliche Zeitraumquelle, Preset gleichzeitig mit `from/to`
 
 **Admin Booking Search**:
 Eine operative Suche in der Admin Booking Operations View nach Customer-Name oder Customer-E-Mail.
 _Avoid_: Volltextsuche ueber Unit-Namen, Datumswerte oder alle Booking-Felder
 
 **Admin Booking Date Range**:
-Die `from`- und `to`-Querywerte der Admin Booking Query als inklusive Kalendertage im Format `YYYY-MM-DD`.
+Der vom Backend aufgelöste inklusive Kalenderzeitraum der Admin Booking Query im Format `YYYY-MM-DD`, abgeleitet aus einem Admin Booking Range Preset oder expliziten `from/to`-Werten.
 _Avoid_: Uhrzeitfilter in V1
 
 **Admin Booking Query Default Window**:
@@ -475,7 +487,8 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - Eine **BookableUnit** kann viele **Bookings** haben.
 - Eine **Booking** gehört genau einer **BookableUnit** und genau einem **User**.
 - **Booking Target** ist die **BookableUnit**.
-- **Booking Request Modes** erlauben direkte Unit-Buchung und Area-basierte Auto-Zuweisung in einem Endpoint.
+- **Booking Request Modes** vereinheitlichen direkte Unit-Buchung und Area-basierte Hot-Desk-Auto-Zuweisung über alle Booking-Flow-Schritte.
+- **Booking Time Input** wird durch **Booking Time Grid**, Öffnungszeiten und **Duration Policy** validiert.
 - Die **Home Page** ist der Service-Einstieg; die **Booking Options Page** ist der fokussierte Buchungseinstieg.
 - Die **Home Page** zeigt anonymen Visitors "Jetzt buchen", "Registrieren" und "Einloggen"; angemeldeten Users zeigt sie "Jetzt buchen" und "Meine Buchungen".
 - Angebots-Teaser auf der **Home Page** fuehren zu `/booking-options/[slug]`, nicht direkt zu `/bookings/new`.
@@ -498,7 +511,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Booking Availability Contract** vereinheitlicht die Zeitfenster-Berechnung für Direct Booking und Hot-Desk-Auto-Assign.
 - **Availability Slot** ist ein temporäres Preview-Ergebnis und kein gespeichertes Fachobjekt.
 - **Custom Calendar** ersetzt den nativen Browser-Datepicker im Booking Flow.
-- **Direct Booking Calendar State** erlaubt belegte/voll belegte Tage fuer konkrete Units sichtbar zu machen.
+- **Direct Booking Calendar State** liefert die Monatszustände einer konkreten **BookableUnit** mit einem Request.
 - **Auto-Assign Calendar Scope** trennt die datumlose Kalenderansicht von der zeitbezogenen Hot-Desk-Preview.
 - **Direct Booking Day Occupancy Display** macht blockierende Intervalle bei konkreten Units sichtbar.
 - **Booking Start Time Selection** macht ungültige Startzeiten sichtbar, ohne sie auswählbar zu machen.
@@ -523,7 +536,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Session User** haelt die Session-relevanten User-Daten ohne direkte Kopplung an das User-Entity-Modell.
 - **Session Lifecycle** trennt Nutzeraktionen wie Login/Register/Logout von der internen Token-Speicherung.
 - **Authenticated API Request** haelt `authToken` aus Pages, Widgets, Features und fachlichen API-Funktionen heraus.
-- **Auto-Assign Scope** begrenzt den Automatikmodus in V1 auf `HOT_DESK`.
+- **Auto-Assign Scope** begrenzt den Automatikmodus dauerhaft auf `HOT_DESK`.
 - **Hot Desk Allocation Mode** weist bei passender Anfrage automatisch eine freie Unit zu.
 - **Hot Desk Allocation Strategy** macht die konkrete Unit-Auswahl reproduzierbar.
 - **Allocation Concurrency Rule** verhindert Doppelvergabe derselben Unit bei parallelen Requests.
@@ -591,6 +604,9 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Welche Fehlercodes nutzt Booking Context?" war offen; aufgelöst: `400`, `401`, `404`, kein `409` ohne Zeitraum.
 - "Lädt `/bookings/new` initial Availability?" war offen; aufgelöst: nein, erst nach Datumsauswahl.
 - "Ist ein TimeSlot ein Fachobjekt?" war offen; aufgelöst: nein, Bookings bleiben freie Zeiträume, müssen aber auf dem **Booking Time Grid** liegen.
+- "Welche Zeitzone bestimmt `startTime` und `endTime`?" war offen; aufgelöst: **Booking Time Input** nutzt lokale Coworking-Zeit in `Europe/Berlin`, nicht die Browser-Zeitzone.
+- "Public Unit Availability oder auth-required Booking Availability?" war offen; aufgelöst: Der **Booking Availability Contract** ist die einzige zeitbezogene Availability-Seam.
+- "Wann ist ein direkter Unit-Tag voll belegt?" war offen; aufgelöst: wenn aktive Bookings keine Duration-Policy-gültige Zeitspanne mehr frei lassen; die Today Booking Start Rule verändert diesen Belegungszustand nicht.
 - "Wie wird die Endzeit gewählt?" war offen; aufgelöst: nach Startzeit als Liste erlaubter Endpunkte.
 - "Native Datepicker oder eigener Kalender?" war offen; aufgelöst: Booking Flow nutzt **Custom Calendar**, nicht den Browser-Datepicker.
 - "Zeigt Custom Calendar Hot-Desk-Auslastung?" war offen; aufgelöst: nein, der Kalender blockiert ohne Zeitraum nur fachlich unmoegliche Tage.
@@ -656,7 +672,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Aktuelle Buchungen" war unscharf; aufgelöst: **Upcoming Booking** meint eigene aktive Bookings mit `endTime >= now`, inklusive gerade laufender Bookings.
 - "Stornierte Buchungen in der eigenen Liste" war offen; aufgelöst: stornierte Bookings erscheinen in **Closed Booking**, nicht in **Upcoming Booking**.
 - "Booking Context zuerst oder Frontend-Zwischenlösung?" war offen; aufgelöst: eigener Backend-Endpoint zuerst.
-- "Auto-Assign für alle UnitTypes?" war offen; aufgelöst: in V1 nur für `HOT_DESK`.
+- "Auto-Assign für alle UnitTypes?" war offen; aufgelöst: dauerhaft nur für `HOT_DESK`.
 - "Buchungsdauer global für alle Typen" war zu grob; aufgelöst: Dauergrenzen kommen je **UnitType**.
 - "Öffnungszeiten je Typ/Area" war offen; aufgelöst: in V1 bleiben Öffnungszeiten global (Mo-Fr 08:00-22:00).
 - "Area-Pflicht für alle buchbaren Einheiten" war offen; aufgelöst: `areaId` bleibt optional.

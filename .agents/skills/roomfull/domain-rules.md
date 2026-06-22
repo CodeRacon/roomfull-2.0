@@ -124,6 +124,8 @@ Verfügbarkeit wird aus bestehenden Bookings berechnet über:
 - `start_time`
 - `end_time`
 
+Der Create-Contract nimmt `date` sowie lokale `HH:mm`-Werte für `startTime` und `endTime` entgegen. Das Backend interpretiert diese verbindlich als Coworking-Zeit in `Europe/Berlin` und persistiert daraus UTC-Zeitpunkte.
+
 Alle Bookings müssen auf dem globalen Booking Time Grid liegen:
 
 - 15-Minuten-Raster
@@ -149,13 +151,13 @@ Für Version 1 gelten globale Öffnungszeiten:
 
 ### Direktmodus
 
-- Request enthält `unitId + start + end`
+- Request enthält `unitId + date + startTime + endTime`
 - Booking wird auf genau dieser Unit geprüft/angelegt
 
 ### Auto-Assign-Modus
 
-- Request enthält `areaId + unitType + start + end`
-- in V1 nur für `HOT_DESK` erlaubt
+- Request enthält `areaId + unitType + date + startTime + endTime`
+- dauerhaft nur für `HOT_DESK` erlaubt
 - System sucht freie Unit deterministisch:
   - `displayOrder` aufsteigend
   - bei Gleichstand `id` aufsteigend

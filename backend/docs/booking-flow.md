@@ -37,26 +37,28 @@ Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Ein
 ### Zeit- und Verfuegbarkeitsmodell
 
 - User waehlt konkrete Von-bis-Zeitraeume.
-- UI nutzt ein 30-Minuten-Raster als Auswahlhilfe, kein fachlich gespeichertes Slot-Modell.
+- UI und Backend nutzen das globale 15-Minuten-Raster; es gibt kein fachlich gespeichertes Slot-Modell.
 - User waehlt Datum, dann Startzeit, dann eine erlaubte Endzeit.
 - Startzeiten orientieren sich an den globalen Oeffnungszeiten `08:00-22:00`.
 - Endzeiten werden aus Startzeit, UnitType-Dauerregel, Oeffnungsende und bei Direct Mode aus blockierenden Intervallen gefiltert.
 - Fachliche Coworking-Zeit ist `Europe/Berlin`.
-- Backend-Zeitvalidierung laeuft zentral ueber `booking-time-policy.ts`.
+- Technische Zeitzonen-, Kalender- und Clock-Logik liegt in `coworking-calendar.ts`.
+- Fachliche Zeitvalidierung und Slot-Berechnung laufen zentral ueber `booking-time-policy.ts`.
 - Backend bleibt Source of Truth fuer Zeitregeln und Konflikte.
 - Bookings starten und enden am selben Kalendertag.
 - Kein Hold/5-Minuten-Timer im MVP.
 - Race-Conflicts werden ueber `409 Conflict` behandelt.
 
-### Tagesbelegung fuer konkrete Units
+### Kalender- und Tagesbelegung fuer konkrete Units
 
-- Fuer `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` soll der BookingFlow nach Datumsauswahl belegte Intervalle anzeigen.
+- Der Direct Booking Calendar State wird pro sichtbarem Monat mit einem Request geladen.
+- Endpoint: `GET /units/:unitId/calendar-state?month=YYYY-MM`
+- Response enthaelt `available`, `partially-booked` oder `fully-booked` pro aktuellem/zukuenftigem Werktag, aber keine rohen Booking- oder Owner-Daten.
+- `fully-booked` bedeutet, dass keine freie Zeitspanne die Duration Policy der Unit mehr erfüllt; die Today Booking Start Rule beeinflusst nur den gewählten Tag, nicht den Monatszustand.
+- Fuer die ausgewaehlte Tagesansicht nutzt der BookingFlow `GET /bookings/availability?date=...&unitId=...`.
 - Die UI zeigt bei Direct Mode alle Rasterpunkte und markiert belegte Zeiten sichtbar als blockiert.
-- Tagesbelegung ist auth-required.
-- Endpoint: `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
-- Response enthaelt nur aktive blockierende Intervalle, keine Owner-/User-Daten.
-- Vergangene Tage und Wochenenden sind fuer diesen Flow ungueltig.
-- `HOT_DESK` bekommt im MVP keine Area-Availability-Preview; Verfuegbarkeit wird beim Submit final per Auto-Assign geprueft.
+- Kalender- und Tagesbelegung sind auth-required.
+- Hot Desk nutzt nach Datumsauswahl die Area-Availability-Preview; der Submit bleibt die finale race-sichere Auto-Assign-Pruefung.
 
 ### Abschluss und Fehlerverhalten
 
@@ -77,6 +79,15 @@ Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Ein
 - `TEAM_ROOM`: min 60, max 480 Minuten
 - `MEETING_ROOM`: min 60, max 480 Minuten
 - Public Contracts liefern diese Werte ueber `unitType.minDurationMinutes` und `unitType.maxDurationMinutes`.
+
+### Booking Request Modes
+
+- Datei: [booking-request-mode.ts](../src/services/booking-request-mode.ts)
+- Funktion: `resolveBookingRequestMode`
+- Gemeinsame Modus-Seam fuer Booking Context, Availability und Booking-Erstellung.
+- Kanonische Modi: `DIRECT` und `AUTO_ASSIGN`.
+- `AUTO_ASSIGN` ist dauerhaft ausschliesslich fuer `HOT_DESK` erlaubt.
+- Fehlende, gemischte, unvollstaendige oder unzulaessige Auswahlen liefern `400`.
 
 ---
 
@@ -115,7 +126,7 @@ Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Ein
 - Datei: [booking.service.ts](../src/services/booking.service.ts)
 - Funktion: `getBookingContext`
 - Aufgabe:
-  - Entry Context aufloesen
+  - Entry Context ueber `resolveBookingRequestMode` aufloesen
   - `DIRECT` ueber aktive Unit + UnitType-Policy bauen
   - `AUTO_ASSIGN` nur fuer `HOT_DESK` erlauben
   - aktive Area + Hot-Desk-SeatCount + UnitType-Policy bauen
@@ -150,8 +161,9 @@ Modi:
 - Client sendet `POST /api/bookings`
 - Header enthält `Authorization: Bearer <token>`
 - Body nutzt einen von zwei Modi:
-  - direkt: `unitId + start + end`
-  - auto-assign: `areaId + unitType + start + end` (in V1 nur `HOT_DESK`)
+  - direkt: `unitId + date + startTime + endTime`
+  - auto-assign: `areaId + unitType + date + startTime + endTime` (dauerhaft nur `HOT_DESK`)
+- `date` ist `YYYY-MM-DD`; `startTime` und `endTime` sind lokale `HH:mm`-Werte in `Europe/Berlin`.
 
 ### Route
 
@@ -171,9 +183,9 @@ Modi:
 - Datei: [booking.service.ts](../src/services/booking.service.ts)
 - Funktion: `createBookingForUser`
 - Aufgabe:
-  - Zeitvalidierung (`start < end`, gleicher Kalendertag, Zukunft, Mo-Fr, `08:00-22:00`)
-  - Modus auflösen (direkt vs auto-assign)
-  - Dauerregel aus UnitType-Policy prüfen
+  - Modus ueber `resolveBookingRequestMode` aufloesen
+  - Booking Target und dessen Duration Policy laden
+  - Booking Time Input zentral ueber `booking-time-policy.ts` validieren und in UTC aufloesen (`startTime < endTime`, Zukunft, Mo-Fr, `08:00-22:00`, 15-Minuten-Raster und Duration Policy)
   - Overlap-freie Booking erstellen
 
 ### Repository
@@ -210,7 +222,7 @@ sequenceDiagram
   participant UR as unit.repository
   participant DB as PostgreSQL
 
-  C->>R: POST /api/bookings {unitId,start,end}
+  C->>R: POST /api/bookings {unitId,date,startTime,endTime}
   R->>M: requireAuth
   M->>CT: createBookingController
   CT->>S: createBookingForUser(...)
@@ -237,7 +249,7 @@ sequenceDiagram
   participant UR as unit.repository
   participant DB as PostgreSQL
 
-  C->>S: createBookingForUser({areaId,unitType,start,end})
+  C->>S: createBookingForUser({areaId,unitType,date,startTime,endTime})
   S->>AR: findActiveAreaById(areaId)
   AR->>DB: SELECT active area
   DB-->>AR: area
@@ -263,12 +275,10 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-  A[start/end parsebar?] -->|nein| E400a[400]
-  A -->|ja| B[start < end?]
+  A[date und HH:mm parsebar?] -->|nein| E400a[400]
+  A -->|ja| B[startTime < endTime?]
   B -->|nein| E400b[400]
-  B -->|ja| C[gleicher Kalendertag?]
-  C -->|nein| E400c[400]
-  C -->|ja| D[in Zukunft?]
+  B -->|ja| D[in Zukunft?]
   D -->|nein| E400d[400]
   D -->|ja| E[Mo-Fr + 08:00-22:00?]
   E -->|nein| E400e[400]
@@ -375,7 +385,7 @@ flowchart TD
 
 ---
 
-## Admin List Bookings Flow `GET /api/admin/bookings`
+## Admin Booking Operations Flow `GET /api/admin/bookings`
 
 ### Request
 
@@ -385,17 +395,18 @@ flowchart TD
 ### Route
 
 - Datei: [bookings.routes.ts](../src/routes/bookings.routes.ts)
-- Mapping: `bookingsRouter.route("/admin/bookings").get(requireRole("ADMIN"), listAdminBookingsController)`
+- Mapping: `bookingsRouter.route("/admin/bookings").get(requireRole("ADMIN"), getAdminBookingOperationsController)`
 
 ### Middleware
 
 - `requireAuth` (router-level)
 - `requireRole("ADMIN")` (route-level)
 
-### Service
+### Operations Module
 
-- Datei: [booking.service.ts](../src/services/booking.service.ts)
-- Funktion: `listAllBookingsForAdmin`
+- Datei: [admin-booking-operations.ts](../src/services/admin-booking-operations.ts)
+- Interface: `adminBookingOperations.get`
+- Aufgabe: View-Status und Berliner Zeitraum auflösen, gefilterte Bookings und operative Summary als einen Datensatz liefern
 
 ### Error-Matrix
 
@@ -403,3 +414,4 @@ flowchart TD
 |---|---|
 | Kein/ungültiger Token | `401` |
 | Rolle nicht `ADMIN` | `403` |
+| Status, Zeitraum, Preset oder Limit ungültig | `400` |

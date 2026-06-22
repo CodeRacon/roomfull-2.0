@@ -224,50 +224,6 @@
 				}
 			}
 		},
-		"/public/units/{unitId}/availability": {
-			"get": {
-				"tags": ["Public Units"],
-				"summary": "Verfügbarkeit einer Unit prüfen",
-				"parameters": [
-					{
-						"name": "unitId",
-						"in": "path",
-						"required": true,
-						"schema": { "type": "string" }
-					},
-					{
-						"name": "start",
-						"in": "query",
-						"required": true,
-						"schema": { "type": "string", "format": "date-time" }
-					},
-					{
-						"name": "end",
-						"in": "query",
-						"required": true,
-						"schema": { "type": "string", "format": "date-time" }
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Verfügbarkeitsstatus",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "object",
-									"properties": {
-										"availability": { "$ref": "#/components/schemas/UnitAvailability" }
-									},
-									"required": ["availability"]
-								}
-							}
-						}
-					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"404": { "$ref": "#/components/responses/NotFound" }
-				}
-			}
-		},
 		"/admin/units": {
 			"get": {
 				"tags": ["Admin Units"],
@@ -586,11 +542,11 @@
 				}
 			}
 		},
-		"/units/{unitId}/day-bookings": {
+		"/units/{unitId}/calendar-state": {
 			"get": {
 				"tags": ["Customer Bookings"],
-				"summary": "Belegte Intervalle einer Unit für einen Tag laden",
-				"description": "Auth-required Endpoint für den BookingFlow. Liefert nur aktive blockierende Intervalle, keine User-/Owner-Daten.",
+				"summary": "Direct Booking Calendar State einer Unit für einen Monat laden",
+				"description": "Auth-required Endpoint für den BookingFlow. Liefert Monatszustände aus aktiven Bookings, aber keine rohen Booking-, User- oder Owner-Daten.",
 				"security": [{ "bearerAuth": [] }],
 				"parameters": [
 					{
@@ -600,22 +556,22 @@
 						"schema": { "type": "string" }
 					},
 					{
-						"name": "date",
+						"name": "month",
 						"in": "query",
 						"required": true,
 						"schema": {
 							"type": "string",
-							"format": "date",
-							"example": "2027-01-18"
+							"pattern": "^\\d{4}-\\d{2}$",
+							"example": "2099-01"
 						}
 					}
 				],
 				"responses": {
 					"200": {
-						"description": "Belegte Intervalle für den Tag",
+						"description": "Calendar State für den Monat",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/UnitDayBookingsResponse" }
+								"schema": { "$ref": "#/components/schemas/DirectBookingCalendarStateResponse" }
 							}
 						}
 					},
@@ -680,6 +636,16 @@
 						}
 					},
 					{
+						"name": "range",
+						"in": "query",
+						"description": "Rollierender Berliner Kalenderzeitraum; darf nicht mit from/to kombiniert werden.",
+						"schema": {
+							"type": "string",
+							"enum": ["week", "month", "quarter", "year"],
+							"default": "month"
+						}
+					},
+					{
 						"name": "to",
 						"in": "query",
 						"schema": {
@@ -710,13 +676,14 @@
 				],
 				"responses": {
 					"200": {
-						"description": "Alle Buchungen",
+						"description": "Admin Booking Operations Datensatz",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AdminBookingListResponse" }
+								"schema": { "$ref": "#/components/schemas/AdminBookingOperationsResponse" }
 							}
 						}
 					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
 					"401": { "$ref": "#/components/responses/Unauthorized" },
 					"403": { "$ref": "#/components/responses/Forbidden" }
 				}
@@ -1209,16 +1176,6 @@
 				},
 				"required": ["bookingOptions"]
 			},
-			"UnitAvailability": {
-				"type": "object",
-				"properties": {
-					"unitId": { "type": "string" },
-					"startTime": { "type": "string", "format": "date-time" },
-					"endTime": { "type": "string", "format": "date-time" },
-					"isAvailable": { "type": "boolean" }
-				},
-				"required": ["unitId", "startTime", "endTime", "isAvailable"]
-			},
 			"CreateUnitRequest": {
 				"type": "object",
 				"properties": {
@@ -1245,25 +1202,28 @@
 				}
 			},
 			"CreateBookingRequest": {
+				"description": "Buchungszeit in lokaler Coworking-Zeit (Europe/Berlin)",
 				"oneOf": [
 					{
 						"type": "object",
 						"properties": {
 							"unitId": { "type": "string" },
-							"start": { "type": "string", "format": "date-time" },
-							"end": { "type": "string", "format": "date-time" }
+							"date": { "type": "string", "format": "date" },
+							"startTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
+							"endTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" }
 						},
-						"required": ["unitId", "start", "end"]
+						"required": ["unitId", "date", "startTime", "endTime"]
 					},
 					{
 						"type": "object",
 						"properties": {
 							"areaId": { "type": "string" },
 							"unitType": { "type": "string", "enum": ["HOT_DESK"] },
-							"start": { "type": "string", "format": "date-time" },
-							"end": { "type": "string", "format": "date-time" }
+							"date": { "type": "string", "format": "date" },
+							"startTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
+							"endTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" }
 						},
-						"required": ["areaId", "unitType", "start", "end"]
+						"required": ["areaId", "unitType", "date", "startTime", "endTime"]
 					}
 				]
 			},
@@ -1511,15 +1471,45 @@
 				},
 				"required": ["bookings"]
 			},
-			"AdminBookingListResponse": {
+			"AdminBookingOperationsResponse": {
 				"type": "object",
 				"properties": {
 					"bookings": {
 						"type": "array",
 						"items": { "$ref": "#/components/schemas/AdminBooking" }
+					},
+					"dateRange": {
+						"type": "object",
+						"properties": {
+							"from": { "type": "string", "format": "date" },
+							"to": { "type": "string", "format": "date" }
+						},
+						"required": ["from", "to"]
+					},
+					"summary": {
+						"type": "object",
+						"properties": {
+							"todayBookings": { "type": "integer", "minimum": 0 },
+							"upcomingInRange": { "type": "integer", "minimum": 0 },
+							"cancelledInRange": { "type": "integer", "minimum": 0 },
+							"topBookedUnit": {
+								"type": "object",
+								"properties": {
+									"id": { "type": "string" },
+									"name": { "type": "string" },
+									"unitType": {
+										"type": "string",
+										"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+									},
+									"bookingCount": { "type": "integer", "minimum": 1 }
+								},
+								"required": ["id", "name", "unitType", "bookingCount"]
+							}
+						},
+						"required": ["todayBookings", "upcomingInRange", "cancelledInRange"]
 					}
 				},
-				"required": ["bookings"]
+				"required": ["bookings", "dateRange", "summary"]
 			},
 			"BookingDemandTrendPoint": {
 				"type": "object",
@@ -1606,32 +1596,40 @@
 				},
 				"required": ["bookingDemand"]
 			},
-			"BookedInterval": {
-				"type": "object",
-				"properties": {
-					"start": { "type": "string", "format": "date-time" },
-					"end": { "type": "string", "format": "date-time" }
-				},
-				"required": ["start", "end"]
-			},
-			"UnitDayBookings": {
+			"DirectBookingCalendarDay": {
 				"type": "object",
 				"properties": {
 					"date": { "type": "string", "format": "date" },
-					"unitId": { "type": "string" },
-					"bookedIntervals": {
-						"type": "array",
-						"items": { "$ref": "#/components/schemas/BookedInterval" }
+					"state": {
+						"type": "string",
+						"enum": ["available", "partially-booked", "fully-booked"]
 					}
 				},
-				"required": ["date", "unitId", "bookedIntervals"]
+				"required": ["date", "state"]
 			},
-			"UnitDayBookingsResponse": {
+			"DirectBookingCalendarState": {
 				"type": "object",
 				"properties": {
-					"dayBookings": { "$ref": "#/components/schemas/UnitDayBookings" }
+					"unitId": { "type": "string" },
+					"month": {
+						"type": "string",
+						"pattern": "^\\d{4}-\\d{2}$"
+					},
+					"days": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/DirectBookingCalendarDay" }
+					}
 				},
-				"required": ["dayBookings"]
+				"required": ["unitId", "month", "days"]
+			},
+			"DirectBookingCalendarStateResponse": {
+				"type": "object",
+				"properties": {
+					"calendarState": {
+						"$ref": "#/components/schemas/DirectBookingCalendarState"
+					}
+				},
+				"required": ["calendarState"]
 			},
 			"ApiError": {
 				"type": "object",

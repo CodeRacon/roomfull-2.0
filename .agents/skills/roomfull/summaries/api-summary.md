@@ -28,7 +28,6 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 - `GET /public/booking-options`
 - `GET /public/units`
 - `GET /public/units/:unitId`
-- `GET /public/units/:unitId/availability?start=...&end=...`
 
 `GET /public/booking-options` speist die Booking Options Page als fokussierten Buchungseinstieg.
 
@@ -65,7 +64,7 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 - `GET /bookings/availability?date=YYYY-MM-DD&areaId=...&unitType=HOT_DESK`
 - `POST /bookings`
 - `GET /me/bookings`
-- `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
+- `GET /units/:unitId/calendar-state?month=YYYY-MM`
 - `DELETE /bookings/:bookingId`
 
 `GET /me/bookings` liefert eigene Bookings inklusive minimaler Unit-Anzeigedaten (`unit.id`, `unit.name`, `unit.unitType.name`), damit die UI Buchungen typgerecht darstellen kann.
@@ -110,18 +109,21 @@ Unterstützte Query-Parameter:
 - `unitTypes`
 - `areas`
 
-`GET /admin/bookings` liefert gefilterte Bookings inklusive minimaler Customer- und Unit-Anzeigedaten (`user.name`, `user.email`, `unit.name`, `unit.unitType.name`) für die Admin-Übersicht.
+`GET /admin/bookings` liefert einen gemeinsamen Admin-Operations-Datensatz aus gefilterten Bookings, effektivem Zeitraum und operativer Summary.
 
 Unterstützte Query-Parameter:
 
 - `status=upcoming|today|completed|cancelled|all`
+- `range=week|month|quarter|year`
 - `from=YYYY-MM-DD`
 - `to=YYYY-MM-DD`
 - `limit=1..500`
 - `search=<customer name or email>`
 
 `status=all` umfasst Vergangenheit und Zukunft im gewählten Zeitraum, damit anstehende Bookings nicht aus der Gesamtsicht fallen.
+`range` wird passend zum Status als rollierender Berliner Kalenderzeitraum aufgelöst und darf nicht mit `from/to` kombiniert werden.
 `search` durchsucht ausschließlich Customer-Name und Customer-E-Mail, nicht Unit-Namen oder sonstige Booking-Felder.
+Die Summary folgt Zeitraum und Customer-Suche, ignoriert Status und `limit` und zählt für `topBookedUnit` nur aktive Bookings.
 
 `GET /admin/analytics/booking-demand` liefert den Nachfrageverlauf für das Admin Analytics Dashboard.
 Die Metrik zählt aktive Bookings gruppiert nach Booking-Startdatum.
@@ -152,8 +154,10 @@ Der Lesestatus ist nicht pro Admin getrennt.
 
 `POST /bookings` unterstützt zwei Modi:
 
-- direkt: `unitId + start + end`
-- auto-assign: `areaId + unitType + start + end` (in V1 nur `HOT_DESK`)
+- direkt: `unitId + date + startTime + endTime`
+- auto-assign: `areaId + unitType + date + startTime + endTime` (dauerhaft nur `HOT_DESK`)
+
+`date` ist `YYYY-MM-DD`; `startTime` und `endTime` sind lokale `HH:mm`-Werte in `Europe/Berlin`. Der Browser erzeugt keine fachlichen ISO-Zeitpunkte.
 
 `GET /bookings/context` ist auth-required und validiert den Einstiegskontext fuer `/bookings/new`:
 
@@ -190,13 +194,15 @@ BookingOptions nutzen dieselbe fachliche Unterscheidung:
 - keine Überschneidung aktiver Bookings auf derselben Unit
 - Auto-Assign ist race-sicher (Transaktion/Konflikt-Retry)
 
-### Unit Day Bookings
+### Direct Booking Calendar State
 
 - auth-required
 - Customer und Admin erlaubt
-- liefert nur aktive blockierende Intervalle
-- keine User-/Owner-Daten
-- `date` muss `YYYY-MM-DD`, heute oder zukünftig und ein Werktag sein
+- liefert `available`, `partially-booked` oder `fully-booked` pro buchbarem Werktag eines Monats
+- `fully-booked` bedeutet: Es existiert keine freie, zur Duration Policy der Unit passende Zeitspanne mehr
+- berücksichtigt nur aktive Bookings
+- liefert keine rohen Booking-, User- oder Owner-Daten
+- `month` muss `YYYY-MM`, aktuell oder zukünftig sein
 - unbekannte/inaktive Unit liefert `404`
 
 ### Unit Management

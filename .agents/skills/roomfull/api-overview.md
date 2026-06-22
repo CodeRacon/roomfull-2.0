@@ -216,10 +216,6 @@ Ungueltige Werte liefern `400 Bad Request`.
 
 Liefert Details zu einer Unit.
 
-### `GET /public/units/:unitId/availability?start=...&end=...`
-
-Prüft, ob eine Unit im Zeitraum verfügbar ist.
-
 ## Bookings
 
 ### `GET /bookings/context`
@@ -314,22 +310,28 @@ Direkter Modus:
 ```json
 {
   "unitId": "cmxxxxx",
-  "start": "2026-04-15T09:00:00.000Z",
-  "end": "2026-04-15T12:00:00.000Z"
+  "date": "2026-04-15",
+  "startTime": "09:00",
+  "endTime": "12:00"
 }
 ```
 
-### `GET /units/:unitId/day-bookings?date=YYYY-MM-DD`
+`date`, `startTime` und `endTime` beschreiben lokale Coworking-Zeit in `Europe/Berlin`. Das Backend wandelt sie erst nach der Fachvalidierung in UTC-Zeitpunkte um.
 
-Liefert auth-required die aktiven blockierenden Intervalle einer Unit fuer einen Berliner Kalendertag.
+### `GET /units/:unitId/calendar-state?month=YYYY-MM`
+
+Liefert auth-required den Direct Booking Calendar State einer Unit fuer einen Berliner Kalendermonat.
 
 Response:
 
 ```ts
-type UnitDayBookings = {
-  date: string;
+type DirectBookingCalendarState = {
   unitId: string;
-  bookedIntervals: Array<{ start: string; end: string }>;
+  month: string;
+  days: Array<{
+    date: string;
+    state: "available" | "partially-booked" | "fully-booked";
+  }>;
 };
 ```
 
@@ -337,8 +339,10 @@ Regeln:
 
 - Customer und Admin duerfen den Endpoint nutzen
 - nur aktive Bookings werden beruecksichtigt
-- keine Owner-/User-Daten werden ausgeliefert
-- vergangene Tage und Wochenenden liefern `400`
+- `fully-booked` bedeutet, dass keine freie Zeitspanne die Duration Policy der Unit mehr erfüllt
+- keine rohen Booking-, Owner- oder User-Daten werden ausgeliefert
+- die Response enthaelt nur aktuelle/zukuenftige Werktage des Monats
+- `month` muss `YYYY-MM`, aktuell oder zukuenftig sein
 - unbekannte oder inaktive Unit liefert `404`
 
 Auto-Assign (nur `HOT_DESK`):
@@ -347,8 +351,9 @@ Auto-Assign (nur `HOT_DESK`):
 {
   "areaId": "cmyyyyy",
   "unitType": "HOT_DESK",
-  "start": "2026-04-15T09:00:00.000Z",
-  "end": "2026-04-15T12:00:00.000Z"
+  "date": "2026-04-15",
+  "startTime": "09:00",
+  "endTime": "12:00"
 }
 ```
 
@@ -418,19 +423,22 @@ Deaktiviert eine Unit.
 
 ### `GET /admin/bookings`
 
-Liefert gefilterte Buchungen inklusive minimaler Customer- und Unit-Anzeigedaten.
+Liefert den gemeinsamen Datensatz der Admin Booking Operations View: gefilterte Bookings, den effektiv verwendeten Zeitraum und die operative Summary.
 
 Query:
 
 ```txt
-GET /admin/bookings?status=upcoming&from=2027-01-01&to=2027-01-31&limit=100&search=max@example.com
+GET /admin/bookings?status=upcoming&range=month&limit=100&search=max@example.com
 ```
 
 `status` ist ein View-Status: `upcoming`, `today`, `completed`, `cancelled` oder `all`.
-`all` umfasst alle Booking-Status im gewählten Zeitraum; ohne explizite `from/to`-Werte nutzt `all` 30 Tage zurück und 30 Tage voraus.
+`range` ist `week`, `month`, `quarter` oder `year` und wird im Backend als rollierender Berliner Kalenderzeitraum passend zum View-Status aufgelöst.
+`all` umfasst alle Booking-Status symmetrisch um heute.
 `from` und `to` sind inklusive Kalendertage im Format `YYYY-MM-DD`.
+`range` darf nicht mit `from/to` kombiniert werden.
 `limit` muss zwischen `1` und `500` liegen.
 `search` durchsucht ausschließlich Customer-Name und Customer-E-Mail.
+`limit` begrenzt nur `bookings`, nicht die Summary. Die Summary folgt Zeitraum und Suche, aber nicht dem View-Status.
 
 Response:
 
@@ -438,6 +446,22 @@ Response:
 type AdminBooking = Booking & {
   user: { id: string; name: string; email: string; role: "CUSTOMER" | "ADMIN" };
   unit: { id: string; name: string; unitType: { name: UnitTypeName } };
+};
+
+type AdminBookingOperations = {
+  bookings: AdminBooking[];
+  dateRange: { from: string; to: string };
+  summary: {
+    todayBookings: number;
+    upcomingInRange: number;
+    cancelledInRange: number;
+    topBookedUnit?: {
+      id: string;
+      name: string;
+      unitType: UnitTypeName;
+      bookingCount: number;
+    };
+  };
 };
 ```
 

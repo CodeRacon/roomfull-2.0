@@ -1,11 +1,11 @@
 meta {
-  name: Admin List Bookings
+  name: Admin Booking Operations
   type: http
   seq: 15
 }
 
 get {
-  url: {{baseUrl}}/api/admin/bookings?search={{adminBookingSearch}}
+  url: {{baseUrl}}/api/admin/bookings?status=upcoming&range=month&limit=100&search={{adminBookingSearch}}
   body: none
   auth: inherit
 }

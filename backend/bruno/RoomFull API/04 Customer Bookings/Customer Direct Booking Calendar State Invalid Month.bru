@@ -1,11 +1,11 @@
 meta {
-  name: Customer Unit Day Bookings Invalid Date
+  name: Customer Direct Booking Calendar State Invalid Month
   type: http
   seq: 16
 }
 
 get {
-  url: {{baseUrl}}/api/units/{{unitId}}/day-bookings?date=not-a-date
+  url: {{baseUrl}}/api/units/{{unitId}}/calendar-state?month=not-a-month
   body: none
   auth: inherit
 }
@@ -15,7 +15,7 @@ headers {
 }
 
 tests {
-  test("rejects invalid date query", function () {
+  test("rejects invalid month query", function () {
     expect(res.getStatus()).to.equal(400);
   });
 }

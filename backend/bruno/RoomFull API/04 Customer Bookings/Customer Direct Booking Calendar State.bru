@@ -1,0 +1,37 @@
+meta {
+  name: Customer Direct Booking Calendar State
+  type: http
+  seq: 15
+}
+
+get {
+  url: {{baseUrl}}/api/units/{{unitId}}/calendar-state?month=2099-01
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+tests {
+  test("returns direct booking calendar state", function () {
+    expect(res.getStatus()).to.equal(200);
+
+    const json = res.getBody();
+    const calendarState = json && json.calendarState ? json.calendarState : null;
+    const allowedStates = ["available", "partially-booked", "fully-booked"];
+
+    expect(calendarState.unitId).to.equal(bru.getVar("unitId"));
+    expect(calendarState.month).to.equal("2099-01");
+    expect(Array.isArray(calendarState.days)).to.equal(true);
+    expect(
+      calendarState.days.every((day) => allowedStates.includes(day.state)),
+    ).to.equal(true);
+  });
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
