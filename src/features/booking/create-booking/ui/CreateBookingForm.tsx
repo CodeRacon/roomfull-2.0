@@ -4,16 +4,14 @@ import { clsx } from "clsx";
 import { useRouter } from "next/navigation";
 import { type ComponentPropsWithoutRef, useEffect, useState } from "react";
 import type {
-	BookedInterval,
 	BookingAvailability,
 	BookingContext,
 	CreateBookingInput,
-	UnitDayBookings,
 } from "@/entities/booking";
 import {
 	createBooking,
 	getBookingAvailability,
-	getUnitDayBookings,
+	getDirectBookingCalendarState,
 } from "@/entities/booking";
 import { useSession } from "@/entities/session";
 import type { UnitTypeName } from "@/entities/unit";
@@ -39,19 +37,11 @@ type FormSubmitHandler = NonNullable<
 	ComponentPropsWithoutRef<"form">["onSubmit"]
 >;
 
-type MinuteRange = {
-	end: number;
-	start: number;
-};
-
 type BookingAccentTheme = {
 	accentClassName: string;
 	actionClassName: string;
 	calendarAccent: CustomCalendarAccentClasses;
 };
-
-const OPENING_MINUTES = 8 * 60;
-const CLOSING_MINUTES = 22 * 60;
 
 const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
 	HOT_DESK: {
@@ -113,13 +103,6 @@ const berlinDateFormatter = new Intl.DateTimeFormat("en-CA", {
 	day: "2-digit",
 });
 
-const berlinTimeFormatter = new Intl.DateTimeFormat("en-CA", {
-	timeZone: "Europe/Berlin",
-	hour: "2-digit",
-	minute: "2-digit",
-	hourCycle: "h23",
-});
-
 function getBerlinTodayDate(): string {
 	const parts = berlinDateFormatter.formatToParts(new Date());
 	const values = new Map(parts.map((part) => [part.type, part.value]));
@@ -139,104 +122,6 @@ function parseDate(date: string): Date {
 function parseTimeToMinutes(time: string): number {
 	const [hours, minutes] = time.split(":").map(Number);
 	return hours * 60 + minutes;
-}
-
-function formatDateParts(year: number, month: number, day: number): string {
-	return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function getVisibleMonthDates(month: string): string[] {
-	const monthStart = parseDate(month);
-	const year = monthStart.getUTCFullYear();
-	const monthIndex = monthStart.getUTCMonth();
-	const daysInMonth = new Date(Date.UTC(year, monthIndex + 1, 0)).getUTCDate();
-
-	return Array.from({ length: daysInMonth }, (_, index) =>
-		formatDateParts(year, monthIndex + 1, index + 1),
-	);
-}
-
-function isWeekend(date: string): boolean {
-	const day = parseDate(date).getUTCDay();
-	return day === 0 || day === 6;
-}
-
-function getBerlinMinutesOfDay(value: string): number {
-	const parts = berlinTimeFormatter.formatToParts(new Date(value));
-	const values = new Map(parts.map((part) => [part.type, part.value]));
-
-	return Number(values.get("hour")) * 60 + Number(values.get("minute"));
-}
-
-function getBookedMinuteRanges(intervals: BookedInterval[]): MinuteRange[] {
-	return intervals
-		.map((interval) => ({
-			end: Math.min(getBerlinMinutesOfDay(interval.end), CLOSING_MINUTES),
-			start: Math.max(getBerlinMinutesOfDay(interval.start), OPENING_MINUTES),
-		}))
-		.filter((range) => range.end > range.start)
-		.sort((firstRange, secondRange) => firstRange.start - secondRange.start);
-}
-
-function getMergedMinuteRanges(ranges: MinuteRange[]): MinuteRange[] {
-	const mergedRanges: MinuteRange[] = [];
-
-	for (const range of ranges) {
-		const lastRange = mergedRanges.at(-1);
-
-		if (!lastRange || range.start > lastRange.end) {
-			mergedRanges.push({ ...range });
-			continue;
-		}
-
-		lastRange.end = Math.max(lastRange.end, range.end);
-	}
-
-	return mergedRanges;
-}
-
-function isFullyBookedDay(intervals: BookedInterval[]): boolean {
-	const bookedRanges = getMergedMinuteRanges(getBookedMinuteRanges(intervals));
-
-	let coveredUntil = OPENING_MINUTES;
-
-	for (const range of bookedRanges) {
-		if (range.start > coveredUntil) {
-			return false;
-		}
-
-		coveredUntil = Math.max(coveredUntil, range.end);
-
-		if (coveredUntil >= CLOSING_MINUTES) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
-function getCalendarDayState(dayBookings: UnitDayBookings): CalendarDayState {
-	if (dayBookings.bookedIntervals.length === 0) {
-		return "available";
-	}
-
-	return isFullyBookedDay(dayBookings.bookedIntervals)
-		? "fully-booked"
-		: "partially-booked";
-}
-
-function buildBookingDateTime(date: string, time: string): string | null {
-	if (date === "" || time === "") {
-		return null;
-	}
-
-	const dateTime = new Date(`${date}T${time}:00`);
-
-	if (Number.isNaN(dateTime.getTime())) {
-		return null;
-	}
-
-	return dateTime.toISOString();
 }
 
 function formatTemplate(
@@ -349,10 +234,6 @@ export function CreateBookingForm({
 		}
 
 		const unitId = directUnitId;
-		const today = getBerlinTodayDate();
-		const visibleDates = getVisibleMonthDates(visibleMonth).filter(
-			(visibleDate) => visibleDate >= today && !isWeekend(visibleDate),
-		);
 
 		async function loadCalendarStates(): Promise<void> {
 			setCalendarDayStates({});
@@ -360,18 +241,14 @@ export function CreateBookingForm({
 			setIsLoadingCalendarStates(true);
 
 			try {
-				const monthBookings = await Promise.all(
-					visibleDates.map((visibleDate) =>
-						getUnitDayBookings(unitId, visibleDate),
-					),
+				const calendarState = await getDirectBookingCalendarState(
+					unitId,
+					visibleMonth.slice(0, 7),
 				);
 
 				setCalendarDayStates(
 					Object.fromEntries(
-						monthBookings.map((monthDayBookings) => [
-							monthDayBookings.date,
-							getCalendarDayState(monthDayBookings),
-						]),
+						calendarState.days.map((day) => [day.date, day.state]),
 					),
 				);
 			} catch (error) {
@@ -502,10 +379,7 @@ export function CreateBookingForm({
 		event.preventDefault();
 		setSubmitError(null);
 
-		const start = buildBookingDateTime(date, startTime);
-		const end = buildBookingDateTime(date, endTime);
-
-		if (!start || !end) {
+		if (date === "" || startTime === "" || endTime === "") {
 			setSubmitError(copy.errors.incompleteSelection);
 			return;
 		}
@@ -514,14 +388,16 @@ export function CreateBookingForm({
 			bookingContext.mode === "DIRECT"
 				? {
 						unitId: bookingContext.unit.id,
-						start,
-						end,
+						date,
+						startTime,
+						endTime,
 					}
 				: {
 						areaId: bookingContext.area.id,
 						unitType: "HOT_DESK",
-						start,
-						end,
+						date,
+						startTime,
+						endTime,
 					};
 
 		try {
@@ -560,7 +436,7 @@ export function CreateBookingForm({
 		<form className="mt-8" onSubmit={handleSubmit}>
 			<section
 				className={clsx(
-					"grid min-h-[24rem] content-between p-5 text-primary md:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8",
+					"grid min-h-96 content-between p-5 text-primary md:p-6 lg:grid-cols-[1fr_0.9fr] lg:p-8",
 					accentTheme.accentClassName,
 				)}
 				aria-labelledby="booking-context-title"

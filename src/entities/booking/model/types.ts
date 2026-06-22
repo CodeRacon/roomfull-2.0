@@ -68,15 +68,23 @@ export type GetBookingAvailabilityInput =
 	| { date: string; unitId: string; areaId?: never; unitType?: never }
 	| { date: string; areaId: string; unitType: "HOT_DESK"; unitId?: never };
 
-export type BookedInterval = { start: string; end: string };
+export type DirectBookingCalendarDayState =
+	| "available"
+	| "partially-booked"
+	| "fully-booked";
 
-export type UnitDayBookings = {
-	date: string;
+export type DirectBookingCalendarState = {
+	days: {
+		date: string;
+		state: DirectBookingCalendarDayState;
+	}[];
+	month: string;
 	unitId: string;
-	bookedIntervals: BookedInterval[];
 };
 
-export type UnitDayBookingsResponse = { dayBookings: UnitDayBookings };
+export type DirectBookingCalendarStateResponse = {
+	calendarState: DirectBookingCalendarState;
+};
 
 export type BookingStatus = "ACTIVE" | "CANCELLED";
 
@@ -117,20 +125,40 @@ export type AdminBookingViewStatus =
 	| "cancelled"
 	| "all";
 
-export type ListAdminBookingsInput = {
+export type AdminBookingRangePreset = "week" | "month" | "quarter" | "year";
+
+export type GetAdminBookingOperationsInput = {
 	from?: string;
 	limit?: number;
+	range?: AdminBookingRangePreset;
 	search?: string;
 	status?: AdminBookingViewStatus;
 	to?: string;
+};
+
+export type AdminBookingOperations = {
+	bookings: AdminBooking[];
+	dateRange: { from: string; to: string };
+	summary: {
+		cancelledInRange: number;
+		todayBookings: number;
+		topBookedUnit?: {
+			id: string;
+			name: string;
+			unitType: UnitTypeName;
+			bookingCount: number;
+		};
+		upcomingInRange: number;
+	};
 };
 
 export type BookingResponse = { booking: Booking };
 
 export type CreateDirectBookingInput = {
 	unitId: string;
-	start: string;
-	end: string;
+	date: string;
+	startTime: string;
+	endTime: string;
 	areaId?: never;
 	unitType?: never;
 };
@@ -138,8 +166,9 @@ export type CreateDirectBookingInput = {
 export type CreateAutoAssignBookingInput = {
 	areaId: string;
 	unitType: "HOT_DESK";
-	start: string;
-	end: string;
+	date: string;
+	startTime: string;
+	endTime: string;
 	unitId?: never;
 };
 
@@ -148,5 +177,3 @@ export type CreateBookingInput =
 	| CreateAutoAssignBookingInput;
 
 export type BookingListResponse = { bookings: MyBooking[] };
-
-export type AdminBookingListResponse = { bookings: AdminBooking[] };

@@ -1,7 +1,7 @@
 export { cancelBooking } from "./cancel-booking";
 export { createBooking } from "./create-booking";
+export { getAdminBookingOperations } from "./get-admin-booking-operations";
 export { getBookingAvailability } from "./get-booking-availability";
 export { getBookingContext } from "./get-booking-context";
-export { getUnitDayBookings } from "./get-unit-day-bookings";
-export { listAdminBookings } from "./list-admin-bookings";
+export { getDirectBookingCalendarState } from "./get-direct-booking-calendar-state";
 export { listMyBookings } from "./list-my-bookings";

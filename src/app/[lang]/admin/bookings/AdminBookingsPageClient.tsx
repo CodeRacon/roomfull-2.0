@@ -3,9 +3,10 @@
 import { clsx } from "clsx";
 import { useDeferredValue, useEffect, useState } from "react";
 import {
-	type AdminBooking,
+	type AdminBookingOperations,
+	type AdminBookingRangePreset,
 	type AdminBookingViewStatus,
-	listAdminBookings,
+	getAdminBookingOperations,
 } from "@/entities/booking";
 import { useSession } from "@/entities/session";
 import { formatUnitTypeName } from "@/entities/unit";
@@ -16,29 +17,18 @@ import { FeedbackBox, TextInput } from "@/shared/ui";
 import { AdminBookingsTable } from "@/widgets/admin-bookings-table";
 
 type AdminBookingFilter = AdminBookingViewStatus;
-type AdminBookingRangePreset = "week" | "month" | "quarter" | "year";
-type AdminBookingDateRange = {
-	from: string;
-	to: string;
-};
-
-type AdminBookingSummary = {
-	cancelledInRange: number;
-	todayBookings: number;
-	topBooked:
-		| {
-				count: number;
-				label: string;
-				meta: string;
-		  }
-		| undefined;
-	upcomingInRange: number;
-};
 
 const DEFAULT_LIMIT = 100;
-const SUMMARY_LIMIT = 500;
-const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_RANGE_PRESET: AdminBookingRangePreset = "month";
+const EMPTY_OPERATIONS: AdminBookingOperations = {
+	bookings: [],
+	dateRange: { from: "", to: "" },
+	summary: {
+		cancelledInRange: 0,
+		todayBookings: 0,
+		upcomingInRange: 0,
+	},
+};
 
 const filters: { status: AdminBookingFilter }[] = [
 	{ status: "today" },
@@ -48,14 +38,11 @@ const filters: { status: AdminBookingFilter }[] = [
 	{ status: "all" },
 ];
 
-const rangePresets: {
-	days: number;
-	key: AdminBookingRangePreset;
-}[] = [
-	{ days: 7, key: "week" },
-	{ days: 30, key: "month" },
-	{ days: 90, key: "quarter" },
-	{ days: 365, key: "year" },
+const rangePresets: { key: AdminBookingRangePreset }[] = [
+	{ key: "week" },
+	{ key: "month" },
+	{ key: "quarter" },
+	{ key: "year" },
 ];
 
 function getBookingFilterSelectedClassName(status: AdminBookingFilter): string {
@@ -71,128 +58,6 @@ function getBookingFilterSelectedClassName(status: AdminBookingFilter): string {
 		case "all":
 			return "bg-primary text-on-primary";
 	}
-}
-
-const berlinDateFormatter = new Intl.DateTimeFormat("en-CA", {
-	timeZone: "Europe/Berlin",
-	year: "numeric",
-	month: "2-digit",
-	day: "2-digit",
-});
-
-function formatBerlinDate(date: Date): string {
-	const parts = berlinDateFormatter.formatToParts(date);
-	const values = new Map(parts.map((part) => [part.type, part.value]));
-
-	return `${values.get("year")}-${values.get("month")}-${values.get("day")}`;
-}
-
-function addDays(date: Date, days: number): Date {
-	return new Date(date.getTime() + days * DAY_IN_MS);
-}
-
-function getRangePresetDays(preset: AdminBookingRangePreset): number {
-	return (
-		rangePresets.find((rangePreset) => rangePreset.key === preset)?.days ?? 30
-	);
-}
-
-function getDateRangeForFilter(
-	status: AdminBookingFilter,
-	preset: AdminBookingRangePreset,
-): AdminBookingDateRange {
-	const now = new Date();
-	const today = formatBerlinDate(now);
-	const presetDays = getRangePresetDays(preset);
-
-	if (status === "today") {
-		return { from: today, to: today };
-	}
-
-	if (status === "all") {
-		return {
-			from: formatBerlinDate(addDays(now, -presetDays)),
-			to: formatBerlinDate(addDays(now, presetDays)),
-		};
-	}
-
-	if (status === "completed" || status === "cancelled") {
-		return { from: formatBerlinDate(addDays(now, -presetDays)), to: today };
-	}
-
-	return { from: today, to: formatBerlinDate(addDays(now, presetDays)) };
-}
-
-function getTopBookedUnit(
-	bookings: AdminBooking[],
-	locale: string,
-): AdminBookingSummary["topBooked"] {
-	const unitCounts = new Map<
-		string,
-		{ count: number; label: string; meta: string }
-	>();
-
-	for (const booking of bookings) {
-		const existingUnit = unitCounts.get(booking.unit.id);
-
-		if (existingUnit) {
-			existingUnit.count += 1;
-			continue;
-		}
-
-		unitCounts.set(booking.unit.id, {
-			count: 1,
-			label: booking.unit.name,
-			meta: formatUnitTypeName(booking.unit.unitType.name),
-		});
-	}
-
-	return Array.from(unitCounts.values()).sort((firstUnit, secondUnit) => {
-		if (secondUnit.count !== firstUnit.count) {
-			return secondUnit.count - firstUnit.count;
-		}
-
-		return firstUnit.label.localeCompare(secondUnit.label, locale);
-	})[0];
-}
-
-function getSummaryFromBookings(input: {
-	allBookings: AdminBooking[];
-	rangeBookings: AdminBooking[];
-	todayBookings: AdminBooking[];
-	locale: string;
-}): AdminBookingSummary {
-	const now = new Date();
-
-	let cancelledInRange = 0;
-	let upcomingInRange = 0;
-
-	for (const booking of input.rangeBookings) {
-		if (booking.status === "CANCELLED") {
-			cancelledInRange += 1;
-			continue;
-		}
-
-		if (new Date(booking.startTime) >= now) {
-			upcomingInRange += 1;
-		}
-	}
-
-	return {
-		cancelledInRange,
-		todayBookings: input.todayBookings.length,
-		topBooked: getTopBookedUnit(input.allBookings, input.locale),
-		upcomingInRange,
-	};
-}
-
-function getEmptySummary(): AdminBookingSummary {
-	return {
-		cancelledInRange: 0,
-		todayBookings: 0,
-		topBooked: undefined,
-		upcomingInRange: 0,
-	};
 }
 
 type AdminBookingsPageClientProps = {
@@ -219,10 +84,8 @@ export function AdminBookingsPageClient({
 		useState<AdminBookingRangePreset>(() => DEFAULT_RANGE_PRESET);
 	const [searchQuery, setSearchQuery] = useState("");
 	const deferredSearchQuery = useDeferredValue(searchQuery);
-	const [bookings, setBookings] = useState<AdminBooking[]>([]);
-	const [summary, setSummary] = useState<AdminBookingSummary>(() =>
-		getEmptySummary(),
-	);
+	const [operations, setOperations] =
+		useState<AdminBookingOperations>(EMPTY_OPERATIONS);
 	const [isLoading, setIsLoading] = useState(true);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -232,47 +95,18 @@ export function AdminBookingsPageClient({
 		}
 
 		async function loadBookings(): Promise<void> {
-			const selectedRange = getDateRangeForFilter(
-				selectedFilter,
-				selectedRangePreset,
-			);
-			const todayRange = getDateRangeForFilter("today", selectedRangePreset);
-
 			try {
 				setIsLoading(true);
 				setErrorMessage(null);
 
-				const [selectedBookings, rangeBookings, todayBookings] =
-					await Promise.all([
-						listAdminBookings({
-							...selectedRange,
-							limit: DEFAULT_LIMIT,
-							search: deferredSearchQuery,
-							status: selectedFilter,
-						}),
-						listAdminBookings({
-							...selectedRange,
-							limit: SUMMARY_LIMIT,
-							search: deferredSearchQuery,
-							status: "all",
-						}),
-						listAdminBookings({
-							...todayRange,
-							limit: SUMMARY_LIMIT,
-							search: deferredSearchQuery,
-							status: "today",
-						}),
-					]);
+				const nextOperations = await getAdminBookingOperations({
+					limit: DEFAULT_LIMIT,
+					range: selectedRangePreset,
+					search: deferredSearchQuery,
+					status: selectedFilter,
+				});
 
-				setBookings(selectedBookings);
-				setSummary(
-					getSummaryFromBookings({
-						allBookings: rangeBookings,
-						rangeBookings,
-						todayBookings,
-						locale: copy.table.dateLocale,
-					}),
-				);
+				setOperations(nextOperations);
 			} catch (error) {
 				if (error instanceof ApiRequestError) {
 					if (error.status === 401) {
@@ -301,8 +135,8 @@ export function AdminBookingsPageClient({
 		endSession,
 		copy.errors.forbidden,
 		copy.errors.fallback,
-		copy.table.dateLocale,
 	]);
+	const { bookings, summary } = operations;
 
 	return (
 		<RequireAuth allowedRoles={["ADMIN"]}>
@@ -345,13 +179,13 @@ export function AdminBookingsPageClient({
 						{copy.summary.topBooked}
 					</p>
 					<p className="mt-3 truncate text-xl font-black leading-none text-primary">
-						{summary.topBooked?.label ?? "-"}
+						{summary.topBookedUnit?.name ?? "-"}
 					</p>
 					<p className="mt-2 truncate text-xs font-semibold text-muted">
-						{summary.topBooked
+						{summary.topBookedUnit
 							? formatTemplate(copy.summary.topBookedMeta, {
-									count: summary.topBooked.count,
-									meta: summary.topBooked.meta,
+									count: summary.topBookedUnit.bookingCount,
+									meta: formatUnitTypeName(summary.topBookedUnit.unitType),
 								})
 							: copy.summary.noData}
 					</p>
