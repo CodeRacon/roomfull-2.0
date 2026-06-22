@@ -1,13 +1,16 @@
 import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
-import TrashIcon from "@public/icons/general/ic-trash.svg";
 import { clsx } from "clsx";
 import { useState } from "react";
 import type { Booking, MyBooking } from "@/entities/booking";
 import { formatUnitTypeName } from "@/entities/unit";
-import { CancelBookingButton } from "@/features/booking/cancel-booking";
+import {
+	CancelBookingCardAction,
+	CancelBookingCompactAction,
+	CancelBookingWorkflow,
+} from "@/features/booking/cancel-booking";
 import { ExportBookingCalendarButton } from "@/features/booking/export-booking-calendar";
 import type { Dictionary, Locale } from "@/shared/i18n";
-import { Button, Calendar, FeedbackBox, TextInput } from "@/shared/ui";
+import { Calendar, FeedbackBox } from "@/shared/ui";
 
 type MyBookingsListProps = {
 	bookings: MyBooking[];
@@ -70,10 +73,6 @@ const bookingFormattersByLocale: Record<
 
 const calendarExportButtonClassName =
 	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-accent bg-background px-3 py-2 text-sm font-black text-accent transition-colors hover:bg-accent-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-const cancelTriggerButtonClassName =
-	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-danger-text bg-background px-3 py-2 text-sm font-black text-danger-text transition-colors hover:bg-danger-bg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
-const cancelConfirmButtonClassName =
-	"inline-flex min-h-10 items-center justify-center gap-2 border-2 border-danger-text bg-danger-text px-3 py-2 text-sm font-black text-danger-bg transition-colors hover:bg-danger-text/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:opacity-60";
 const maxVisibleCalendarLabels = 3;
 const myBookingsCalendarAccent = {
 	containerClassName: "bg-background",
@@ -336,27 +335,17 @@ function BookingCard({
 	copy,
 	isHighlighted = false,
 	locale,
-	onBookingCancelError,
-	onBookingCancelled,
 	tone = "active",
 }: {
 	booking: MyBooking;
 	copy: MyBookingsCopy;
 	isHighlighted?: boolean;
 	locale: Locale;
-	onBookingCancelError: (message: string) => void;
-	onBookingCancelled: (booking: Booking) => void;
 	tone?: BookingCardTone;
 }) {
 	const isPast = tone === "past";
-	const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] =
-		useState(false);
-	const [cancelConfirmationInput, setCancelConfirmationInput] = useState("");
-	const [isCancelSubmitting, setIsCancelSubmitting] = useState(false);
 	const canExportCalendar = canExportBooking(booking, tone);
 	const canCancelBooking = canCancelMyBooking(booking);
-	const canConfirmCancel =
-		cancelConfirmationInput.trim() === copy.actions.cancelKeyword;
 
 	return (
 		<article
@@ -410,62 +399,9 @@ function BookingCard({
 							{copy.actions.downloadIcs}
 						</ExportBookingCalendarButton>
 					)}
-					{canCancelBooking &&
-						(isCancelConfirmationOpen ? (
-							<div className="w-full border-t-2 border-primary pt-4">
-								<p className="text-danger-text">
-									{formatTemplate(copy.actions.cancelPrompt, {
-										keyword: copy.actions.cancelKeyword,
-									})}
-								</p>
-								<div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-									<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-										<TextInput
-											value={cancelConfirmationInput}
-											onChange={(event) =>
-												setCancelConfirmationInput(event.target.value)
-											}
-											disabled={isCancelSubmitting}
-											placeholder={copy.actions.cancelKeyword}
-											className="max-w-48"
-										/>
-										<CancelBookingButton
-											ariaLabel={copy.actions.cancelAriaLabel}
-											bookingId={booking.id}
-											className={cancelConfirmButtonClassName}
-											iconClassName="size-4"
-											onCancelled={onBookingCancelled}
-											onError={onBookingCancelError}
-											onSubmittingChange={setIsCancelSubmitting}
-											disabled={!canConfirmCancel}
-											errorCopy={copy.cancelErrors}
-										>
-											{copy.actions.cancelConfirm}
-										</CancelBookingButton>
-									</div>
-									<Button
-										type="button"
-										variant="secondary"
-										disabled={isCancelSubmitting}
-										onClick={() => {
-											setIsCancelConfirmationOpen(false);
-											setCancelConfirmationInput("");
-										}}
-									>
-										{copy.actions.cancelAbort}
-									</Button>
-								</div>
-							</div>
-						) : (
-							<button
-								type="button"
-								onClick={() => setIsCancelConfirmationOpen(true)}
-								className={cancelTriggerButtonClassName}
-							>
-								<TrashIcon className="size-4" aria-hidden="true" />
-								{copy.actions.cancelBooking}
-							</button>
-						))}
+					{canCancelBooking && (
+						<CancelBookingCardAction bookingId={booking.id} />
+					)}
 				</div>
 			</div>
 		</article>
@@ -477,27 +413,17 @@ function BookingListRow({
 	copy,
 	isHighlighted = false,
 	locale,
-	onBookingCancelError,
-	onBookingCancelled,
 	tone,
 }: {
 	booking: MyBooking;
 	copy: MyBookingsCopy;
 	isHighlighted?: boolean;
 	locale: Locale;
-	onBookingCancelError: (message: string) => void;
-	onBookingCancelled: (booking: Booking) => void;
 	tone: BookingCardTone;
 }) {
 	const isPast = tone === "past";
-	const [isCancelConfirmationOpen, setIsCancelConfirmationOpen] =
-		useState(false);
-	const [cancelConfirmationInput, setCancelConfirmationInput] = useState("");
-	const [isCancelSubmitting, setIsCancelSubmitting] = useState(false);
 	const canExportCalendar = canExportBooking(booking, tone);
 	const canCancelBooking = canCancelMyBooking(booking);
-	const canConfirmCancel =
-		cancelConfirmationInput.trim() === copy.actions.cancelKeyword;
 
 	return (
 		<article
@@ -549,64 +475,11 @@ function BookingListRow({
 								</ExportBookingCalendarButton>
 							)}
 							{canCancelBooking && (
-								<button
-									type="button"
-									onClick={() => setIsCancelConfirmationOpen(true)}
-									className={cancelTriggerButtonClassName}
-								>
-									<TrashIcon className="size-4" aria-hidden="true" />
-									{copy.actions.cancelShort}
-								</button>
+								<CancelBookingCompactAction bookingId={booking.id} />
 							)}
 						</div>
 					)}
 				</div>
-				{canCancelBooking && isCancelConfirmationOpen && (
-					<div className="border-primary border-t-2 px-4 pb-4 pt-4 text-sm font-semibold">
-						<p className="text-danger-text">
-							{formatTemplate(copy.actions.cancelPrompt, {
-								keyword: copy.actions.cancelKeyword,
-							})}
-						</p>
-						<div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-							<div className="flex items-center gap-3">
-								<TextInput
-									value={cancelConfirmationInput}
-									onChange={(event) =>
-										setCancelConfirmationInput(event.target.value)
-									}
-									disabled={isCancelSubmitting}
-									placeholder={copy.actions.cancelKeyword}
-									className="max-w-48"
-								/>
-								<CancelBookingButton
-									ariaLabel={copy.actions.cancelAriaLabel}
-									bookingId={booking.id}
-									className={cancelConfirmButtonClassName}
-									iconClassName="size-4"
-									onCancelled={onBookingCancelled}
-									onError={onBookingCancelError}
-									onSubmittingChange={setIsCancelSubmitting}
-									disabled={!canConfirmCancel}
-									errorCopy={copy.cancelErrors}
-								>
-									{copy.actions.cancelConfirm}
-								</CancelBookingButton>
-							</div>
-							<Button
-								type="button"
-								variant="secondary"
-								disabled={isCancelSubmitting}
-								onClick={() => {
-									setIsCancelConfirmationOpen(false);
-									setCancelConfirmationInput("");
-								}}
-							>
-								{copy.actions.cancelAbort}
-							</Button>
-						</div>
-					</div>
-				)}
 			</div>
 		</article>
 	);
@@ -617,16 +490,12 @@ function BookingCalendarView({
 	copy,
 	highlightedBookingId,
 	locale,
-	onBookingCancelError,
-	onBookingCancelled,
 	tone,
 }: {
 	bookings: MyBooking[];
 	copy: MyBookingsCopy;
 	highlightedBookingId?: string | null;
 	locale: Locale;
-	onBookingCancelError: (message: string) => void;
-	onBookingCancelled: (booking: Booking) => void;
 	tone: BookingCardTone;
 }) {
 	const initialSelectedDate =
@@ -766,8 +635,6 @@ function BookingCalendarView({
 								copy={copy}
 								isHighlighted={booking.id === highlightedBookingId}
 								locale={locale}
-								onBookingCancelled={onBookingCancelled}
-								onBookingCancelError={onBookingCancelError}
 								tone={tone}
 							/>
 						))}
@@ -785,8 +652,6 @@ function BookingSection({
 	emptyText,
 	highlightedBookingId,
 	locale,
-	onBookingCancelError,
-	onBookingCancelled,
 	tone,
 	title,
 	viewMode,
@@ -797,8 +662,6 @@ function BookingSection({
 	emptyText: string;
 	highlightedBookingId?: string | null;
 	locale: Locale;
-	onBookingCancelError: (message: string) => void;
-	onBookingCancelled: (booking: Booking) => void;
 	tone: BookingCardTone;
 	title: string;
 	viewMode: MyBookingsViewMode;
@@ -834,8 +697,6 @@ function BookingSection({
 					copy={copy}
 					highlightedBookingId={highlightedBookingId}
 					locale={locale}
-					onBookingCancelled={onBookingCancelled}
-					onBookingCancelError={onBookingCancelError}
 					tone={tone}
 				/>
 			) : viewMode === "list" ? (
@@ -847,8 +708,6 @@ function BookingSection({
 							copy={copy}
 							isHighlighted={booking.id === highlightedBookingId}
 							locale={locale}
-							onBookingCancelled={onBookingCancelled}
-							onBookingCancelError={onBookingCancelError}
 							tone={tone}
 						/>
 					))}
@@ -862,8 +721,6 @@ function BookingSection({
 							copy={copy}
 							isHighlighted={booking.id === highlightedBookingId}
 							locale={locale}
-							onBookingCancelled={onBookingCancelled}
-							onBookingCancelError={onBookingCancelError}
 							tone={tone}
 						/>
 					))}
@@ -906,7 +763,12 @@ export function MyBookingsList({
 		.sort(compareByStartDesc);
 
 	return (
-		<div>
+		<CancelBookingWorkflow
+			key={viewMode}
+			copy={copy}
+			onCancelled={onBookingCancelled}
+			onError={onBookingCancelError}
+		>
 			<MyBookingsViewModeSwitch
 				copy={copy.views}
 				onViewModeChange={onViewModeChange}
@@ -918,8 +780,6 @@ export function MyBookingsList({
 				emptyText={copy.sections.upcomingEmpty}
 				highlightedBookingId={highlightedBookingId}
 				locale={locale}
-				onBookingCancelled={onBookingCancelled}
-				onBookingCancelError={onBookingCancelError}
 				tone="active"
 				title={copy.sections.upcomingTitle}
 				viewMode={viewMode}
@@ -931,12 +791,10 @@ export function MyBookingsList({
 				emptyText={copy.sections.pastEmpty}
 				highlightedBookingId={highlightedBookingId}
 				locale={locale}
-				onBookingCancelled={onBookingCancelled}
-				onBookingCancelError={onBookingCancelError}
 				tone="past"
 				title={copy.sections.pastTitle}
 				viewMode={viewMode}
 			/>
-		</div>
+		</CancelBookingWorkflow>
 	);
 }
