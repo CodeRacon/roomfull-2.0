@@ -1,19 +1,14 @@
-import type { Booking } from "@prisma/client";
-import { BookingStatus, UnitTypeName } from "@prisma/client";
+import { type Booking, BookingStatus, type UnitTypeName } from "@prisma/client";
 import { findActiveAreaById } from "../db/area.repository.js";
 import {
-	type AdminBookingRecord,
 	cancelBooking as cancelBookingRecord,
 	findBookingById as findBookingByIdRecord,
-	listActiveBookingIntervalsForUnitInRange,
-	listAllBookings as listAllBookingsRecords,
 	listUserBookings as listUserBookingsRecords,
 	type UserBookingRecord,
 } from "../db/booking.repository.js";
 import {
 	countActiveUnitCapacityByAreaAndUnitType,
 	createBookingWithTransaction,
-	findActiveUnitById,
 	findActiveUnitByIdWithRelations,
 	findUnitTypeByName,
 	listAvailableUnitsForAllocation,
@@ -24,19 +19,15 @@ import {
 	defaultContentLocale,
 	resolveLocalizedDescription,
 } from "../lib/content-locale.js";
-import {
-	addBerlinCalendarDays,
-	assertBookableDateTimeRange,
-	getBerlinCalendarDayRange,
-	getBerlinTodayDate,
-	getBookableBerlinDayRange,
-	parseDateTime,
-} from "./booking-time-policy.js";
+import { resolveBookingRequestMode } from "./booking-request-mode.js";
+import { bookingTimePolicy } from "./booking-time-policy.js";
+import { coworkingCalendar } from "./coworking-calendar.js";
 
 type CreateBookingForUserInput = {
 	userId: string;
-	start: string;
-	end: string;
+	date: string;
+	startTime: string;
+	endTime: string;
 	unitId?: string;
 	areaId?: string;
 	unitType?: string;
@@ -51,51 +42,11 @@ type CancelBookingForUserInput = {
 	userId: string;
 };
 
-type ListUnitDayBookingsInput = {
-	unitId: string;
-	date: string;
-};
-
-export type AdminBookingViewStatus =
-	| "upcoming"
-	| "today"
-	| "completed"
-	| "cancelled"
-	| "all";
-
-type ListAllBookingsForAdminInput = {
-	from?: string;
-	limit?: string;
-	search?: string;
-	status?: string;
-	to?: string;
-};
-
 type GetBookingContextInput = {
 	unitId?: string;
 	areaId?: string;
 	unitType?: string;
 	locale?: ContentLocale;
-};
-
-type BookingContextEntry =
-	| {
-			mode: "DIRECT";
-			unitId: string;
-	  }
-	| {
-			mode: "AUTO_ASSIGN";
-			areaId: string;
-			unitType: UnitTypeName;
-	  };
-
-export type UnitDayBookings = {
-	date: string;
-	unitId: string;
-	bookedIntervals: {
-		start: string;
-		end: string;
-	}[];
 };
 
 export type BookingContextMode = "DIRECT" | "AUTO_ASSIGN";
@@ -130,137 +81,12 @@ export type AutoAssignBookingContext = {
 
 export type BookingContext = DirectBookingContext | AutoAssignBookingContext;
 
-function parseUnitType(value: string): UnitTypeName {
-	const normalized = value.trim().toUpperCase();
-
-	switch (normalized) {
-		case UnitTypeName.HOT_DESK:
-			return UnitTypeName.HOT_DESK;
-		case UnitTypeName.BOOTH:
-			return UnitTypeName.BOOTH;
-		case UnitTypeName.TEAM_ROOM:
-			return UnitTypeName.TEAM_ROOM;
-		case UnitTypeName.MEETING_ROOM:
-			return UnitTypeName.MEETING_ROOM;
-		default:
-			throw new AppError(400, "unitType ist ungültig");
-	}
-}
-
-function resolveBookingContextEntry(
-	input: GetBookingContextInput,
-): BookingContextEntry {
-	const unitId = input.unitId?.trim() ?? "";
-	const areaId = input.areaId?.trim() ?? "";
-	const unitTypeRaw = input.unitType?.trim() ?? "";
-
-	const directSelected = unitId.length > 0;
-	const autoSelected = areaId.length > 0 || unitTypeRaw.length > 0;
-
-	if (directSelected && autoSelected) {
-		throw new AppError(
-			400,
-			"Entweder unitId ODER areaId+unitType senden, nicht beides",
-		);
-	}
-
-	if (!directSelected && !autoSelected) {
-		throw new AppError(
-			400,
-			"Entweder unitId oder areaId+unitType ist erforderlich",
-		);
-	}
-
-	if (directSelected) {
-		return { mode: "DIRECT", unitId };
-	}
-
-	if (areaId.length === 0 || unitTypeRaw.length === 0) {
-		throw new AppError(
-			400,
-			"Für Auto-Assign sind areaId und unitType erforderlich",
-		);
-	}
-
-	const unitType = parseUnitType(unitTypeRaw);
-
-	if (unitType !== UnitTypeName.HOT_DESK) {
-		throw new AppError(400, "Auto-Assign ist in V1 nur für HOT_DESK erlaubt");
-	}
-
-	return { mode: "AUTO_ASSIGN", areaId, unitType };
-}
-
-function resolveBookingMode(
-	input: CreateBookingForUserInput,
-):
-	| { mode: "DIRECT"; unitId: string }
-	| { mode: "AUTO"; areaId: string; unitType: UnitTypeName } {
-	const unitId = input.unitId?.trim() ?? "";
-	const areaId = input.areaId?.trim() ?? "";
-	const unitTypeRaw = input.unitType?.trim() ?? "";
-
-	const directSelected = unitId.length > 0;
-	const autoSelected = areaId.length > 0 || unitTypeRaw.length > 0;
-
-	if (directSelected && autoSelected) {
-		throw new AppError(
-			400,
-			"Entweder unitId ODER areaId+unitType senden, nicht beides",
-		);
-	}
-
-	if (!directSelected && !autoSelected) {
-		throw new AppError(
-			400,
-			"Entweder unitId oder areaId+unitType ist erforderlich",
-		);
-	}
-
-	if (directSelected) {
-		return { mode: "DIRECT", unitId };
-	}
-
-	if (areaId.length === 0 || unitTypeRaw.length === 0) {
-		throw new AppError(
-			400,
-			"Für Auto-Assign sind areaId und unitType erforderlich",
-		);
-	}
-
-	const unitType = parseUnitType(unitTypeRaw);
-
-	if (unitType !== UnitTypeName.HOT_DESK) {
-		throw new AppError(400, "Auto-Assign ist in V1 nur für HOT_DESK erlaubt");
-	}
-
-	return { mode: "AUTO", areaId, unitType };
-}
-
 function mapUnitTypePolicy(
 	name: UnitTypeName,
 	minDurationMinutes: number,
 	maxDurationMinutes: number,
 ): BookingContextUnitType {
 	return { name, minDurationMinutes, maxDurationMinutes };
-}
-
-function assertDurationForType(
-	startTime: Date,
-	endTime: Date,
-	minDurationMinutes: number,
-	maxDurationMinutes: number,
-): void {
-	const durationMs = endTime.getTime() - startTime.getTime();
-	const minDurationMs = minDurationMinutes * 60 * 1000;
-	const maxDurationMs = maxDurationMinutes * 60 * 1000;
-
-	if (durationMs < minDurationMs || durationMs > maxDurationMs) {
-		throw new AppError(
-			400,
-			`Buchungsdauer muss zwischen ${minDurationMinutes} und ${maxDurationMinutes} Minuten liegen`,
-		);
-	}
 }
 
 async function getDirectBookingContext(
@@ -342,7 +168,7 @@ async function getAutoAssignBookingContext(input: {
 export async function getBookingContext(
 	input: GetBookingContextInput,
 ): Promise<BookingContext> {
-	const entry = resolveBookingContextEntry(input);
+	const entry = resolveBookingRequestMode(input);
 	const locale = input.locale ?? defaultContentLocale;
 
 	if (entry.mode === "DIRECT") {
@@ -359,26 +185,28 @@ export async function getBookingContext(
 async function createDirectBooking(input: {
 	userId: string;
 	unitId: string;
-	startTime: Date;
-	endTime: Date;
+	date: string;
+	startTime: string;
+	endTime: string;
 }): Promise<Booking> {
 	const unit = await findActiveUnitByIdWithRelations(input.unitId);
 	if (!unit) {
 		throw new AppError(404, "Unit wurde nicht gefunden");
 	}
 
-	assertDurationForType(
-		input.startTime,
-		input.endTime,
-		unit.unitType.minDurationMinutes,
-		unit.unitType.maxDurationMinutes,
-	);
+	const { startTime, endTime } = bookingTimePolicy.resolveBookingTimeInput({
+		date: input.date,
+		startTime: input.startTime,
+		endTime: input.endTime,
+		minDurationMinutes: unit.unitType.minDurationMinutes,
+		maxDurationMinutes: unit.unitType.maxDurationMinutes,
+	});
 
 	const booking = await createBookingWithTransaction({
 		userId: input.userId,
 		unitId: unit.id,
-		startTime: input.startTime,
-		endTime: input.endTime,
+		startTime,
+		endTime,
 	});
 
 	if (!booking) {
@@ -392,8 +220,9 @@ async function createAutoAssignedHotDeskBooking(input: {
 	userId: string;
 	areaId: string;
 	unitType: UnitTypeName;
-	startTime: Date;
-	endTime: Date;
+	date: string;
+	startTime: string;
+	endTime: string;
 }): Promise<Booking> {
 	const area = await findActiveAreaById(input.areaId);
 	if (!area) {
@@ -405,27 +234,28 @@ async function createAutoAssignedHotDeskBooking(input: {
 		throw new AppError(404, "UnitType wurde nicht gefunden");
 	}
 
-	assertDurationForType(
-		input.startTime,
-		input.endTime,
-		unitType.minDurationMinutes,
-		unitType.maxDurationMinutes,
-	);
+	const { startTime, endTime } = bookingTimePolicy.resolveBookingTimeInput({
+		date: input.date,
+		startTime: input.startTime,
+		endTime: input.endTime,
+		minDurationMinutes: unitType.minDurationMinutes,
+		maxDurationMinutes: unitType.maxDurationMinutes,
+	});
 
 	for (let attempt = 0; attempt < 3; attempt += 1) {
 		const candidates = await listAvailableUnitsForAllocation({
 			areaId: area.id,
 			unitTypeId: unitType.id,
-			startTime: input.startTime,
-			endTime: input.endTime,
+			startTime,
+			endTime,
 		});
 
 		for (const candidate of candidates) {
 			const booking = await createBookingWithTransaction({
 				userId: input.userId,
 				unitId: candidate.id,
-				startTime: input.startTime,
-				endTime: input.endTime,
+				startTime,
+				endTime,
 			});
 
 			if (booking) {
@@ -440,23 +270,20 @@ async function createAutoAssignedHotDeskBooking(input: {
 export async function createBookingForUser(
 	input: CreateBookingForUserInput,
 ): Promise<Booking> {
-	const startTime = parseDateTime(input.start, "start");
-	const endTime = parseDateTime(input.end, "end");
-	assertBookableDateTimeRange(startTime, endTime);
-
 	const userId = input.userId.trim();
 	if (userId === "") {
 		throw new AppError(400, "userId ist erforderlich");
 	}
 
-	const mode = resolveBookingMode(input);
+	const mode = resolveBookingRequestMode(input);
 
 	if (mode.mode === "DIRECT") {
 		return createDirectBooking({
 			userId,
 			unitId: mode.unitId,
-			startTime,
-			endTime,
+			date: input.date,
+			startTime: input.startTime,
+			endTime: input.endTime,
 		});
 	}
 
@@ -464,8 +291,9 @@ export async function createBookingForUser(
 		userId,
 		areaId: mode.areaId,
 		unitType: mode.unitType,
-		startTime,
-		endTime,
+		date: input.date,
+		startTime: input.startTime,
+		endTime: input.endTime,
 	});
 }
 
@@ -506,190 +334,9 @@ export async function cancelBookingForUser(
 		throw new AppError(403, "Buchung gehört nicht zum Benutzer");
 	}
 
-	if (booking.startTime.getTime() <= Date.now()) {
+	if (booking.startTime <= coworkingCalendar.now()) {
 		throw new AppError(409, "Nur zukünftige Buchungen können storniert werden");
 	}
 
 	return cancelBookingRecord({ bookingId });
-}
-
-function parseAdminBookingViewStatus(status?: string): AdminBookingViewStatus {
-	const normalizedStatus = status?.trim() ?? "";
-
-	if (normalizedStatus === "") {
-		return "upcoming";
-	}
-
-	switch (normalizedStatus) {
-		case "upcoming":
-		case "today":
-		case "completed":
-		case "cancelled":
-		case "all":
-			return normalizedStatus;
-		default:
-			throw new AppError(400, "status ist ungültig");
-	}
-}
-
-function parseAdminBookingLimit(limit?: string): number {
-	const normalizedLimit = limit?.trim() ?? "";
-
-	if (normalizedLimit === "") {
-		return 100;
-	}
-
-	const parsedLimit = Number(normalizedLimit);
-
-	if (!Number.isInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 500) {
-		throw new AppError(400, "limit muss zwischen 1 und 500 liegen");
-	}
-
-	return parsedLimit;
-}
-
-function getDefaultAdminBookingDateRange(status: AdminBookingViewStatus): {
-	from: string;
-	to: string;
-} {
-	const today = getBerlinTodayDate();
-
-	if (status === "upcoming" || status === "today") {
-		return {
-			from: today,
-			to: status === "today" ? today : addBerlinCalendarDays(today, 30),
-		};
-	}
-
-	if (status === "all") {
-		return {
-			from: addBerlinCalendarDays(today, -30),
-			to: addBerlinCalendarDays(today, 30),
-		};
-	}
-
-	return {
-		from: addBerlinCalendarDays(today, -30),
-		to: today,
-	};
-}
-
-function resolveAdminBookingDateRange(input: {
-	from?: string;
-	status: AdminBookingViewStatus;
-	to?: string;
-}): { fromStart: Date; toEnd: Date } {
-	const defaultRange = getDefaultAdminBookingDateRange(input.status);
-	const from = input.from?.trim() || defaultRange.from;
-	const to = input.to?.trim() || defaultRange.to;
-
-	if (from > to) {
-		throw new AppError(400, "from darf nicht nach to liegen");
-	}
-
-	return {
-		fromStart: getBerlinCalendarDayRange(from).startTime,
-		toEnd: getBerlinCalendarDayRange(to).endTime,
-	};
-}
-
-export async function listAllBookingsForAdmin(
-	input: ListAllBookingsForAdminInput = {},
-): Promise<AdminBookingRecord[]> {
-	const status = parseAdminBookingViewStatus(input.status);
-	const limit = parseAdminBookingLimit(input.limit);
-	const search = input.search?.trim();
-	const dateRange = resolveAdminBookingDateRange({
-		from: input.from,
-		status,
-		to: input.to,
-	});
-	const now = new Date();
-
-	switch (status) {
-		case "upcoming":
-			return listAllBookingsRecords({
-				limit,
-				orderBy: { startTime: "asc" },
-				search,
-				status: BookingStatus.ACTIVE,
-				startBefore: dateRange.toEnd,
-				endAfter:
-					now.getTime() > dateRange.fromStart.getTime()
-						? now
-						: dateRange.fromStart,
-			});
-		case "today":
-			return listAllBookingsRecords({
-				limit,
-				orderBy: { startTime: "asc" },
-				search,
-				status: BookingStatus.ACTIVE,
-				startBefore: dateRange.toEnd,
-				endAfter: dateRange.fromStart,
-			});
-		case "completed":
-			return listAllBookingsRecords({
-				limit,
-				orderBy: { endTime: "desc" },
-				search,
-				status: BookingStatus.ACTIVE,
-				startBefore: dateRange.toEnd,
-				endAfter: dateRange.fromStart,
-				endBefore: now,
-			});
-		case "cancelled":
-			return listAllBookingsRecords({
-				limit,
-				orderBy: { updatedAt: "desc" },
-				search,
-				status: BookingStatus.CANCELLED,
-				startBefore: dateRange.toEnd,
-				endAfter: dateRange.fromStart,
-			});
-		case "all":
-			return listAllBookingsRecords({
-				limit,
-				orderBy: { startTime: "asc" },
-				search,
-				startBefore: dateRange.toEnd,
-				endAfter: dateRange.fromStart,
-			});
-	}
-}
-
-export async function listUnitDayBookings(
-	input: ListUnitDayBookingsInput,
-): Promise<UnitDayBookings> {
-	const unitId = input.unitId.trim();
-
-	if (unitId === "") {
-		throw new AppError(400, "unitId ist erforderlich");
-	}
-
-	const dayRange = getBookableBerlinDayRange(input.date);
-	const unit = await findActiveUnitById(unitId);
-
-	if (!unit) {
-		throw new AppError(404, "Unit wurde nicht gefunden");
-	}
-
-	const intervals = await listActiveBookingIntervalsForUnitInRange({
-		unitId,
-		startTime: dayRange.startTime,
-		endTime: dayRange.endTime,
-	});
-
-	return {
-		date: dayRange.date,
-		unitId,
-		bookedIntervals: intervals.map((interval) => ({
-			start: new Date(
-				Math.max(interval.startTime.getTime(), dayRange.startTime.getTime()),
-			).toISOString(),
-			end: new Date(
-				Math.min(interval.endTime.getTime(), dayRange.endTime.getTime()),
-			).toISOString(),
-		})),
-	};
 }

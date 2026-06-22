@@ -2,11 +2,11 @@ import { Router } from "express";
 import {
 	cancelBookingController,
 	createBookingController,
+	getAdminBookingOperationsController,
 	getBookingAvailabilityController,
 	getBookingContextController,
-	listAdminBookingsController,
+	getDirectBookingCalendarStateController,
 	listMyBookingsController,
-	listUnitDayBookingsController,
 } from "../controllers/bookings.controller.js";
 import { requireAuth, requireRole } from "../middleware/auth.middleware.js";
 
@@ -25,11 +25,11 @@ bookingsRouter.route("/bookings").post(createBookingController);
 bookingsRouter.route("/me/bookings").get(listMyBookingsController);
 
 bookingsRouter
-	.route("/units/:unitId/day-bookings")
-	.get(listUnitDayBookingsController);
+	.route("/units/:unitId/calendar-state")
+	.get(getDirectBookingCalendarStateController);
 
 bookingsRouter.route("/bookings/:bookingId").delete(cancelBookingController);
 
 bookingsRouter
 	.route("/admin/bookings")
-	.get(requireRole("ADMIN"), listAdminBookingsController);
+	.get(requireRole("ADMIN"), getAdminBookingOperationsController);

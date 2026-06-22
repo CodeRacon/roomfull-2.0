@@ -1,315 +1,228 @@
+import type { BookedInterval } from "../db/booking.repository.js";
 import { AppError } from "../lib/app-error.js";
+import {
+	type CoworkingCalendar,
+	coworkingCalendar,
+} from "./coworking-calendar.js";
 
-export const COWORKING_TIME_ZONE = "Europe/Berlin";
-export const BOOKING_TIME_GRID_MINUTES = 15;
-export const OPENING_MINUTES = 8 * 60;
-export const CLOSING_MINUTES = 22 * 60;
+const BOOKING_TIME_GRID_MINUTES = 15;
+const OPENING_MINUTES = 8 * 60;
+const CLOSING_MINUTES = 22 * 60;
 
-const WEEKDAY_START = 1;
-const WEEKDAY_END = 5;
+type MinuteInterval = { start: number; end: number };
 
-type LocalDateTimeParts = {
-	year: number;
-	month: number;
-	day: number;
-	hour: number;
-	minute: number;
-	second: number;
-};
-
-const berlinDateTimeFormatter = new Intl.DateTimeFormat("en-CA", {
-	timeZone: COWORKING_TIME_ZONE,
-	year: "numeric",
-	month: "2-digit",
-	day: "2-digit",
-	hour: "2-digit",
-	minute: "2-digit",
-	second: "2-digit",
-	hourCycle: "h23",
-});
-
-export function parseDateTime(value: string, fieldName: "start" | "end"): Date {
-	const trimmed = value.trim();
-
-	if (trimmed === "") {
-		throw new AppError(400, `${fieldName} ist erforderlich`);
-	}
-
-	const date = new Date(trimmed);
-
-	if (Number.isNaN(date.getTime())) {
-		throw new AppError(400, `${fieldName} muss ein gültiges ISO-Datum sein`);
-	}
-
-	return date;
-}
-
-function getBerlinDateTimeParts(date: Date): LocalDateTimeParts {
-	const parts = berlinDateTimeFormatter.formatToParts(date);
-	const values = new Map(parts.map((part) => [part.type, part.value]));
-
-	return {
-		year: Number(values.get("year")),
-		month: Number(values.get("month")),
-		day: Number(values.get("day")),
-		hour: Number(values.get("hour")),
-		minute: Number(values.get("minute")),
-		second: Number(values.get("second")),
-	};
-}
-
-export function getBerlinDateString(date: Date): string {
-	const { year, month, day } = getBerlinDateTimeParts(date);
-	return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
-function formatBerlinDateParts(dateParts: LocalDateTimeParts): string {
-	return `${dateParts.year}-${String(dateParts.month).padStart(2, "0")}-${String(dateParts.day).padStart(2, "0")}`;
-}
-
-function assertValidBerlinDateString(date: string): LocalDateTimeParts {
-	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date.trim());
+function parseTime(value: string, fieldName: "startTime" | "endTime"): number {
+	const match = /^(\d{2}):(\d{2})$/.exec(value.trim());
 
 	if (!match) {
-		throw new AppError(400, "date muss im Format YYYY-MM-DD sein");
+		throw new AppError(400, `${fieldName} muss im Format HH:mm sein`);
 	}
 
-	const year = Number(match[1]);
-	const month = Number(match[2]);
-	const day = Number(match[3]);
-	const utcDate = new Date(Date.UTC(year, month - 1, day));
+	const hours = Number(match[1]);
+	const minutes = Number(match[2]);
 
-	if (
-		utcDate.getUTCFullYear() !== year ||
-		utcDate.getUTCMonth() !== month - 1 ||
-		utcDate.getUTCDate() !== day
-	) {
-		throw new AppError(400, "date ist kein gültiges Kalenderdatum");
+	if (hours > 23 || minutes > 59) {
+		throw new AppError(400, `${fieldName} ist keine gültige Uhrzeit`);
 	}
 
-	return { year, month, day, hour: 0, minute: 0, second: 0 };
+	return hours * 60 + minutes;
 }
 
-function addDays(
-	dateParts: LocalDateTimeParts,
-	days: number,
-): LocalDateTimeParts {
-	const utcDate = new Date(
-		Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day + days),
-	);
+function formatMinutes(minutes: number): string {
+	return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+}
+
+function roundUpToGrid(minutes: number): number {
+	const remainder = minutes % BOOKING_TIME_GRID_MINUTES;
+	return remainder === 0
+		? minutes
+		: minutes + BOOKING_TIME_GRID_MINUTES - remainder;
+}
+
+function roundDownToGrid(minutes: number): number {
+	return minutes - (minutes % BOOKING_TIME_GRID_MINUTES);
+}
+
+function overlaps(
+	left: { startTime: Date; endTime: Date },
+	right: { startTime: Date; endTime: Date },
+): boolean {
+	return left.startTime < right.endTime && left.endTime > right.startTime;
+}
+
+export function createBookingTimePolicy(calendar: CoworkingCalendar) {
+	function assertBookableDate(date: string): string {
+		const normalizedDate = calendar.getDayRange(date).date;
+
+		if (normalizedDate < calendar.getTodayDate()) {
+			throw new AppError(400, "date darf nicht in der Vergangenheit liegen");
+		}
+
+		const dayOfWeek = calendar.getDayOfWeek(normalizedDate);
+		if (dayOfWeek < 1 || dayOfWeek > 5) {
+			throw new AppError(400, "Zeitraum muss an einem Werktag liegen (Mo-Fr)");
+		}
+
+		return normalizedDate;
+	}
+
+	function listSlots(input: {
+		date: string;
+		minDurationMinutes: number;
+		maxDurationMinutes: number;
+		applyTodayRule: boolean;
+	}) {
+		const minDuration = roundUpToGrid(input.minDurationMinutes);
+		const maxDuration = roundDownToGrid(input.maxDurationMinutes);
+		let firstStart = OPENING_MINUTES;
+
+		if (input.applyTodayRule && input.date === calendar.getTodayDate()) {
+			const now = calendar.now();
+			firstStart = Math.max(
+				OPENING_MINUTES,
+				roundUpToGrid(calendar.getMinutesOfDay(now) + 1),
+			);
+		}
+
+		const slots = [];
+		for (
+			let start = firstStart;
+			start + minDuration <= CLOSING_MINUTES;
+			start += BOOKING_TIME_GRID_MINUTES
+		) {
+			for (
+				let end = start + minDuration;
+				end <= CLOSING_MINUTES && end - start <= maxDuration;
+				end += BOOKING_TIME_GRID_MINUTES
+			) {
+				slots.push({
+					start: formatMinutes(start),
+					end: formatMinutes(end),
+					startTime: calendar.toUtcDateFromMinutes(input.date, start),
+					endTime: calendar.toUtcDateFromMinutes(input.date, end),
+				});
+			}
+		}
+		return slots;
+	}
+
+	function getBookingDayPlan(input: {
+		date: string;
+		minDurationMinutes: number;
+		maxDurationMinutes: number;
+		applyTodayRule?: boolean;
+	}) {
+		const date = assertBookableDate(input.date);
+		const dayRange = calendar.getDayRange(date);
+		return {
+			date,
+			startTime: dayRange.startTime,
+			endTime: dayRange.endTime,
+			openingHours: { start: "08:00", end: "22:00" },
+			timeGridMinutes: BOOKING_TIME_GRID_MINUTES,
+			slots: listSlots({
+				...input,
+				date,
+				applyTodayRule: input.applyTodayRule ?? true,
+			}),
+		};
+	}
 
 	return {
-		year: utcDate.getUTCFullYear(),
-		month: utcDate.getUTCMonth() + 1,
-		day: utcDate.getUTCDate(),
-		hour: dateParts.hour,
-		minute: dateParts.minute,
-		second: dateParts.second,
+		resolveBookingTimeInput(input: {
+			date: string;
+			startTime: string;
+			endTime: string;
+			minDurationMinutes: number;
+			maxDurationMinutes: number;
+		}) {
+			const date = assertBookableDate(input.date);
+			const startMinutes = parseTime(input.startTime, "startTime");
+			const endMinutes = parseTime(input.endTime, "endTime");
+
+			if (startMinutes >= endMinutes) {
+				throw new AppError(400, "Startzeit muss vor Endzeit liegen");
+			}
+			if (
+				startMinutes % BOOKING_TIME_GRID_MINUTES !== 0 ||
+				endMinutes % BOOKING_TIME_GRID_MINUTES !== 0
+			) {
+				throw new AppError(
+					400,
+					"Start und Ende müssen auf dem 15-Minuten-Zeitraster liegen",
+				);
+			}
+			if (startMinutes < OPENING_MINUTES || endMinutes > CLOSING_MINUTES) {
+				throw new AppError(
+					400,
+					"Zeitraum muss innerhalb der Öffnungszeiten liegen (Mo-Fr 08:00-22:00)",
+				);
+			}
+
+			const startTime = calendar.toUtcDateFromMinutes(date, startMinutes);
+			const endTime = calendar.toUtcDateFromMinutes(date, endMinutes);
+			if (startTime <= calendar.now()) {
+				throw new AppError(400, "Nur zukünftige Zeiträume sind erlaubt");
+			}
+
+			const durationMinutes = endMinutes - startMinutes;
+			if (
+				durationMinutes < input.minDurationMinutes ||
+				durationMinutes > input.maxDurationMinutes
+			) {
+				throw new AppError(
+					400,
+					`Buchungsdauer muss zwischen ${input.minDurationMinutes} und ${input.maxDurationMinutes} Minuten liegen`,
+				);
+			}
+
+			return { date, startTime, endTime };
+		},
+
+		getBookingDayPlan,
+
+		hasDurationValidSlot(input: {
+			date: string;
+			minDurationMinutes: number;
+			maxDurationMinutes: number;
+			blockingIntervals: BookedInterval[];
+		}) {
+			const plan = getBookingDayPlan({ ...input, applyTodayRule: false });
+			return plan.slots.some(
+				(slot) =>
+					!input.blockingIntervals.some((interval) => overlaps(interval, slot)),
+			);
+		},
+
+		toBlockedIntervals(intervals: BookedInterval[]) {
+			const ranges = intervals
+				.map((interval) => ({
+					start: Math.max(
+						OPENING_MINUTES,
+						roundDownToGrid(calendar.getMinutesOfDay(interval.startTime)),
+					),
+					end: Math.min(
+						CLOSING_MINUTES,
+						roundUpToGrid(calendar.getMinutesOfDay(interval.endTime)),
+					),
+				}))
+				.filter((range) => range.end > range.start)
+				.sort((left, right) => left.start - right.start);
+			const merged: MinuteInterval[] = [];
+
+			for (const range of ranges) {
+				const last = merged.at(-1);
+				if (!last || range.start > last.end) merged.push({ ...range });
+				else last.end = Math.max(last.end, range.end);
+			}
+
+			return merged.map((range) => ({
+				start: formatMinutes(range.start),
+				end: formatMinutes(range.end),
+			}));
+		},
 	};
 }
 
-function toUtcDateFromBerlinParts(dateParts: LocalDateTimeParts): Date {
-	const initialUtcMs = Date.UTC(
-		dateParts.year,
-		dateParts.month - 1,
-		dateParts.day,
-		dateParts.hour,
-		dateParts.minute,
-		dateParts.second,
-	);
-	const actualBerlinParts = getBerlinDateTimeParts(new Date(initialUtcMs));
-	const desiredLocalMs = Date.UTC(
-		dateParts.year,
-		dateParts.month - 1,
-		dateParts.day,
-		dateParts.hour,
-		dateParts.minute,
-		dateParts.second,
-	);
-	const actualLocalMs = Date.UTC(
-		actualBerlinParts.year,
-		actualBerlinParts.month - 1,
-		actualBerlinParts.day,
-		actualBerlinParts.hour,
-		actualBerlinParts.minute,
-		actualBerlinParts.second,
-	);
-
-	return new Date(initialUtcMs - (actualLocalMs - desiredLocalMs));
-}
-
-function assertSameBerlinCalendarDay(
-	startTime: Date,
-	endTime: Date,
-): LocalDateTimeParts {
-	const start = getBerlinDateTimeParts(startTime);
-	const end = getBerlinDateTimeParts(endTime);
-
-	const isSameDate =
-		start.year === end.year &&
-		start.month === end.month &&
-		start.day === end.day;
-
-	if (!isSameDate) {
-		throw new AppError(
-			400,
-			"Start und Ende müssen am selben Kalendertag liegen",
-		);
-	}
-
-	return start;
-}
-
-function assertBerlinWeekday(dateParts: LocalDateTimeParts): void {
-	const day = new Date(
-		Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day),
-	).getUTCDay();
-
-	if (day < WEEKDAY_START || day > WEEKDAY_END) {
-		throw new AppError(400, "Zeitraum muss an einem Werktag liegen (Mo-Fr)");
-	}
-}
-
-function toMinutesOfDay(dateParts: LocalDateTimeParts): number {
-	return dateParts.hour * 60 + dateParts.minute;
-}
-
-export function getBerlinMinutesOfDay(date: Date): number {
-	return toMinutesOfDay(getBerlinDateTimeParts(date));
-}
-
-function assertOnBookingTimeGrid(date: Date, fieldName: "start" | "end"): void {
-	const dateParts = getBerlinDateTimeParts(date);
-	const minutes = toMinutesOfDay(dateParts);
-
-	if (
-		minutes % BOOKING_TIME_GRID_MINUTES !== 0 ||
-		dateParts.second !== 0 ||
-		date.getMilliseconds() !== 0
-	) {
-		throw new AppError(
-			400,
-			`${fieldName} muss auf dem 15-Minuten-Zeitraster liegen`,
-		);
-	}
-}
-
-function assertWithinBerlinOpeningHours(startTime: Date, endTime: Date): void {
-	const startMinutes = toMinutesOfDay(getBerlinDateTimeParts(startTime));
-	const endMinutes = toMinutesOfDay(getBerlinDateTimeParts(endTime));
-
-	if (startMinutes < OPENING_MINUTES || endMinutes > CLOSING_MINUTES) {
-		throw new AppError(
-			400,
-			"Zeitraum muss innerhalb der Öffnungszeiten liegen (Mo-Fr 08:00-22:00)",
-		);
-	}
-}
-
-export function assertBookableDateTimeRange(
-	startTime: Date,
-	endTime: Date,
-): void {
-	if (startTime.getTime() >= endTime.getTime()) {
-		throw new AppError(400, "Startzeit muss vor Endzeit liegen");
-	}
-
-	const startDateParts = assertSameBerlinCalendarDay(startTime, endTime);
-
-	if (startTime.getTime() <= Date.now()) {
-		throw new AppError(400, "Nur zukünftige Zeiträume sind erlaubt");
-	}
-
-	assertBerlinWeekday(startDateParts);
-	assertOnBookingTimeGrid(startTime, "start");
-	assertOnBookingTimeGrid(endTime, "end");
-	assertWithinBerlinOpeningHours(startTime, endTime);
-}
-
-export function formatMinutesOfDay(minutes: number): string {
-	const hours = Math.floor(minutes / 60);
-	const remainingMinutes = minutes % 60;
-
-	return `${String(hours).padStart(2, "0")}:${String(remainingMinutes).padStart(
-		2,
-		"0",
-	)}`;
-}
-
-export function toUtcDateFromBerlinDateAndMinutes(
-	date: string,
-	minutes: number,
-): Date {
-	const dateParts = assertValidBerlinDateString(date);
-
-	return toUtcDateFromBerlinParts({
-		...dateParts,
-		hour: Math.floor(minutes / 60),
-		minute: minutes % 60,
-		second: 0,
-	});
-}
-
-export function getFirstBookableStartMinutesForDate(date: string): number {
-	const normalizedDate = formatBerlinDateParts(
-		assertValidBerlinDateString(date),
-	);
-
-	if (normalizedDate !== getBerlinDateString(new Date())) {
-		return OPENING_MINUTES;
-	}
-
-	const now = getBerlinDateTimeParts(new Date());
-	const nowMinutes = toMinutesOfDay(now);
-	const gridRemainder = nowMinutes % BOOKING_TIME_GRID_MINUTES;
-	const nextGridMinutes =
-		gridRemainder === 0 && now.second === 0
-			? nowMinutes + BOOKING_TIME_GRID_MINUTES
-			: nowMinutes + (BOOKING_TIME_GRID_MINUTES - gridRemainder);
-
-	return Math.max(OPENING_MINUTES, nextGridMinutes);
-}
-
-export function getBookableBerlinDayRange(date: string): {
-	date: string;
-	startTime: Date;
-	endTime: Date;
-} {
-	const dateParts = assertValidBerlinDateString(date);
-	const normalizedDate = formatBerlinDateParts(dateParts);
-
-	if (normalizedDate < getBerlinDateString(new Date())) {
-		throw new AppError(400, "date darf nicht in der Vergangenheit liegen");
-	}
-
-	assertBerlinWeekday(dateParts);
-
-	return {
-		date: normalizedDate,
-		startTime: toUtcDateFromBerlinParts(dateParts),
-		endTime: toUtcDateFromBerlinParts(addDays(dateParts, 1)),
-	};
-}
-
-export function getBerlinTodayDate(): string {
-	return getBerlinDateString(new Date());
-}
-
-export function addBerlinCalendarDays(date: string, days: number): string {
-	const dateParts = assertValidBerlinDateString(date);
-	return formatBerlinDateParts(addDays(dateParts, days));
-}
-
-export function getBerlinCalendarDayRange(date: string): {
-	date: string;
-	startTime: Date;
-	endTime: Date;
-} {
-	const dateParts = assertValidBerlinDateString(date);
-
-	return {
-		date: formatBerlinDateParts(dateParts),
-		startTime: toUtcDateFromBerlinParts(dateParts),
-		endTime: toUtcDateFromBerlinParts(addDays(dateParts, 1)),
-	};
-}
+export type BookingTimePolicy = ReturnType<typeof createBookingTimePolicy>;
+export const bookingTimePolicy = createBookingTimePolicy(coworkingCalendar);

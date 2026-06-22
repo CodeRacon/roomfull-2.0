@@ -1,13 +1,7 @@
 import type { Area, BookableUnit } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
-import {
-	createNewUnit,
-	deactivateExistingUnit,
-	getAdminUnitContext,
-	listAdminUnits,
-	updateExistingUnit,
-} from "../services/unit.service.js";
+import { adminUnitManagement } from "../services/admin-unit-management.js";
 
 type CreateUnitBody = {
 	name: string;
@@ -212,7 +206,7 @@ export async function listAdminUnitsController(
 	}
 
 	try {
-		const units = await listAdminUnits(query);
+		const units = await adminUnitManagement.list(query);
 		res.status(200).json({ units: units.map(serializeAdminUnit) });
 	} catch (error) {
 		next(error);
@@ -225,7 +219,7 @@ export async function getAdminUnitContextController(
 	next: NextFunction,
 ): Promise<void> {
 	try {
-		const context = await getAdminUnitContext();
+		const context = await adminUnitManagement.getContext();
 		res.status(200).json({
 			...context,
 			areas: context.areas.map(omitLocalizedDescriptionFields),
@@ -248,7 +242,7 @@ export async function createAdminUnitController(
 	}
 
 	try {
-		const newUnit = await createNewUnit(input);
+		const newUnit = await adminUnitManagement.create(input);
 		res.status(201).json({ unit: serializeAdminUnit(newUnit) });
 	} catch (error) {
 		next(error);
@@ -273,7 +267,10 @@ export async function updateAdminUnitController(
 	}
 
 	try {
-		const updatedUnit = await updateExistingUnit({ id: unitId, ...input });
+		const updatedUnit = await adminUnitManagement.update({
+			id: unitId,
+			...input,
+		});
 		res.status(200).json({ unit: serializeAdminUnit(updatedUnit) });
 	} catch (error) {
 		next(error);
@@ -292,7 +289,7 @@ export async function deactivateAdminUnitController(
 	}
 
 	try {
-		const deactivatedUnit = await deactivateExistingUnit(unitId);
+		const deactivatedUnit = await adminUnitManagement.deactivate(unitId);
 		res.status(200).json({ unit: serializeAdminUnit(deactivatedUnit) });
 	} catch (error) {
 		next(error);

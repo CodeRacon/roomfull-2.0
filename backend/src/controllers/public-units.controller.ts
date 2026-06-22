@@ -3,7 +3,6 @@ import { AppError } from "../lib/app-error.js";
 import { parseContentLocale } from "../lib/content-locale.js";
 import {
 	getPublicBookingOptions,
-	getPublicUnitAvailability,
 	getPublicUnitById,
 	getPublicUnits,
 } from "../services/unit.service.js";
@@ -69,50 +68,6 @@ export async function getPublicUnitByIdController(
 			),
 		);
 		res.status(200).json({ unit });
-	} catch (error) {
-		next(error);
-	}
-}
-
-function parseAvailabilityQuery(
-	query: Request["query"],
-): { start: string; end: string } | null {
-	const start = typeof query.start === "string" ? query.start.trim() : "";
-	const end = typeof query.end === "string" ? query.end.trim() : "";
-
-	if (start.length === 0 || end.length === 0) {
-		return null;
-	}
-
-	return { start, end };
-}
-
-export async function getPublicUnitAvailabilityController(
-	req: Request,
-	res: Response,
-	next: NextFunction,
-): Promise<void> {
-	const unitId = parseUnitId(req.params);
-
-	if (!unitId) {
-		next(new AppError(400, "Ungültige Route-Parameter"));
-		return;
-	}
-
-	const query = parseAvailabilityQuery(req.query);
-
-	if (!query) {
-		next(new AppError(400, "start und end Query-Parameter sind erforderlich"));
-		return;
-	}
-
-	try {
-		const availability = await getPublicUnitAvailability({
-			unitId,
-			start: query.start,
-			end: query.end,
-		});
-		res.status(200).json({ availability });
 	} catch (error) {
 		next(error);
 	}

@@ -4,12 +4,7 @@ import {
 	listBookingDemandRecordsInRange,
 } from "../db/analytics.repository.js";
 import { AppError } from "../lib/app-error.js";
-import {
-	addBerlinCalendarDays,
-	getBerlinCalendarDayRange,
-	getBerlinDateString,
-	getBerlinTodayDate,
-} from "./booking-time-policy.js";
+import { coworkingCalendar } from "./coworking-calendar.js";
 
 type GetBookingDemandInput = {
 	from?: string;
@@ -53,11 +48,11 @@ const UNIT_TYPE_ORDER: UnitTypeName[] = [
 ];
 
 function getDefaultBookingDemandDateRange(): { from: string; to: string } {
-	const today = getBerlinTodayDate();
+	const today = coworkingCalendar.getTodayDate();
 
 	return {
-		from: addBerlinCalendarDays(today, -30),
-		to: addBerlinCalendarDays(today, 30),
+		from: coworkingCalendar.addDays(today, -30),
+		to: coworkingCalendar.addDays(today, 30),
 	};
 }
 
@@ -77,9 +72,9 @@ function resolveBookingDemandDateRange(input: GetBookingDemandInput): {
 
 	return {
 		from,
-		fromStart: getBerlinCalendarDayRange(from).startTime,
+		fromStart: coworkingCalendar.getDayRange(from).startTime,
 		to,
-		toEnd: getBerlinCalendarDayRange(to).endTime,
+		toEnd: coworkingCalendar.getDayRange(to).endTime,
 	};
 }
 
@@ -91,7 +86,7 @@ export function buildBookingDemandTrend(input: {
 	const countsByDate = new Map<string, number>();
 
 	for (const booking of input.bookings) {
-		const date = getBerlinDateString(booking.startTime);
+		const date = coworkingCalendar.getDateString(booking.startTime);
 		countsByDate.set(date, (countsByDate.get(date) ?? 0) + 1);
 	}
 
@@ -100,7 +95,7 @@ export function buildBookingDemandTrend(input: {
 	for (
 		let date = input.from;
 		date <= input.to;
-		date = addBerlinCalendarDays(date, 1)
+		date = coworkingCalendar.addDays(date, 1)
 	) {
 		trend.push({
 			date,

@@ -1,28 +1,11 @@
-import type { BookableUnit, UnitTypeName } from "@prisma/client";
+import type { UnitTypeName } from "@prisma/client";
 import {
-	doesAreaExist,
-	listAreasForAdminContext,
-} from "../db/area.repository.js";
-import { hasOverlappingActiveBookings } from "../db/booking.repository.js";
-import {
-	type AdminUnitStatusFilter,
-	type CreateUnitInput,
-	createUnit,
-	deactivateUnit,
-	findActiveUnitById,
 	findActiveUnitByIdWithRelations,
-	findUnitById,
-	findUnitTypeById,
-	type ListAdminUnitsInput,
 	listActiveUnitsWithRelations,
 	listActiveUnitsWithRelationsByUnitType,
-	listAdminUnitsWithRelations,
-	listUnitTypesForAdminContext,
 	listUnitTypesForBookingOptions,
 	type UnitTypeForBookingOption,
 	type UnitWithRelations,
-	type UpdateUnitInput,
-	updateUnit,
 } from "../db/unit.repository.js";
 import { AppError } from "../lib/app-error.js";
 import {
@@ -30,17 +13,6 @@ import {
 	defaultContentLocale,
 	resolveLocalizedDescription,
 } from "../lib/content-locale.js";
-import {
-	assertBookableDateTimeRange,
-	parseDateTime,
-} from "./booking-time-policy.js";
-
-export type UnitAvailability = {
-	unitId: string;
-	startTime: string;
-	endTime: string;
-	isAvailable: boolean;
-};
 
 export type BookingMode = "AUTO_ASSIGN" | "CHOOSE_UNIT";
 export type AreaSelectionMode = "REQUIRED" | "NOT_APPLICABLE";
@@ -83,25 +55,6 @@ export type BookingOption = {
 	areas: BookingOptionArea[];
 };
 
-export type AdminUnitListInput = {
-	status?: string;
-	unitType?: string;
-	search?: string;
-};
-
-export type AdminUnitContext = {
-	unitTypes: {
-		id: string;
-		name: UnitTypeName;
-	}[];
-	areas: {
-		id: string;
-		name: string;
-		description: string | null;
-		isActive: boolean;
-	}[];
-};
-
 export const BOOKING_OPTION_UNIT_TYPES: UnitTypeName[] = [
 	"HOT_DESK",
 	"BOOTH",
@@ -128,28 +81,6 @@ function parseOptionalUnitType(value?: string): UnitTypeName | undefined {
 		default:
 			throw new AppError(400, "unitType ist ungültig");
 	}
-}
-
-function parseAdminUnitStatus(value?: string): AdminUnitStatusFilter {
-	const normalized = value?.trim().toLowerCase();
-
-	if (!normalized) {
-		return "active";
-	}
-
-	switch (normalized) {
-		case "active":
-		case "deactivated":
-		case "all":
-			return normalized;
-		default:
-			throw new AppError(400, "status ist ungültig");
-	}
-}
-
-function normalizeAdminUnitSearch(value?: string): string | undefined {
-	const normalized = value?.trim();
-	return normalized && normalized.length > 0 ? normalized : undefined;
 }
 
 function getBookingOptionStatus(totalActiveUnits: number): BookingOptionStatus {
@@ -259,171 +190,6 @@ function localizeUnit(
 	};
 }
 
-function assertNonEmpty(value: string, message: string): void {
-	if (value.trim().length === 0) {
-		throw new AppError(400, message);
-	}
-}
-
-function assertPositiveInteger(value: number, message: string): void {
-	if (!Number.isInteger(value) || value <= 0) {
-		throw new AppError(400, message);
-	}
-}
-
-function assertNonNegativeInteger(value: number, message: string): void {
-	if (!Number.isInteger(value) || value < 0) {
-		throw new AppError(400, message);
-	}
-}
-
-function normalizeCreateInput(input: CreateUnitInput): CreateUnitInput {
-	const trimmedAreaId = input.areaId?.trim();
-	const areaId =
-		trimmedAreaId && trimmedAreaId.length > 0 ? trimmedAreaId : undefined;
-
-	return {
-		...input,
-		name: input.name.trim(),
-		description: input.description.trim(),
-		unitTypeId: input.unitTypeId.trim(),
-		areaId,
-	};
-}
-
-function normalizeUpdateInput(input: UpdateUnitInput): UpdateUnitInput {
-	const normalized: UpdateUnitInput = {
-		id: input.id.trim(),
-	};
-
-	if (input.name !== undefined) {
-		normalized.name = input.name.trim();
-	}
-
-	if (input.description !== undefined) {
-		normalized.description = input.description.trim();
-	}
-
-	if (input.unitTypeId !== undefined) {
-		normalized.unitTypeId = input.unitTypeId.trim();
-	}
-
-	if (input.areaId !== undefined) {
-		if (input.areaId === null) {
-			normalized.areaId = null;
-		} else {
-			const trimmedAreaId = input.areaId.trim();
-			normalized.areaId = trimmedAreaId.length > 0 ? trimmedAreaId : null;
-		}
-	}
-
-	if (input.capacity !== undefined) {
-		normalized.capacity = input.capacity;
-	}
-
-	if (input.displayOrder !== undefined) {
-		normalized.displayOrder = input.displayOrder;
-	}
-
-	if (input.isActive !== undefined) {
-		normalized.isActive = input.isActive;
-	}
-
-	return normalized;
-}
-
-async function assertUnitExists(unitId: string): Promise<BookableUnit> {
-	const existingUnit = await findUnitById(unitId);
-
-	if (!existingUnit) {
-		throw new AppError(404, "Unit wurde nicht gefunden");
-	}
-
-	return existingUnit;
-}
-
-async function assertAreaExists(areaId: string): Promise<void> {
-	const existingArea = await doesAreaExist(areaId);
-
-	if (!existingArea) {
-		throw new AppError(404, "Area wurde nicht gefunden");
-	}
-}
-
-async function assertUnitTypeExistsAndHotDeskHasArea(
-	unitTypeId: string,
-	areaId: string | undefined,
-): Promise<void> {
-	const unitType = await findUnitTypeById(unitTypeId);
-
-	if (!unitType) {
-		throw new AppError(404, "UnitType wurde nicht gefunden");
-	}
-
-	if (unitType.name === "HOT_DESK" && !areaId) {
-		throw new AppError(400, "Hot Desk benötigt eine Area");
-	}
-}
-
-function validateCreateInput(input: CreateUnitInput): void {
-	assertNonEmpty(input.name, "Unit-Name darf nicht leer sein");
-	assertNonEmpty(input.description, "Beschreibung darf nicht leer sein");
-	assertNonEmpty(input.unitTypeId, "UnitType ist erforderlich");
-	assertPositiveInteger(input.capacity, "Kapazität muss größer als 0 sein");
-
-	if (input.displayOrder !== undefined) {
-		assertNonNegativeInteger(input.displayOrder, "displayOrder muss >= 0 sein");
-	}
-
-	if (input.areaId !== undefined && input.areaId.length > 0) {
-		assertNonEmpty(input.areaId, "areaId ist ungültig");
-	}
-}
-
-function validateUpdateInput(input: UpdateUnitInput): void {
-	if (input.name !== undefined) {
-		assertNonEmpty(input.name, "Unit-Name darf nicht leer sein");
-	}
-
-	if (input.description !== undefined) {
-		assertNonEmpty(input.description, "Beschreibung darf nicht leer sein");
-	}
-
-	if (input.capacity !== undefined) {
-		assertPositiveInteger(input.capacity, "Kapazität muss größer als 0 sein");
-	}
-
-	if (input.unitTypeId !== undefined) {
-		assertNonEmpty(input.unitTypeId, "UnitType ist erforderlich");
-	}
-
-	if (input.displayOrder !== undefined) {
-		assertNonNegativeInteger(input.displayOrder, "displayOrder muss >= 0 sein");
-	}
-
-	if (input.areaId !== undefined && input.areaId !== null) {
-		assertNonEmpty(input.areaId, "areaId ist ungültig");
-	}
-}
-
-export async function createNewUnit(
-	input: CreateUnitInput,
-): Promise<BookableUnit> {
-	const normalizedInput = normalizeCreateInput(input);
-
-	validateCreateInput(normalizedInput);
-	await assertUnitTypeExistsAndHotDeskHasArea(
-		normalizedInput.unitTypeId,
-		normalizedInput.areaId,
-	);
-
-	if (normalizedInput.areaId) {
-		await assertAreaExists(normalizedInput.areaId);
-	}
-
-	return createUnit(normalizedInput);
-}
-
 export async function getPublicUnits(input?: {
 	locale?: ContentLocale;
 	unitType?: string;
@@ -436,27 +202,6 @@ export async function getPublicUnits(input?: {
 		: await listActiveUnitsWithRelations();
 
 	return units.map((unit) => localizeUnit(unit, locale));
-}
-
-export async function listAdminUnits(
-	input: AdminUnitListInput = {},
-): Promise<UnitWithRelations[]> {
-	const filters: ListAdminUnitsInput = {
-		status: parseAdminUnitStatus(input.status),
-		unitType: parseOptionalUnitType(input.unitType),
-		search: normalizeAdminUnitSearch(input.search),
-	};
-
-	return listAdminUnitsWithRelations(filters);
-}
-
-export async function getAdminUnitContext(): Promise<AdminUnitContext> {
-	const [unitTypes, areas] = await Promise.all([
-		listUnitTypesForAdminContext(),
-		listAreasForAdminContext(),
-	]);
-
-	return { unitTypes, areas };
 }
 
 export async function getPublicBookingOptions(): Promise<BookingOption[]> {
@@ -495,82 +240,4 @@ export async function getPublicUnitById(
 	}
 
 	return localizeUnit(existingUnit, locale);
-}
-
-export async function getPublicUnitAvailability(input: {
-	unitId: string;
-	start: string;
-	end: string;
-}): Promise<UnitAvailability> {
-	const unitId = input.unitId.trim();
-	const start = input.start.trim();
-	const end = input.end.trim();
-
-	if (unitId.length === 0) {
-		throw new AppError(400, "Ungültige Route-Parameter");
-	}
-
-	if (start.length === 0 || end.length === 0) {
-		throw new AppError(400, "start und end Query-Parameter sind erforderlich");
-	}
-
-	const startTime = parseDateTime(start, "start");
-	const endTime = parseDateTime(end, "end");
-
-	assertBookableDateTimeRange(startTime, endTime);
-
-	const existingUnit = await findActiveUnitById(unitId);
-	if (!existingUnit) {
-		throw new AppError(404, "Unit wurde nicht gefunden");
-	}
-
-	const hasOverlap = await hasOverlappingActiveBookings({
-		unitId,
-		startTime,
-		endTime,
-	});
-
-	return {
-		unitId,
-		startTime: startTime.toISOString(),
-		endTime: endTime.toISOString(),
-		isAvailable: !hasOverlap,
-	};
-}
-
-export async function updateExistingUnit(
-	input: UpdateUnitInput,
-): Promise<BookableUnit> {
-	const normalizedInput = normalizeUpdateInput(input);
-	const existingUnit = await assertUnitExists(normalizedInput.id);
-
-	validateUpdateInput(normalizedInput);
-
-	const hasAreaIdChange = "areaId" in normalizedInput;
-	const effectiveUnitTypeId =
-		normalizedInput.unitTypeId ?? existingUnit.unitTypeId;
-	const effectiveAreaId = hasAreaIdChange
-		? (normalizedInput.areaId ?? undefined)
-		: (existingUnit.areaId ?? undefined);
-
-	await assertUnitTypeExistsAndHotDeskHasArea(
-		effectiveUnitTypeId,
-		effectiveAreaId,
-	);
-
-	if (normalizedInput.areaId !== undefined && normalizedInput.areaId !== null) {
-		await assertAreaExists(normalizedInput.areaId);
-	}
-
-	return updateUnit(normalizedInput);
-}
-
-export async function deactivateExistingUnit(
-	id: string,
-): Promise<BookableUnit> {
-	const unitId = id.trim();
-
-	await assertUnitExists(unitId);
-
-	return deactivateUnit(unitId);
 }

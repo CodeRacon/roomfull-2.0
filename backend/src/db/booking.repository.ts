@@ -1,4 +1,4 @@
-import type { Booking, Prisma } from "@prisma/client";
+import type { Booking, Prisma, UnitTypeName } from "@prisma/client";
 import { BookingStatus } from "@prisma/client";
 import { prisma } from "./prisma.js";
 
@@ -21,17 +21,23 @@ type CancelBookingInput = {
 	bookingId: string;
 };
 
-type ListAllBookingsInput = {
+export type AdminBookingRecordQuery = {
 	limit: number;
 	orderBy: Prisma.BookingOrderByWithRelationInput;
 	search?: string;
 	status?: BookingStatus;
 	startBefore?: Date;
 	endAfter?: Date;
+	endAtOrAfter?: Date;
 	endBefore?: Date;
 	updatedAtFrom?: Date;
 	updatedAtTo?: Date;
 };
+
+export type AdminBookingScopeQuery = Omit<
+	AdminBookingRecordQuery,
+	"limit" | "orderBy"
+>;
 
 export type BookedInterval = {
 	startTime: Date;
@@ -77,24 +83,6 @@ export type AdminBookingRecord = Prisma.BookingGetPayload<{
 		};
 	};
 }>;
-
-export async function hasOverlappingActiveBookings(input: {
-	unitId: string;
-	startTime: Date;
-	endTime: Date;
-}): Promise<boolean> {
-	const booking = await prisma.booking.findFirst({
-		where: {
-			unitId: input.unitId,
-			status: BookingStatus.ACTIVE,
-			startTime: { lt: input.endTime },
-			endTime: { gt: input.startTime },
-		},
-		select: { id: true },
-	});
-
-	return booking !== null;
-}
 
 export async function listActiveBookingIntervalsForUnitInRange(input: {
 	unitId: string;
@@ -170,14 +158,15 @@ export async function cancelBooking(
 	});
 }
 
-export async function listAllBookings(
-	input: ListAllBookingsInput,
-): Promise<AdminBookingRecord[]> {
+function buildAdminBookingWhere(
+	input: AdminBookingScopeQuery,
+): Prisma.BookingWhereInput {
 	const where: Prisma.BookingWhereInput = {
 		status: input.status,
 		startTime: input.startBefore ? { lt: input.startBefore } : undefined,
 		endTime: {
 			...(input.endAfter ? { gt: input.endAfter } : {}),
+			...(input.endAtOrAfter ? { gte: input.endAtOrAfter } : {}),
 			...(input.endBefore ? { lt: input.endBefore } : {}),
 		},
 		updatedAt:
@@ -198,6 +187,14 @@ export async function listAllBookings(
 			],
 		};
 	}
+
+	return where;
+}
+
+export async function listAllBookings(
+	input: AdminBookingRecordQuery,
+): Promise<AdminBookingRecord[]> {
+	const where = buildAdminBookingWhere(input);
 
 	return prisma.booking.findMany({
 		where,
@@ -225,4 +222,49 @@ export async function listAllBookings(
 		orderBy: input.orderBy,
 		take: input.limit,
 	});
+}
+
+export async function countAdminBookings(
+	input: AdminBookingScopeQuery,
+): Promise<number> {
+	return prisma.booking.count({ where: buildAdminBookingWhere(input) });
+}
+
+export async function findTopBookedAdminUnit(
+	input: AdminBookingScopeQuery,
+): Promise<
+	| {
+			id: string;
+			name: string;
+			unitType: UnitTypeName;
+			bookingCount: number;
+	  }
+	| undefined
+> {
+	const topGroup = await prisma.booking.groupBy({
+		by: ["unitId"],
+		where: buildAdminBookingWhere(input),
+		_count: { _all: true },
+		orderBy: [{ _count: { unitId: "desc" } }, { unitId: "asc" }],
+		take: 1,
+	});
+	const top = topGroup[0];
+
+	if (!top) {
+		return undefined;
+	}
+
+	const unit = await prisma.bookableUnit.findUnique({
+		where: { id: top.unitId },
+		select: { id: true, name: true, unitType: { select: { name: true } } },
+	});
+
+	return unit
+		? {
+				id: unit.id,
+				name: unit.name,
+				unitType: unit.unitType.name,
+				bookingCount: top._count._all,
+			}
+		: undefined;
 }

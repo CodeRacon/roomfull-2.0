@@ -1,23 +1,24 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
 import { parseContentLocale } from "../lib/content-locale.js";
+import { adminBookingOperations } from "../services/admin-booking-operations.js";
 import {
 	cancelBookingForUser,
 	createBookingForUser,
 	getBookingContext,
-	listAllBookingsForAdmin,
-	listUnitDayBookings,
 	listUserBookings,
 } from "../services/booking.service.js";
 import { getBookingAvailability } from "../services/booking-availability.js";
+import { getDirectBookingCalendarState } from "../services/direct-booking-calendar-state.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
 
 type CreateBookingBody = {
-	start: string;
-	end: string;
+	date: string;
+	startTime: string;
+	endTime: string;
 	unitId?: string;
 	areaId?: string;
 	unitType?: string;
@@ -37,8 +38,10 @@ function parseCreateBookingBody(body: unknown): CreateBookingBody | null {
 		return null;
 	}
 
-	const start = typeof body.start === "string" ? body.start.trim() : "";
-	const end = typeof body.end === "string" ? body.end.trim() : "";
+	const date = typeof body.date === "string" ? body.date.trim() : "";
+	const startTime =
+		typeof body.startTime === "string" ? body.startTime.trim() : "";
+	const endTime = typeof body.endTime === "string" ? body.endTime.trim() : "";
 
 	const unitId =
 		typeof body.unitId === "string" ? body.unitId.trim() : undefined;
@@ -49,13 +52,14 @@ function parseCreateBookingBody(body: unknown): CreateBookingBody | null {
 	const unitType =
 		typeof body.unitType === "string" ? body.unitType.trim() : undefined;
 
-	if (start.length === 0 || end.length === 0) {
+	if (date.length === 0 || startTime.length === 0 || endTime.length === 0) {
 		return null;
 	}
 
 	return {
-		start,
-		end,
+		date,
+		startTime,
+		endTime,
 		unitId,
 		areaId,
 		unitType,
@@ -144,8 +148,9 @@ export async function createBookingController(
 	try {
 		const booking = await createBookingForUser({
 			userId,
-			start: input.start,
-			end: input.end,
+			date: input.date,
+			startTime: input.startTime,
+			endTime: input.endTime,
 			unitId: input.unitId,
 			areaId: input.areaId,
 			unitType: input.unitType,
@@ -216,14 +221,15 @@ function parseUnitId(params: Request["params"]): string | null {
 	return unitId.length > 0 ? unitId : null;
 }
 
-function parseDateQuery(query: Request["query"]): string | null {
-	const date = typeof query.date === "string" ? query.date.trim() : "";
-	return date.length > 0 ? date : null;
+function parseMonthQuery(query: Request["query"]): string | null {
+	const month = typeof query.month === "string" ? query.month.trim() : "";
+	return month.length > 0 ? month : null;
 }
 
 function parseAdminBookingsQuery(query: Request["query"]): {
 	from?: string;
 	limit?: string;
+	range?: string;
 	search?: string;
 	status?: string;
 	to?: string;
@@ -231,6 +237,7 @@ function parseAdminBookingsQuery(query: Request["query"]): {
 	return {
 		from: readStringQuery(query.from),
 		limit: readStringQuery(query.limit),
+		range: readStringQuery(query.range),
 		search: readStringQuery(query.search),
 		status: readStringQuery(query.status),
 		to: readStringQuery(query.to),
@@ -262,22 +269,22 @@ export async function cancelBookingController(
 	}
 }
 
-export async function listAdminBookingsController(
+export async function getAdminBookingOperationsController(
 	req: Request,
 	res: Response,
 	next: NextFunction,
 ): Promise<void> {
 	try {
-		const bookings = await listAllBookingsForAdmin(
+		const operations = await adminBookingOperations.get(
 			parseAdminBookingsQuery(req.query),
 		);
-		res.status(200).json({ bookings });
+		res.status(200).json(operations);
 	} catch (error) {
 		next(error);
 	}
 }
 
-export async function listUnitDayBookingsController(
+export async function getDirectBookingCalendarStateController(
 	req: Request<UnitParams>,
 	res: Response,
 	next: NextFunction,
@@ -289,16 +296,19 @@ export async function listUnitDayBookingsController(
 		return;
 	}
 
-	const date = parseDateQuery(req.query);
+	const month = parseMonthQuery(req.query);
 
-	if (!date) {
-		fail(next, 400, "date Query-Parameter ist erforderlich");
+	if (!month) {
+		fail(next, 400, "month Query-Parameter ist erforderlich");
 		return;
 	}
 
 	try {
-		const dayBookings = await listUnitDayBookings({ unitId, date });
-		res.status(200).json({ dayBookings });
+		const calendarState = await getDirectBookingCalendarState({
+			unitId,
+			month,
+		});
+		res.status(200).json({ calendarState });
 	} catch (error) {
 		next(error);
 	}
