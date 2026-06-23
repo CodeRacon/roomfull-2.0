@@ -1,13 +1,8 @@
-import type { Booking, Prisma, UnitTypeName } from "@prisma/client";
-import { BookingStatus } from "@prisma/client";
+import type { Booking, UnitTypeName } from "@prisma/client";
+import { BookingStatus, Prisma } from "@prisma/client";
 import { prisma } from "./prisma.js";
 
-type CreateBookingInput = {
-	userId: string;
-	unitId: string;
-	startTime: Date;
-	endTime: Date;
-};
+const ACTIVE_BOOKING_OVERLAP_CONSTRAINT = "bookings_no_active_overlap_excl";
 
 type ListUserBookingsInput = {
 	userId: string;
@@ -84,6 +79,19 @@ export type AdminBookingRecord = Prisma.BookingGetPayload<{
 	};
 }>;
 
+export function isBookingOverlapConstraintViolation(error: unknown): boolean {
+	if (
+		!(error instanceof Prisma.PrismaClientKnownRequestError) ||
+		error.code !== "P2004"
+	) {
+		return false;
+	}
+
+	return [String(error.meta?.database_error ?? ""), error.message].some(
+		(value) => value.includes(ACTIVE_BOOKING_OVERLAP_CONSTRAINT),
+	);
+}
+
 export async function listActiveBookingIntervalsForUnitInRange(input: {
 	unitId: string;
 	startTime: Date;
@@ -104,16 +112,43 @@ export async function listActiveBookingIntervalsForUnitInRange(input: {
 	});
 }
 
-export async function createBooking(
-	input: CreateBookingInput,
-): Promise<Booking> {
-	return prisma.booking.create({
-		data: {
-			userId: input.userId,
-			unitId: input.unitId,
-			startTime: input.startTime,
-			endTime: input.endTime,
-		},
+export async function createBookingWithTransaction(input: {
+	userId: string;
+	unitId: string;
+	startTime: Date;
+	endTime: Date;
+}) {
+	return prisma.$transaction(async (tx) => {
+		const overlap = await tx.booking.findFirst({
+			where: {
+				unitId: input.unitId,
+				status: BookingStatus.ACTIVE,
+				startTime: { lt: input.endTime },
+				endTime: { gt: input.startTime },
+			},
+			select: { id: true },
+		});
+
+		if (overlap) {
+			return null;
+		}
+
+		try {
+			return await tx.booking.create({
+				data: {
+					userId: input.userId,
+					unitId: input.unitId,
+					startTime: input.startTime,
+					endTime: input.endTime,
+				},
+			});
+		} catch (error) {
+			if (isBookingOverlapConstraintViolation(error)) {
+				return null;
+			}
+
+			throw error;
+		}
 	});
 }
 
