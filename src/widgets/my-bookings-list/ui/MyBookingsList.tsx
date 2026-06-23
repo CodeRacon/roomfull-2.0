@@ -1,7 +1,13 @@
 import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
 import { clsx } from "clsx";
 import { useState } from "react";
-import type { Booking, MyBooking } from "@/entities/booking";
+import {
+	type Booking,
+	createBookingDateTimeFormatter,
+	formatBookingDateKey,
+	isSameBookingDay,
+	type MyBooking,
+} from "@/entities/booking";
 import { formatUnitTypeName } from "@/entities/unit";
 import {
 	CancelBookingCardAction,
@@ -36,7 +42,7 @@ function createBookingFormatters(locale: Locale) {
 	const intlLocale = intlLocaleByLocale[locale];
 
 	return {
-		dateTime: new Intl.DateTimeFormat(intlLocale, {
+		dateTime: createBookingDateTimeFormatter(intlLocale, {
 			weekday: "long",
 			day: "2-digit",
 			month: "2-digit",
@@ -44,17 +50,17 @@ function createBookingFormatters(locale: Locale) {
 			hour: "2-digit",
 			minute: "2-digit",
 		}),
-		day: new Intl.DateTimeFormat(intlLocale, {
+		day: createBookingDateTimeFormatter(intlLocale, {
 			weekday: "long",
 			day: "2-digit",
 			month: "2-digit",
 			year: "numeric",
 		}),
-		time: new Intl.DateTimeFormat(intlLocale, {
+		time: createBookingDateTimeFormatter(intlLocale, {
 			hour: "2-digit",
 			minute: "2-digit",
 		}),
-		listDay: new Intl.DateTimeFormat(intlLocale, {
+		listDay: createBookingDateTimeFormatter(intlLocale, {
 			weekday: "short",
 			day: "2-digit",
 			month: "2-digit",
@@ -79,14 +85,6 @@ const myBookingsCalendarAccent = {
 	weekdayClassName: "bg-primary text-on-primary",
 };
 
-function isSameLocalDay(start: Date, end: Date): boolean {
-	return (
-		start.getFullYear() === end.getFullYear() &&
-		start.getMonth() === end.getMonth() &&
-		start.getDate() === end.getDate()
-	);
-}
-
 function formatTemplate(
 	template: string,
 	values: Record<string, string | number>,
@@ -107,7 +105,7 @@ function formatBookingWindow(
 	const end = new Date(endTime);
 	const formatters = bookingFormattersByLocale[locale];
 
-	if (isSameLocalDay(start, end)) {
+	if (isSameBookingDay(start, end)) {
 		return formatTemplate(copy.sameDay, {
 			date: formatters.day.format(start),
 			start: formatters.time.format(start),
@@ -131,7 +129,7 @@ function formatBookingListWindow(
 	const end = new Date(endTime);
 	const formatters = bookingFormattersByLocale[locale];
 
-	if (isSameLocalDay(start, end)) {
+	if (isSameBookingDay(start, end)) {
 		return formatTemplate(copy.listSameDay, {
 			date: formatters.listDay.format(start),
 			start: formatters.time.format(start),
@@ -182,15 +180,8 @@ function compareByStartDesc(left: MyBooking, right: MyBooking): number {
 	return compareByStartAsc(right, left);
 }
 
-function formatDateKey(date: Date): string {
-	return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-		2,
-		"0",
-	)}-${String(date.getDate()).padStart(2, "0")}`;
-}
-
 function getBookingDateKey(booking: MyBooking): string {
-	return formatDateKey(new Date(booking.startTime));
+	return formatBookingDateKey(booking.startTime);
 }
 
 function getBookingMonth(booking: MyBooking): string {
@@ -198,7 +189,7 @@ function getBookingMonth(booking: MyBooking): string {
 }
 
 function getCurrentMonth(): string {
-	return `${formatDateKey(new Date()).slice(0, 7)}-01`;
+	return `${formatBookingDateKey(new Date()).slice(0, 7)}-01`;
 }
 
 function getInitialVisibleMonth(bookings: MyBooking[]): string {

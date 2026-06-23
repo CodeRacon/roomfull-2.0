@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { listMyBookings, type MyBooking } from "@/entities/booking";
+import {
+	createBookingDateTimeFormatter,
+	isSameBookingDay,
+	listMyBookings,
+	type MyBooking,
+} from "@/entities/booking";
 import { useSession } from "@/entities/session";
 import { formatUnitTypeName } from "@/entities/unit";
 import { RequireAuth } from "@/features/auth/require-auth";
@@ -19,14 +24,6 @@ function formatRegistrationDate(createdAt: string, locale: string): string {
 	}).format(new Date(createdAt));
 }
 
-function isSameLocalDay(start: Date, end: Date): boolean {
-	return (
-		start.getFullYear() === end.getFullYear() &&
-		start.getMonth() === end.getMonth() &&
-		start.getDate() === end.getDate()
-	);
-}
-
 function formatBookingWindow(
 	startTime: string,
 	endTime: string,
@@ -34,17 +31,17 @@ function formatBookingWindow(
 ): string {
 	const start = new Date(startTime);
 	const end = new Date(endTime);
-	const bookingDayFormatter = new Intl.DateTimeFormat(copy.locale, {
+	const bookingDayFormatter = createBookingDateTimeFormatter(copy.locale, {
 		weekday: "long",
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
 	});
-	const bookingTimeFormatter = new Intl.DateTimeFormat(copy.locale, {
+	const bookingTimeFormatter = createBookingDateTimeFormatter(copy.locale, {
 		hour: "2-digit",
 		minute: "2-digit",
 	});
-	const dateTimeFormatter = new Intl.DateTimeFormat(copy.locale, {
+	const dateTimeFormatter = createBookingDateTimeFormatter(copy.locale, {
 		weekday: "long",
 		day: "2-digit",
 		month: "2-digit",
@@ -53,7 +50,7 @@ function formatBookingWindow(
 		minute: "2-digit",
 	});
 
-	if (isSameLocalDay(start, end)) {
+	if (isSameBookingDay(start, end)) {
 		return copy.sameDay
 			.replace("{date}", bookingDayFormatter.format(start))
 			.replace("{start}", bookingTimeFormatter.format(start))

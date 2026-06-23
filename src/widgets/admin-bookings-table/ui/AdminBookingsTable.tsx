@@ -1,5 +1,9 @@
 import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
-import type { AdminBooking } from "@/entities/booking";
+import {
+	type AdminBooking,
+	createBookingDateTimeFormatter,
+	formatBookingDateKey,
+} from "@/entities/booking";
 import { formatUnitTypeName } from "@/entities/unit";
 import type { Dictionary } from "@/shared/i18n";
 import { Badge, FeedbackBox } from "@/shared/ui";
@@ -21,20 +25,6 @@ type DisplayStatus = {
 	variant: "danger" | "muted" | "neutral" | "success" | "warning";
 };
 
-const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
-	timeZone: "Europe/Berlin",
-	year: "numeric",
-	month: "2-digit",
-	day: "2-digit",
-});
-
-function formatBerlinDateKey(value: string): string {
-	const parts = dateKeyFormatter.formatToParts(new Date(value));
-	const values = new Map(parts.map((part) => [part.type, part.value]));
-
-	return `${values.get("year")}-${values.get("month")}-${values.get("day")}`;
-}
-
 function groupBookingsByDay(
 	bookings: AdminBooking[],
 	dayLabelFormatter: Intl.DateTimeFormat,
@@ -42,7 +32,7 @@ function groupBookingsByDay(
 	const groups = new Map<string, BookingDayGroup>();
 
 	for (const booking of bookings) {
-		const dateKey = formatBerlinDateKey(booking.startTime);
+		const dateKey = formatBookingDateKey(booking.startTime);
 		const existingGroup = groups.get(dateKey);
 
 		if (existingGroup) {
@@ -69,8 +59,8 @@ function getDisplayStatus(
 	}
 
 	const now = new Date();
-	const startDateKey = formatBerlinDateKey(booking.startTime);
-	const todayDateKey = formatBerlinDateKey(now.toISOString());
+	const startDateKey = formatBookingDateKey(booking.startTime);
+	const todayDateKey = formatBookingDateKey(now);
 
 	if (new Date(booking.endTime) < now) {
 		return { label: copy.completed, variant: "muted" };
@@ -125,7 +115,7 @@ function getStatusSummary(
 }
 
 function isGroupOpenByDefault(group: BookingDayGroup): boolean {
-	const todayDateKey = formatBerlinDateKey(new Date().toISOString());
+	const todayDateKey = formatBookingDateKey(new Date());
 
 	return group.dateKey >= todayDateKey;
 }
@@ -135,15 +125,13 @@ export function AdminBookingsTable({
 	copy,
 	filterLabel,
 }: AdminBookingsTableProps) {
-	const dayLabelFormatter = new Intl.DateTimeFormat(copy.dateLocale, {
-		timeZone: "Europe/Berlin",
+	const dayLabelFormatter = createBookingDateTimeFormatter(copy.dateLocale, {
 		weekday: "long",
 		day: "2-digit",
 		month: "2-digit",
 		year: "numeric",
 	});
-	const timeFormatter = new Intl.DateTimeFormat(copy.dateLocale, {
-		timeZone: "Europe/Berlin",
+	const timeFormatter = createBookingDateTimeFormatter(copy.dateLocale, {
 		hour: "2-digit",
 		minute: "2-digit",
 	});

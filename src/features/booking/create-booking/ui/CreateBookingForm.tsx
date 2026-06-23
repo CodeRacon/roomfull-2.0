@@ -10,6 +10,7 @@ import type {
 } from "@/entities/booking";
 import {
 	createBooking,
+	formatBookingDateKey,
 	getBookingAvailability,
 	getDirectBookingCalendarState,
 } from "@/entities/booking";
@@ -96,18 +97,8 @@ const bookingAccentThemeByUnitType: Record<UnitTypeName, BookingAccentTheme> = {
 	},
 };
 
-const berlinDateFormatter = new Intl.DateTimeFormat("en-CA", {
-	timeZone: "Europe/Berlin",
-	year: "numeric",
-	month: "2-digit",
-	day: "2-digit",
-});
-
 function getBerlinTodayDate(): string {
-	const parts = berlinDateFormatter.formatToParts(new Date());
-	const values = new Map(parts.map((part) => [part.type, part.value]));
-
-	return `${values.get("year")}-${values.get("month")}-${values.get("day")}`;
+	return formatBookingDateKey(new Date());
 }
 
 function getCurrentBerlinMonth(): string {

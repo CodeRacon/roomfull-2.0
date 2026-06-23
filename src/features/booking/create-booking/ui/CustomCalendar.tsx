@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { formatBookingDateKey } from "@/entities/booking";
 import type { Dictionary } from "@/shared/i18n";
 import type { CalendarAccentClasses } from "@/shared/ui";
 import { Calendar } from "@/shared/ui";
@@ -33,18 +34,8 @@ const defaultCustomCalendarAccentClasses: CustomCalendarAccentClasses = {
 	todayBorderClassName: "border-primary!",
 };
 
-const berlinDateFormatter = new Intl.DateTimeFormat("en-CA", {
-	timeZone: "Europe/Berlin",
-	year: "numeric",
-	month: "2-digit",
-	day: "2-digit",
-});
-
 function getBerlinTodayDate(): string {
-	const parts = berlinDateFormatter.formatToParts(new Date());
-	const values = new Map(parts.map((part) => [part.type, part.value]));
-
-	return `${values.get("year")}-${values.get("month")}-${values.get("day")}`;
+	return formatBookingDateKey(new Date());
 }
 
 function parseDate(date: string): Date {

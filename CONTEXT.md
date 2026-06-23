@@ -38,6 +38,10 @@ _Avoid_: separater Endpoint pro Buchungsmodus, abweichende Modusnamen oder Zielr
 Eine Booking-Erstellung übermittelt `date` sowie lokale `HH:mm`-Werte für `startTime` und `endTime`, die das Backend verbindlich als Coworking-Zeit in `Europe/Berlin` interpretiert.
 _Avoid_: vom Browser erzeugte ISO-Zeitpunkte, Browser-Zeitzone als fachliche Zeitquelle
 
+**Booking Time Display**:
+Sichtbare Datums- und Zeitangaben einer Booking werden im Frontend verbindlich in `Europe/Berlin` projiziert, unabhängig von der Browser-Zeitzone.
+_Avoid_: browserlokale Booking-Gruppierung, unterschiedliche Anzeigezeitzonen zwischen Account-, Customer- und Admin-Ansichten
+
 **Home Page**:
 Die öffentliche Startseite `/` erklärt RoomFull als Service und zeigt ansprechende Angebots-Teaser mit auth-aware CTAs in den Buchungseinstieg.
 _Avoid_: reine interne Unit-Liste oder fokussierter Buchungskatalog
@@ -91,8 +95,8 @@ Ein bewusster Zwischenzustand, in dem alle Frontend-Routen unter `de` und `en` f
 _Avoid_: Blockieren lokalisierter Routen fuer noch nicht uebersetzte Bereiche, Mischsprache als Zielzustand
 
 **Booking Options Page**:
-Die schlanke Buchungsübersicht `/booking-options`, auf der Customers eine BookingOption-Kategorie auswählen und in die passende Detailauswahl einsteigen.
-_Avoid_: Marketing-Seite, allgemeine Service-Erklärung, alle konkreten Varianten gleichzeitig anzeigen
+Die schlanke Buchungsübersicht `/booking-options`, auf der Customers eine BookingOption-Kategorie auswählen und in die passende Detailauswahl einsteigen. Aktive Area- beziehungsweise Unit-Namen werden als nicht-interaktive Vorschau aus der DB angezeigt.
+_Avoid_: Marketing-Seite, allgemeine Service-Erklärung, konkrete Unit-Auswahl bereits auf der Kategorie-Übersicht
 
 **Create Booking Page**:
 Gemeinsame Customer-Seite `/bookings/new`, die je nach Einstiegskontext einen der Booking Request Modes vorbereitet.
@@ -355,7 +359,7 @@ Admins nutzen fuer operative oder testweise Booking-Erstellung bewusst den norma
 _Avoid_: Admin-Dashboard oder Header mit einem zusaetzlichen Pruef-/Testbooking-Shortcut ueberladen
 
 **Admin Unit Management**:
-Ein Admin verwaltet im MVP das buchbare Inventar als BookableUnits: Name, Beschreibung, Kapazitaet, UnitType, Area, Sortierung und Aktivierungsstatus.
+Ein Admin verwaltet im MVP das buchbare Inventar als BookableUnits: Name, deutsche und englische Beschreibung, Kapazitaet, UnitType, Area, Sortierung und Aktivierungsstatus.
 _Avoid_: Admin Unit Management als Rohdatenbank-Editor oder als Pflege von UnitType-Buchungsregeln
 
 **Admin Unit Inventory View**:
@@ -375,7 +379,7 @@ Eine zeitlich begrenzte Sperrung einer ansonsten aktiven BookableUnit waere ein 
 _Avoid_: temporaere Sperrzeiten in `isActive` oder Deaktivierung hineinmodellieren
 
 **Admin Unit Editable Fields**:
-Admins duerfen an BookableUnits Name, Beschreibung, Kapazitaet, UnitType, Area, DisplayOrder und Aktivierungsstatus bearbeiten. Technische IDs, Zeitstempel, bestehende Bookings und UnitType-Dauerregeln sind nicht Teil des Unit-Formulars.
+Admins duerfen an BookableUnits Name, deutsche und englische Beschreibung, Kapazitaet, UnitType, Area, DisplayOrder und Aktivierungsstatus bearbeiten. Das technische Legacy-Feld `description` folgt der deutschen Beschreibung. Technische IDs, Zeitstempel, bestehende Bookings und UnitType-Dauerregeln sind nicht Teil des Unit-Formulars.
 _Avoid_: historische Bookings oder systemweite Buchungsregeln im Unit-Editor veraendern
 
 **Admin Unit Edit Flow**:
@@ -489,6 +493,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Booking Target** ist die **BookableUnit**.
 - **Booking Request Modes** vereinheitlichen direkte Unit-Buchung und Area-basierte Hot-Desk-Auto-Zuweisung über alle Booking-Flow-Schritte.
 - **Booking Time Input** wird durch **Booking Time Grid**, Öffnungszeiten und **Duration Policy** validiert.
+- **Booking Time Display** projiziert sichtbare Booking-Zeitpunkte unabhängig von der Browser-Zeitzone nach `Europe/Berlin`.
 - Die **Home Page** ist der Service-Einstieg; die **Booking Options Page** ist der fokussierte Buchungseinstieg.
 - Die **Home Page** zeigt anonymen Visitors "Jetzt buchen", "Registrieren" und "Einloggen"; angemeldeten Users zeigt sie "Jetzt buchen" und "Meine Buchungen".
 - Angebots-Teaser auf der **Home Page** fuehren zu `/booking-options/[slug]`, nicht direkt zu `/bookings/new`.
@@ -496,7 +501,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - Die **Home Page** nutzt **BookingOptions** als Datenbasis, praesentiert sie aber kuratiert als Service-Angebote.
 - Die **Home Page** teasert Varianten nur an; konkrete Area- oder Unit-Varianten werden erst auf `/booking-options/[slug]` ausgewaehlt.
 - Die **Home Page** braucht visuelle Arbeitsbereich-Signale; der erste Slice darf vorhandene Assets nutzen, soll aber spaetere Medien je Arbeitsbereich ermoeglichen.
-- Die **Booking Options Page** bleibt eine Kategorie-Übersicht; konkrete Area- oder Unit-Auswahl passiert auf `/booking-options/[slug]`.
+- Die **Booking Options Page** bleibt eine Kategorie-Übersicht und zeigt aktive Area- oder Unit-Namen nur als Vorschau; konkrete Auswahl passiert auf `/booking-options/[slug]`.
 - Die **Create Booking Page** ist der gemeinsame UI-Einstieg fuer beide Booking Request Modes.
 - Der **Create Booking Entry Context** entscheidet, welcher Booking Request Mode vorbereitet wird.
 - Der **Booking Context** ist die Backend-Quelle fuer die Darstellung und Validierung des Entry Context auf der Create Booking Page.
@@ -605,6 +610,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Lädt `/bookings/new` initial Availability?" war offen; aufgelöst: nein, erst nach Datumsauswahl.
 - "Ist ein TimeSlot ein Fachobjekt?" war offen; aufgelöst: nein, Bookings bleiben freie Zeiträume, müssen aber auf dem **Booking Time Grid** liegen.
 - "Welche Zeitzone bestimmt `startTime` und `endTime`?" war offen; aufgelöst: **Booking Time Input** nutzt lokale Coworking-Zeit in `Europe/Berlin`, nicht die Browser-Zeitzone.
+- "Welche Zeitzone nutzt die sichtbare Booking-Darstellung?" war offen; aufgelöst: **Booking Time Display** nutzt in Account-, Customer- und Admin-Ansichten verbindlich `Europe/Berlin`.
 - "Public Unit Availability oder auth-required Booking Availability?" war offen; aufgelöst: Der **Booking Availability Contract** ist die einzige zeitbezogene Availability-Seam.
 - "Wann ist ein direkter Unit-Tag voll belegt?" war offen; aufgelöst: wenn aktive Bookings keine Duration-Policy-gültige Zeitspanne mehr frei lassen; die Today Booking Start Rule verändert diesen Belegungszustand nicht.
 - "Wie wird die Endzeit gewählt?" war offen; aufgelöst: nach Startzeit als Liste erlaubter Endpunkte.
