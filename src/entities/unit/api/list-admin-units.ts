@@ -1,9 +1,13 @@
 import { apiGetAuthenticated } from "@/shared/api";
-import type { ListAdminUnitsInput, Unit, UnitListResponse } from "../model";
+import type {
+	AdminUnit,
+	AdminUnitListResponse,
+	ListAdminUnitsInput,
+} from "../model";
 
 export async function listAdminUnits(
 	input: ListAdminUnitsInput = {},
-): Promise<Unit[]> {
+): Promise<AdminUnit[]> {
 	const searchParams = new URLSearchParams();
 
 	if (input.status) {
@@ -22,7 +26,7 @@ export async function listAdminUnits(
 	const path =
 		queryString.length > 0 ? `/admin/units?${queryString}` : "/admin/units";
 
-	const response = await apiGetAuthenticated<UnitListResponse>(path, {
+	const response = await apiGetAuthenticated<AdminUnitListResponse>(path, {
 		cache: "no-store",
 	});
 

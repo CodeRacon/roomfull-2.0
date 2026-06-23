@@ -262,7 +262,7 @@
 						"description": "Admin-Inventarliste",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/UnitListResponse" }
+								"schema": { "$ref": "#/components/schemas/AdminUnitListResponse" }
 							}
 						}
 					},
@@ -288,7 +288,7 @@
 						"description": "Unit erfolgreich erstellt",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/UnitResponse" }
+								"schema": { "$ref": "#/components/schemas/AdminUnitResponse" }
 							}
 						}
 					},
@@ -346,7 +346,7 @@
 						"description": "Unit erfolgreich aktualisiert",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/UnitResponse" }
+								"schema": { "$ref": "#/components/schemas/AdminUnitResponse" }
 							}
 						}
 					},
@@ -375,7 +375,7 @@
 						"description": "Unit erfolgreich deaktiviert",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/UnitResponse" }
+								"schema": { "$ref": "#/components/schemas/AdminUnitResponse" }
 							}
 						}
 					},
@@ -1064,6 +1064,36 @@
 				},
 				"required": ["units"]
 			},
+			"AdminUnit": {
+				"allOf": [
+					{ "$ref": "#/components/schemas/Unit" },
+					{
+						"type": "object",
+						"properties": {
+							"descriptionDe": { "type": "string", "nullable": true },
+							"descriptionEn": { "type": "string", "nullable": true }
+						},
+						"required": ["descriptionDe", "descriptionEn"]
+					}
+				]
+			},
+			"AdminUnitResponse": {
+				"type": "object",
+				"properties": {
+					"unit": { "$ref": "#/components/schemas/AdminUnit" }
+				},
+				"required": ["unit"]
+			},
+			"AdminUnitListResponse": {
+				"type": "object",
+				"properties": {
+					"units": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/AdminUnit" }
+					}
+				},
+				"required": ["units"]
+			},
 			"AdminUnitContextUnitType": {
 				"type": "object",
 				"properties": {
@@ -1110,6 +1140,14 @@
 				},
 				"required": ["id", "name", "activeUnitCount"]
 			},
+			"BookingOptionUnit": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string" }
+				},
+				"required": ["id", "name"]
+			},
 			"BookingOptionUnitType": {
 				"type": "object",
 				"properties": {
@@ -1153,6 +1191,10 @@
 					"areas": {
 						"type": "array",
 						"items": { "$ref": "#/components/schemas/BookingOptionArea" }
+					},
+					"units": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/BookingOptionUnit" }
 					}
 				},
 				"required": [
@@ -1163,7 +1205,8 @@
 					"status",
 					"totalActiveUnits",
 					"maxCapacity",
-					"areas"
+					"areas",
+					"units"
 				]
 			},
 			"BookingOptionListResponse": {
@@ -1180,20 +1223,28 @@
 				"type": "object",
 				"properties": {
 					"name": { "type": "string" },
-					"description": { "type": "string" },
+					"descriptionDe": { "type": "string" },
+					"descriptionEn": { "type": "string" },
 					"capacity": { "type": "integer", "minimum": 1 },
 					"isActive": { "type": "boolean" },
 					"displayOrder": { "type": "integer", "minimum": 0 },
 					"unitTypeId": { "type": "string" },
 					"areaId": { "type": "string" }
 				},
-				"required": ["name", "description", "capacity", "unitTypeId"]
+				"required": [
+					"name",
+					"descriptionDe",
+					"descriptionEn",
+					"capacity",
+					"unitTypeId"
+				]
 			},
 			"UpdateUnitRequest": {
 				"type": "object",
 				"properties": {
 					"name": { "type": "string" },
-					"description": { "type": "string" },
+					"descriptionDe": { "type": "string" },
+					"descriptionEn": { "type": "string" },
 					"capacity": { "type": "integer", "minimum": 1 },
 					"isActive": { "type": "boolean" },
 					"displayOrder": { "type": "integer", "minimum": 0 },

@@ -24,12 +24,25 @@ export type Unit = {
 	area: UnitArea | null;
 };
 
+export type AdminUnit = Unit & {
+	descriptionDe: string | null;
+	descriptionEn: string | null;
+};
+
 export type UnitListResponse = {
 	units: Unit[];
 };
 
 export type UnitResponse = {
 	unit: Unit;
+};
+
+export type AdminUnitListResponse = {
+	units: AdminUnit[];
+};
+
+export type AdminUnitResponse = {
+	unit: AdminUnit;
 };
 
 export type AdminUnitStatusFilter = "active" | "deactivated" | "all";
@@ -59,7 +72,8 @@ export type AdminUnitContext = {
 
 export type CreateAdminUnitInput = {
 	name: string;
-	description: string;
+	descriptionDe: string;
+	descriptionEn: string;
 	capacity: number;
 	isActive?: boolean;
 	unitTypeId: string;

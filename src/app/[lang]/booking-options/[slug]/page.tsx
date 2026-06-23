@@ -7,6 +7,7 @@ import { parseBookingOptionSlug } from "@/entities/booking-option";
 import { getPublicUnits } from "@/entities/unit";
 import { type Dictionary, getDictionary, isLocale } from "@/shared/i18n";
 import { appRoutes } from "@/shared/routing";
+import { EmphasizedText } from "@/shared/ui";
 
 type BookingOptionPageProps = {
 	params: Promise<{ lang: string; slug: string }>;
@@ -221,7 +222,7 @@ export default async function BookingOptionPage({
 
 				<section
 					className={clsx(
-						"mt-6 grid min-h-[28rem] content-between p-5 text-primary md:p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8",
+						"mt-6 grid min-h-112 content-between p-5 text-primary md:p-6 lg:grid-cols-[1.1fr_0.9fr] lg:p-8",
 						theme.backgroundClassName,
 					)}
 					aria-labelledby="booking-option-title"
@@ -243,7 +244,10 @@ export default async function BookingOptionPage({
 							{optionCopy.title}
 						</h1>
 						<p className="mt-5 max-w-2xl text-base font-semibold leading-7 md:text-lg">
-							{optionCopy.description}
+							<EmphasizedText
+								emphasis={optionCopy.descriptionEmphasis}
+								text={optionCopy.description}
+							/>
 						</p>
 					</div>
 
@@ -275,12 +279,12 @@ export default async function BookingOptionPage({
 						</div>
 
 						{selectionItems.length > 0 ? (
-							<div className="divide-y-4 divide-primary">
+							<div className="divide-y-4 divide-primary lg:border-r-4">
 								{selectionItems.map((item, index) => (
 									<Link
 										key={item.id}
 										href={item.href}
-										className="group grid min-h-[13rem] gap-5 bg-background p-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-focus md:grid-cols-[4.5rem_minmax(0,1fr)_12rem] md:p-6 md:hover:bg-primary md:hover:text-on-primary"
+										className="group grid min-h-52 gap-5 bg-background p-5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-focus md:grid-cols-[4.5rem_minmax(0,1fr)_12rem] md:p-6 md:hover:bg-primary md:hover:text-on-primary"
 									>
 										<span className="text-5xl font-black leading-none tabular-nums md:text-6xl">
 											{String(index + 1).padStart(2, "0")}

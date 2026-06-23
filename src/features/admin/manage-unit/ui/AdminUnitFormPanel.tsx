@@ -3,12 +3,12 @@
 import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useSession } from "@/entities/session";
 import {
+	type AdminUnit,
 	type AdminUnitContextArea,
 	type AdminUnitContextUnitType,
 	createAdminUnit,
 	deactivateAdminUnit,
 	formatUnitTypeName,
-	type Unit,
 	updateAdminUnit,
 } from "@/entities/unit";
 import { ApiRequestError } from "@/shared/api";
@@ -22,14 +22,15 @@ type AdminUnitFormPanelProps = {
 	copy: Dictionary["adminWorkspaces"]["units"]["form"];
 	mode: AdminUnitFormMode;
 	onCancel: () => void;
-	onSaved: (unit: Unit) => void;
-	unit?: Unit | null;
+	onSaved: (unit: AdminUnit) => void;
+	unit?: AdminUnit | null;
 	unitTypes: AdminUnitContextUnitType[];
 };
 
 type AdminUnitFormState = {
 	name: string;
-	description: string;
+	descriptionDe: string;
+	descriptionEn: string;
 	capacity: string;
 	unitTypeId: string;
 	areaId: string;
@@ -40,7 +41,7 @@ type AdminUnitFormState = {
 type AdminUnitFormErrors = Partial<Record<keyof AdminUnitFormState, string>>;
 
 function getInitialFormState(input: {
-	unit?: Unit | null;
+	unit?: AdminUnit | null;
 	unitTypes: AdminUnitContextUnitType[];
 }): AdminUnitFormState {
 	const firstUnitTypeId = input.unitTypes[0]?.id ?? "";
@@ -48,7 +49,8 @@ function getInitialFormState(input: {
 	if (!input.unit) {
 		return {
 			name: "",
-			description: "",
+			descriptionDe: "",
+			descriptionEn: "",
 			capacity: "1",
 			unitTypeId: firstUnitTypeId,
 			areaId: "",
@@ -59,7 +61,8 @@ function getInitialFormState(input: {
 
 	return {
 		name: input.unit.name,
-		description: input.unit.description,
+		descriptionDe: input.unit.descriptionDe ?? input.unit.description,
+		descriptionEn: input.unit.descriptionEn ?? "",
 		capacity: String(input.unit.capacity),
 		unitTypeId: input.unit.unitTypeId,
 		areaId: input.unit.areaId ?? "",
@@ -92,8 +95,12 @@ function validateForm(input: {
 		errors.name = input.copy.name;
 	}
 
-	if (input.formState.description.trim().length === 0) {
-		errors.description = input.copy.description;
+	if (input.formState.descriptionDe.trim().length === 0) {
+		errors.descriptionDe = input.copy.descriptionDe;
+	}
+
+	if (input.formState.descriptionEn.trim().length === 0) {
+		errors.descriptionEn = input.copy.descriptionEn;
 	}
 
 	if (!Number.isInteger(capacity) || capacity <= 0) {
@@ -160,7 +167,8 @@ export function AdminUnitFormPanel({
 	function getPayload() {
 		return {
 			name: formState.name.trim(),
-			description: formState.description.trim(),
+			descriptionDe: formState.descriptionDe.trim(),
+			descriptionEn: formState.descriptionEn.trim(),
 			capacity: Number(formState.capacity),
 			isActive: formState.isActive,
 			unitTypeId: formState.unitTypeId,
@@ -169,7 +177,7 @@ export function AdminUnitFormPanel({
 		};
 	}
 
-	async function runUnitAction(action: () => Promise<Unit>) {
+	async function runUnitAction(action: () => Promise<AdminUnit>) {
 		try {
 			setIsSubmitting(true);
 			setSubmitError(null);
@@ -269,7 +277,7 @@ export function AdminUnitFormPanel({
 	const title = mode === "create" ? copy.titleCreate : copy.titleEdit;
 
 	return (
-		<Panel className="mt-8">
+		<Panel className="mt-8 border-primary!">
 			<div className="flex flex-wrap items-start justify-between gap-3">
 				<div>
 					<h2 className="text-lg font-semibold">{title}</h2>
@@ -319,19 +327,38 @@ export function AdminUnitFormPanel({
 					</Field>
 				</div>
 
-				<Field
-					label={copy.fields.description}
-					htmlFor="admin-unit-description"
-					errorText={errors.description}
-				>
-					<textarea
-						id="admin-unit-description"
-						className="min-h-28 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-xs transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-1 focus-visible:outline-focus"
-						value={formState.description}
-						aria-invalid={Boolean(errors.description) || undefined}
-						onChange={(event) => updateField("description", event.target.value)}
-					/>
-				</Field>
+				<div className="grid gap-2 md:grid-cols-2">
+					<Field
+						label={copy.fields.descriptionDe}
+						htmlFor="admin-unit-description-de"
+						errorText={errors.descriptionDe}
+					>
+						<textarea
+							id="admin-unit-description-de"
+							className="min-h-28 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-xs transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-1 focus-visible:outline-focus"
+							value={formState.descriptionDe}
+							aria-invalid={Boolean(errors.descriptionDe) || undefined}
+							onChange={(event) =>
+								updateField("descriptionDe", event.target.value)
+							}
+						/>
+					</Field>
+					<Field
+						label={copy.fields.descriptionEn}
+						htmlFor="admin-unit-description-en"
+						errorText={errors.descriptionEn}
+					>
+						<textarea
+							id="admin-unit-description-en"
+							className="min-h-28 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-xs transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-1 focus-visible:outline-focus"
+							value={formState.descriptionEn}
+							aria-invalid={Boolean(errors.descriptionEn) || undefined}
+							onChange={(event) =>
+								updateField("descriptionEn", event.target.value)
+							}
+						/>
+					</Field>
+				</div>
 
 				<div className="grid gap-2 md:grid-cols-3">
 					<Field

@@ -1,11 +1,15 @@
 import { apiPutAuthenticated } from "@/shared/api";
-import type { Unit, UnitResponse, UpdateAdminUnitInput } from "../model";
+import type {
+	AdminUnit,
+	AdminUnitResponse,
+	UpdateAdminUnitInput,
+} from "../model";
 
 export async function updateAdminUnit(input: {
 	unitId: string;
 	values: UpdateAdminUnitInput;
-}): Promise<Unit> {
-	const response = await apiPutAuthenticated<UnitResponse>(
+}): Promise<AdminUnit> {
+	const response = await apiPutAuthenticated<AdminUnitResponse>(
 		`/admin/units/${input.unitId}`,
 		input.values,
 	);

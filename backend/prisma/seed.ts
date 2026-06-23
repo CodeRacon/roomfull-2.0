@@ -48,16 +48,16 @@ async function main(): Promise<void> {
 	const openWorldArea = await prisma.area.upsert({
 		where: { name: "Open World" },
 		update: {
-			description: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
-			descriptionDe: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
-			descriptionEn: "Open area with a lively coworking atmosphere",
+			description: "Open World mit lebendiger Coworking-Atmosphäre",
+			descriptionDe: "Open World mit lebendiger Coworking-Atmosphäre",
+			descriptionEn: "Open World with a lively coworking atmosphere",
 			isActive: true,
 		},
 		create: {
 			name: "Open World",
-			description: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
-			descriptionDe: "Offener Bereich mit lebendiger Coworking-Atmosphäre",
-			descriptionEn: "Open area with a lively coworking atmosphere",
+			description: "Open World mit lebendiger Coworking-Atmosphäre",
+			descriptionDe: "Open World mit lebendiger Coworking-Atmosphäre",
+			descriptionEn: "Open World with a lively coworking atmosphere",
 		},
 	});
 
@@ -139,34 +139,43 @@ async function main(): Promise<void> {
 		...hotDeskUnits,
 		{
 			id: "seed-booth-b1",
-			name: "Booth B1",
-			description: "Kompakte Booth für fokussierte Arbeit im kleinen Team",
-			descriptionDe: "Kompakte Booth für fokussierte Arbeit im kleinen Team",
-			descriptionEn: "Compact booth for focused work in a small team",
-			capacity: 4,
-			displayOrder: 30,
+			name: "Book Nook",
+			description:
+				"Dein ruhiger Rückzugsort für ungestörtes und konzentriertes Arbeiten. Still, kompakt und ideal, wenn du für eine Weile aus dem Trubel raus willst.",
+			descriptionDe:
+				"Dein ruhiger Rückzugsort für ungestörtes und konzentriertes Arbeiten. Still, kompakt und ideal, wenn du für eine Weile aus dem Trubel raus willst.",
+			descriptionEn:
+				"Your quiet retreat for uninterrupted, focused work. Calm, compact, and ideal when you want to get away from the bustle for a while.",
+			capacity: 3,
+			displayOrder: 2,
 			unitTypeId: boothType.id,
 			areaId: null,
 		},
 		{
 			id: "seed-team-room-c1",
-			name: "Team Room C1",
-			description: "Meetingraum für kleine Teams und Workshops",
-			descriptionDe: "Meetingraum für kleine Teams und Workshops",
-			descriptionEn: "Meeting room for small teams and workshops",
+			name: "Huddle Hub",
+			description:
+				"Euer Raum für kurze Team-Syncs, schnelle Abstimmungen und klare nächste Schritte. Kompakt, direkt und ideal, wenn alle kurz zusammenkommen müssen.",
+			descriptionDe:
+				"Euer Raum für kurze Team-Syncs, schnelle Abstimmungen und klare nächste Schritte. Kompakt, direkt und ideal, wenn alle kurz zusammenkommen müssen.",
+			descriptionEn:
+				"Your room for quick team syncs, fast alignment, and clear next steps. Compact, direct, and ideal when everyone needs to come together briefly.",
 			capacity: 6,
-			displayOrder: 40,
+			displayOrder: 1,
 			unitTypeId: teamRoomType.id,
 			areaId: null,
 		},
 		{
 			id: "seed-meeting-room-d1",
-			name: "Meeting Room D1",
-			description: "Großer Meeting Room für Workshops und Abstimmungen",
-			descriptionDe: "Großer Meeting Room für Workshops und Abstimmungen",
-			descriptionEn: "Large meeting room for workshops and alignment",
-			capacity: 16,
-			displayOrder: 50,
+			name: "Table Talk",
+			description:
+				"Euer Forum für aktiven Austausch, Entscheidungsfindung und gemeinsame Klärung. Ruhig, großzügig und ideal, wenn mehrere Perspektiven an einen Tisch gehören.",
+			descriptionDe:
+				"Euer Forum für aktiven Austausch, Entscheidungsfindung und gemeinsame Klärung. Ruhig, großzügig und ideal, wenn mehrere Perspektiven an einen Tisch gehören.",
+			descriptionEn:
+				"Your forum for active exchange, decision-making, and shared clarity. Calm, spacious, and ideal when multiple perspectives belong at one table.",
+			capacity: 12,
+			displayOrder: 2,
 			unitTypeId: meetingRoomType.id,
 			areaId: null,
 		},
@@ -176,17 +185,7 @@ async function main(): Promise<void> {
 		demoUnits.map((unit) =>
 			prisma.bookableUnit.upsert({
 				where: { id: unit.id },
-				update: {
-					name: unit.name,
-					description: unit.description,
-					descriptionDe: unit.descriptionDe,
-					descriptionEn: unit.descriptionEn,
-					capacity: unit.capacity,
-					displayOrder: unit.displayOrder,
-					unitTypeId: unit.unitTypeId,
-					areaId: unit.areaId,
-					isActive: true,
-				},
+				update: {},
 				create: {
 					...unit,
 					isActive: true,

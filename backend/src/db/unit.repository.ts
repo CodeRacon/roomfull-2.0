@@ -1,7 +1,7 @@
 import {
 	type BookableUnit,
 	BookingStatus,
-	Prisma,
+	type Prisma,
 	type UnitTypeName,
 } from "@prisma/client";
 import { prisma } from "./prisma.js";
@@ -9,6 +9,8 @@ import { prisma } from "./prisma.js";
 export type CreateUnitInput = {
 	name: string;
 	description: string;
+	descriptionDe: string;
+	descriptionEn: string;
 	capacity: number;
 	isActive?: boolean;
 	unitTypeId: string;
@@ -179,6 +181,8 @@ export async function createUnit(
 		data: {
 			name: input.name,
 			description: input.description,
+			descriptionDe: input.descriptionDe,
+			descriptionEn: input.descriptionEn,
 			capacity: input.capacity,
 			isActive: input.isActive ?? true,
 			unitTypeId: input.unitTypeId,
@@ -256,46 +260,6 @@ export async function listActiveUnitsForAvailability(input: {
 			},
 		},
 		orderBy: [{ displayOrder: "asc" }, { id: "asc" }],
-	});
-}
-
-export async function createBookingWithTransaction(input: {
-	userId: string;
-	unitId: string;
-	startTime: Date;
-	endTime: Date;
-}) {
-	return prisma.$transaction(async (tx) => {
-		const overlap = await tx.booking.findFirst({
-			where: {
-				unitId: input.unitId,
-				status: BookingStatus.ACTIVE,
-				startTime: { lt: input.endTime },
-				endTime: { gt: input.startTime },
-			},
-			select: { id: true },
-		});
-
-		if (overlap) {
-			return null;
-		}
-
-		try {
-			return await tx.booking.create({
-				data: {
-					userId: input.userId,
-					unitId: input.unitId,
-					startTime: input.startTime,
-					endTime: input.endTime,
-				},
-			});
-		} catch (error) {
-			if (error instanceof Prisma.PrismaClientKnownRequestError) {
-				return null;
-			}
-
-			throw error;
-		}
 	});
 }
 

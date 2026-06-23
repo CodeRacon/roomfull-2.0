@@ -1,7 +1,6 @@
 export { getPublicBookingOptions } from "./api";
 export {
 	formatBookingOptionStatus,
-	getBookingOptionDescription,
 	getBookingOptionHref,
 	parseBookingOptionSlug,
 } from "./lib";
@@ -14,4 +13,5 @@ export type {
 	BookingOptionListResponse,
 	BookingOptionSlug,
 	BookingOptionStatus,
+	BookingOptionUnit,
 } from "./model";

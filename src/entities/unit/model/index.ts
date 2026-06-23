@@ -1,7 +1,10 @@
 export type {
+	AdminUnit,
 	AdminUnitContext,
 	AdminUnitContextArea,
 	AdminUnitContextUnitType,
+	AdminUnitListResponse,
+	AdminUnitResponse,
 	AdminUnitStatusFilter,
 	CreateAdminUnitInput,
 	ListAdminUnitsInput,

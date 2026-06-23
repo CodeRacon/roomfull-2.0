@@ -24,6 +24,11 @@ export type BookingOptionArea = {
 	activeUnitCount: number;
 };
 
+export type BookingOptionUnit = {
+	id: string;
+	name: string;
+};
+
 type PublicUnitArea = Omit<
 	NonNullable<UnitWithRelations["area"]>,
 	"description" | "descriptionDe" | "descriptionEn"
@@ -53,6 +58,7 @@ export type BookingOption = {
 	totalActiveUnits: number;
 	maxCapacity: number;
 	areas: BookingOptionArea[];
+	units: BookingOptionUnit[];
 };
 
 export const BOOKING_OPTION_UNIT_TYPES: UnitTypeName[] = [
@@ -118,6 +124,9 @@ function buildBookingOption(unitType: UnitTypeForBookingOption): BookingOption {
 	const isHotDesk = unitType.name === "HOT_DESK";
 
 	const areas = isHotDesk ? buildHotDeskAreas(unitType) : [];
+	const units = isHotDesk
+		? []
+		: unitType.units.map((unit) => ({ id: unit.id, name: unit.name }));
 
 	const totalActiveUnits = isHotDesk
 		? areas.reduce((sum, area) => sum + area.activeUnitCount, 0)
@@ -142,6 +151,7 @@ function buildBookingOption(unitType: UnitTypeForBookingOption): BookingOption {
 		totalActiveUnits,
 		maxCapacity,
 		areas,
+		units,
 	};
 }
 
@@ -204,24 +214,36 @@ export async function getPublicUnits(input?: {
 	return units.map((unit) => localizeUnit(unit, locale));
 }
 
-export async function getPublicBookingOptions(): Promise<BookingOption[]> {
-	const unitTypes = await listUnitTypesForBookingOptions(
-		BOOKING_OPTION_UNIT_TYPES,
-	);
-	const unitTypesByName = new Map(
-		unitTypes.map((unitType) => [unitType.name, unitType]),
-	);
+type PublicBookingOptionsSource = {
+	listUnitTypesForBookingOptions: typeof listUnitTypesForBookingOptions;
+};
 
-	return BOOKING_OPTION_UNIT_TYPES.map((unitTypeName) => {
-		const unitType = unitTypesByName.get(unitTypeName);
+export function createGetPublicBookingOptions(
+	source: PublicBookingOptionsSource,
+): () => Promise<BookingOption[]> {
+	return async () => {
+		const unitTypes = await source.listUnitTypesForBookingOptions(
+			BOOKING_OPTION_UNIT_TYPES,
+		);
+		const unitTypesByName = new Map(
+			unitTypes.map((unitType) => [unitType.name, unitType]),
+		);
 
-		if (!unitType) {
-			throw new AppError(500, "BookingOption UnitType fehlt");
-		}
+		return BOOKING_OPTION_UNIT_TYPES.map((unitTypeName) => {
+			const unitType = unitTypesByName.get(unitTypeName);
 
-		return buildBookingOption(unitType);
-	});
+			if (!unitType) {
+				throw new AppError(500, "BookingOption UnitType fehlt");
+			}
+
+			return buildBookingOption(unitType);
+		});
+	};
 }
+
+export const getPublicBookingOptions = createGetPublicBookingOptions({
+	listUnitTypesForBookingOptions,
+});
 
 export async function getPublicUnitById(
 	unitId: string,

@@ -1,21 +1,15 @@
 import type { Area, BookableUnit } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
-import { adminUnitManagement } from "../services/admin-unit-management.js";
+import {
+	adminUnitManagement,
+	type CreateAdminUnitInput,
+	type UpdateAdminUnitInput,
+} from "../services/admin-unit-management.js";
 
-type CreateUnitBody = {
-	name: string;
-	description: string;
-	capacity: number;
-	isActive?: boolean;
-	unitTypeId: string;
-	areaId?: string;
-	displayOrder?: number;
-};
+type CreateUnitBody = CreateAdminUnitInput;
 
-type UpdateUnitBody = Partial<Omit<CreateUnitBody, "areaId">> & {
-	areaId?: string | null;
-};
+type UpdateUnitBody = Omit<UpdateAdminUnitInput, "id">;
 const INVALID_BODY_MESSAGE = "Ungültiger Request Body";
 const INVALID_QUERY_MESSAGE = "Ungültige Query-Parameter";
 const INVALID_ROUTE_PARAMS_MESSAGE = "Ungültige Route-Parameter";
@@ -46,15 +40,13 @@ function serializeAdminUnit<
 		area?: (Area & LocalizedDescriptionFields) | null;
 	},
 >(unit: T) {
-	const { area, ...unitWithoutArea } = unit;
-
 	if (!("area" in unit)) {
-		return omitLocalizedDescriptionFields(unit);
+		return unit;
 	}
 
 	return {
-		...omitLocalizedDescriptionFields(unitWithoutArea),
-		area: area ? omitLocalizedDescriptionFields(area) : area,
+		...unit,
+		area: unit.area ? omitLocalizedDescriptionFields(unit.area) : unit.area,
 	};
 }
 
@@ -69,7 +61,8 @@ function parseCreateUnitBody(body: unknown): CreateUnitBody | null {
 
 	if (
 		typeof body.name !== "string" ||
-		typeof body.description !== "string" ||
+		typeof body.descriptionDe !== "string" ||
+		typeof body.descriptionEn !== "string" ||
 		typeof body.unitTypeId !== "string" ||
 		typeof body.capacity !== "number" ||
 		("isActive" in body && typeof body.isActive !== "boolean") ||
@@ -88,7 +81,8 @@ function parseCreateUnitBody(body: unknown): CreateUnitBody | null {
 
 	return {
 		name: body.name.trim(),
-		description: body.description.trim(),
+		descriptionDe: body.descriptionDe.trim(),
+		descriptionEn: body.descriptionEn.trim(),
 		capacity: body.capacity,
 		isActive,
 		unitTypeId: body.unitTypeId.trim(),
@@ -111,11 +105,18 @@ function parseUpdateUnitBody(body: unknown): UpdateUnitBody | null {
 		parsed.name = body.name.trim();
 	}
 
-	if ("description" in body) {
-		if (typeof body.description !== "string") {
+	if ("descriptionDe" in body) {
+		if (typeof body.descriptionDe !== "string") {
 			return null;
 		}
-		parsed.description = body.description.trim();
+		parsed.descriptionDe = body.descriptionDe.trim();
+	}
+
+	if ("descriptionEn" in body) {
+		if (typeof body.descriptionEn !== "string") {
+			return null;
+		}
+		parsed.descriptionEn = body.descriptionEn.trim();
 	}
 
 	if ("capacity" in body) {

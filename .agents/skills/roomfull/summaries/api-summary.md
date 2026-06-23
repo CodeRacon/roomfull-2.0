@@ -48,8 +48,9 @@ Der Contract enthält:
 - `totalActiveUnits`
 - `maxCapacity`
 - `areas`
+- `units` als schlanke Vorschau mit `id` und `name`
 
-`HOT_DESK` liefert Areas mit aktiver Unit-Anzahl. `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`.
+`HOT_DESK` liefert Areas mit aktiver Unit-Anzahl und `units: []`. `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []` sowie ihre aktiven Units in `displayOrder`.
 
 `GET /public/units` bleibt für konkrete Unit-Auswahl und Unit-Details bestehen.
 `Unit.unitType` enthält ebenfalls `minDurationMinutes` und `maxDurationMinutes`.
@@ -208,6 +209,9 @@ BookingOptions nutzen dieselbe fachliche Unterscheidung:
 ### Unit Management
 
 - Name nicht leer
+- deutsche und englische Beschreibung nicht leer
+- Admin-Responses liefern `descriptionDe` und `descriptionEn`; Public-Responses liefern die für das Locale aufgelöste `description`
+- das Legacy-Feld `description` folgt der deutschen Beschreibung
 - Kapazität > 0
 - `unitTypeId` muss existieren
 - `areaId` optional, muss bei Angabe existieren

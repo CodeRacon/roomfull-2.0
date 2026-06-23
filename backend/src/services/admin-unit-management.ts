@@ -26,6 +26,13 @@ export type AdminUnitListInput = {
 	search?: string;
 };
 
+export type CreateAdminUnitInput = Omit<CreateUnitInput, "description">;
+export type UpdateAdminUnitInput = { id: string } & Partial<
+	Omit<CreateAdminUnitInput, "areaId">
+> & {
+		areaId?: string | null;
+	};
+
 export type AdminUnitContext = {
 	unitTypes: UnitTypeIdentity[];
 	areas: Array<{
@@ -106,7 +113,9 @@ function assertNonNegativeInteger(value: number, message: string): void {
 	}
 }
 
-function normalizeCreateInput(input: CreateUnitInput): CreateUnitInput {
+function normalizeCreateInput(
+	input: CreateAdminUnitInput,
+): CreateAdminUnitInput {
 	const trimmedAreaId = input.areaId?.trim();
 	const areaId =
 		trimmedAreaId && trimmedAreaId.length > 0 ? trimmedAreaId : undefined;
@@ -114,21 +123,28 @@ function normalizeCreateInput(input: CreateUnitInput): CreateUnitInput {
 	return {
 		...input,
 		name: input.name.trim(),
-		description: input.description.trim(),
+		descriptionDe: input.descriptionDe.trim(),
+		descriptionEn: input.descriptionEn.trim(),
 		unitTypeId: input.unitTypeId.trim(),
 		areaId,
 	};
 }
 
-function normalizeUpdateInput(input: UpdateUnitInput): UpdateUnitInput {
-	const normalized: UpdateUnitInput = { id: input.id.trim() };
+function normalizeUpdateInput(
+	input: UpdateAdminUnitInput,
+): UpdateAdminUnitInput {
+	const normalized: UpdateAdminUnitInput = { id: input.id.trim() };
 
 	if (input.name !== undefined) {
 		normalized.name = input.name.trim();
 	}
 
-	if (input.description !== undefined) {
-		normalized.description = input.description.trim();
+	if (input.descriptionDe !== undefined) {
+		normalized.descriptionDe = input.descriptionDe.trim();
+	}
+
+	if (input.descriptionEn !== undefined) {
+		normalized.descriptionEn = input.descriptionEn.trim();
 	}
 
 	if (input.unitTypeId !== undefined) {
@@ -159,9 +175,16 @@ function normalizeUpdateInput(input: UpdateUnitInput): UpdateUnitInput {
 	return normalized;
 }
 
-function validateCreateInput(input: CreateUnitInput): void {
+function validateCreateInput(input: CreateAdminUnitInput): void {
 	assertNonEmpty(input.name, "Unit-Name darf nicht leer sein");
-	assertNonEmpty(input.description, "Beschreibung darf nicht leer sein");
+	assertNonEmpty(
+		input.descriptionDe,
+		"Deutsche Beschreibung darf nicht leer sein",
+	);
+	assertNonEmpty(
+		input.descriptionEn,
+		"Englische Beschreibung darf nicht leer sein",
+	);
 	assertNonEmpty(input.unitTypeId, "UnitType ist erforderlich");
 	assertPositiveInteger(input.capacity, "Kapazität muss größer als 0 sein");
 
@@ -174,13 +197,23 @@ function validateCreateInput(input: CreateUnitInput): void {
 	}
 }
 
-function validateUpdateInput(input: UpdateUnitInput): void {
+function validateUpdateInput(input: UpdateAdminUnitInput): void {
 	if (input.name !== undefined) {
 		assertNonEmpty(input.name, "Unit-Name darf nicht leer sein");
 	}
 
-	if (input.description !== undefined) {
-		assertNonEmpty(input.description, "Beschreibung darf nicht leer sein");
+	if (input.descriptionDe !== undefined) {
+		assertNonEmpty(
+			input.descriptionDe,
+			"Deutsche Beschreibung darf nicht leer sein",
+		);
+	}
+
+	if (input.descriptionEn !== undefined) {
+		assertNonEmpty(
+			input.descriptionEn,
+			"Englische Beschreibung darf nicht leer sein",
+		);
 	}
 
 	if (input.capacity !== undefined) {
@@ -237,7 +270,7 @@ export function createAdminUnitManagement(input: {
 	}
 
 	return {
-		async create(createInput: CreateUnitInput): Promise<BookableUnit> {
+		async create(createInput: CreateAdminUnitInput): Promise<BookableUnit> {
 			const normalizedInput = normalizeCreateInput(createInput);
 
 			validateCreateInput(normalizedInput);
@@ -250,7 +283,10 @@ export function createAdminUnitManagement(input: {
 				await assertAreaExists(normalizedInput.areaId);
 			}
 
-			return source.createUnit(normalizedInput);
+			return source.createUnit({
+				...normalizedInput,
+				description: normalizedInput.descriptionDe,
+			});
 		},
 
 		async deactivate(id: string): Promise<BookableUnit> {
@@ -278,7 +314,7 @@ export function createAdminUnitManagement(input: {
 			});
 		},
 
-		async update(updateInput: UpdateUnitInput): Promise<BookableUnit> {
+		async update(updateInput: UpdateAdminUnitInput): Promise<BookableUnit> {
 			const normalizedInput = normalizeUpdateInput(updateInput);
 			const existingUnit = await assertUnitExists(normalizedInput.id);
 
@@ -300,7 +336,12 @@ export function createAdminUnitManagement(input: {
 				await assertAreaExists(normalizedInput.areaId);
 			}
 
-			return source.updateUnit(normalizedInput);
+			return source.updateUnit({
+				...normalizedInput,
+				...(normalizedInput.descriptionDe !== undefined
+					? { description: normalizedInput.descriptionDe }
+					: {}),
+			});
 		},
 	};
 }

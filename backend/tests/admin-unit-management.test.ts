@@ -41,7 +41,7 @@ function createHarness(input?: {
 		{
 			id: "area-open-world",
 			name: "Open World",
-			description: "Offener Bereich",
+			description: "Open World",
 			isActive: true,
 		},
 	];
@@ -112,7 +112,8 @@ describe("Admin Unit Management", () => {
 
 		const created = await management.create({
 			name: "  Booth Zwei  ",
-			description: "  Fensterplatz  ",
+			descriptionDe: "  Ruhiger Fensterplatz  ",
+			descriptionEn: "  Quiet window seat  ",
 			capacity: 2,
 			unitTypeId: "  type-booth  ",
 		});
@@ -122,6 +123,8 @@ describe("Admin Unit Management", () => {
 			{
 				name: created.name,
 				description: created.description,
+				descriptionDe: created.descriptionDe,
+				descriptionEn: created.descriptionEn,
 				capacity: created.capacity,
 				unitTypeId: created.unitTypeId,
 				isActive: created.isActive,
@@ -129,7 +132,9 @@ describe("Admin Unit Management", () => {
 			},
 			{
 				name: "Booth Zwei",
-				description: "Fensterplatz",
+				description: "Ruhiger Fensterplatz",
+				descriptionDe: "Ruhiger Fensterplatz",
+				descriptionEn: "Quiet window seat",
 				capacity: 2,
 				unitTypeId: "type-booth",
 				isActive: true,
@@ -145,7 +150,8 @@ describe("Admin Unit Management", () => {
 			() =>
 				management.create({
 					name: "Desk Eins",
-					description: "Flex Desk",
+					descriptionDe: "Flex Desk",
+					descriptionEn: "Flex desk",
 					capacity: 1,
 					unitTypeId: "type-hot-desk",
 				}),
@@ -157,7 +163,8 @@ describe("Admin Unit Management", () => {
 		const { management } = createHarness();
 		const validInput = {
 			name: "Desk Eins",
-			description: "Flex Desk",
+			descriptionDe: "Flex Desk",
+			descriptionEn: "Flex desk",
 			capacity: 1,
 			unitTypeId: "type-hot-desk",
 		};
@@ -198,6 +205,25 @@ describe("Admin Unit Management", () => {
 				}),
 			400,
 		);
+	});
+
+	it("updates localized descriptions and keeps the legacy fallback in sync", async () => {
+		const existing = createUnit({
+			description: "Alte Beschreibung",
+			descriptionDe: "Alte Beschreibung",
+			descriptionEn: "Old description",
+		});
+		const { management } = createHarness({ units: [existing] });
+
+		const updated = await management.update({
+			id: existing.id,
+			descriptionDe: "  Neue Beschreibung  ",
+			descriptionEn: "  New description  ",
+		});
+
+		assert.equal(updated.description, "Neue Beschreibung");
+		assert.equal(updated.descriptionDe, "Neue Beschreibung");
+		assert.equal(updated.descriptionEn, "New description");
 	});
 
 	it("deactivates the existing BookableUnit without replacing it", async () => {
@@ -244,7 +270,7 @@ describe("Admin Unit Management", () => {
 				{
 					id: "area-open-world",
 					name: "Open World",
-					description: "Offener Bereich",
+					description: "Open World",
 					isActive: true,
 				},
 			],

@@ -1,0 +1,1 @@
+export { EmphasizedText } from "./EmphasizedText";

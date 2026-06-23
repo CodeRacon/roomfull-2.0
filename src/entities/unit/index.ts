@@ -9,9 +9,12 @@ export {
 } from "./api";
 export { formatUnitTypeName } from "./lib";
 export type {
+	AdminUnit,
 	AdminUnitContext,
 	AdminUnitContextArea,
 	AdminUnitContextUnitType,
+	AdminUnitListResponse,
+	AdminUnitResponse,
 	AdminUnitStatusFilter,
 	CreateAdminUnitInput,
 	ListAdminUnitsInput,

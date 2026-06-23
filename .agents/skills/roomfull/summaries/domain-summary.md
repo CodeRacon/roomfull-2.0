@@ -35,6 +35,8 @@ Eine `BookingOption` ist ein Customer-facing Angebot und entspricht im MVP einem
 
 `BookingOption.status` beschreibt nur grundsätzliche Verfügbarkeit ohne Zeitraum. Zeitbezogene Verfügbarkeit wird später im Booking-Flow geprüft.
 
+Die Booking Options Page darf aktive Area- beziehungsweise Unit-Namen als Vorschau zeigen. Die konkrete Auswahl und Buchung bleibt auf der jeweiligen Detailseite.
+
 ## Struktur
 
 - `Area` gruppiert mehrere BookableUnits (z. B. Open World)

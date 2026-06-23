@@ -1,10 +1,14 @@
 import { apiPostAuthenticated } from "@/shared/api";
-import type { CreateAdminUnitInput, Unit, UnitResponse } from "../model";
+import type {
+	AdminUnit,
+	AdminUnitResponse,
+	CreateAdminUnitInput,
+} from "../model";
 
 export async function createAdminUnit(
 	input: CreateAdminUnitInput,
-): Promise<Unit> {
-	const response = await apiPostAuthenticated<UnitResponse>(
+): Promise<AdminUnit> {
+	const response = await apiPostAuthenticated<AdminUnitResponse>(
 		"/admin/units",
 		input,
 	);

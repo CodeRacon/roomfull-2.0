@@ -16,6 +16,11 @@ export type BookingOptionArea = {
 	activeUnitCount: number;
 };
 
+export type BookingOptionUnit = {
+	id: string;
+	name: string;
+};
+
 export type BookingOption = {
 	key: BookingOptionKey;
 	unitType: {
@@ -30,6 +35,7 @@ export type BookingOption = {
 	totalActiveUnits: number;
 	maxCapacity: number;
 	areas: BookingOptionArea[];
+	units: BookingOptionUnit[];
 };
 
 export type BookingOptionListResponse = { bookingOptions: BookingOption[] };

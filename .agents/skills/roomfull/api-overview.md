@@ -169,6 +169,7 @@ type BookingOption = {
   totalActiveUnits: number;
   maxCapacity: number;
   areas: Array<{ id: string; name: string; activeUnitCount: number }>;
+  units: Array<{ id: string; name: string }>;
 };
 ```
 
@@ -177,8 +178,10 @@ Regeln:
 - Public BookingOptions kommen aus einer expliziten Backend-Allowlist
 - `HOT_DESK` nutzt `AUTO_ASSIGN` und `areaSelection: REQUIRED`
 - `HOT_DESK.areas[]` enthält Areas mit aktiver Hot-Desk-Anzahl
+- `HOT_DESK` liefert `units: []`, damit keine konkreten Hot-Desk-IDs veröffentlicht werden
 - `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` nutzen `CHOOSE_UNIT` und `areaSelection: NOT_APPLICABLE`
 - `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []`
+- `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern aktive Units als `units[]`, sortiert nach `displayOrder`, dann `id`
 - `status` ist `AVAILABLE`, wenn `totalActiveUnits > 0`, sonst `UNAVAILABLE`
 - fehlende Allowlist-UnitTypes sind System-/Seed-Fehler
 
@@ -387,7 +390,12 @@ Response:
 
 ```ts
 type AdminUnitListResponse = {
-  units: Unit[];
+  units: AdminUnit[];
+};
+
+type AdminUnit = Unit & {
+  descriptionDe: string | null;
+  descriptionEn: string | null;
 };
 ```
 
@@ -411,11 +419,13 @@ type AdminUnitContextResponse = {
 
 ### `POST /admin/units`
 
-Legt eine neue Unit an.
+Legt eine neue Unit an. `descriptionDe` und `descriptionEn` sind Pflichtfelder.
+Das Legacy-Feld `description` wird serverseitig mit `descriptionDe` synchronisiert.
 
 ### `PUT /admin/units/:unitId`
 
-Bearbeitet eine Unit.
+Bearbeitet eine Unit. Die lokalisierten Beschreibungen werden über
+`descriptionDe` und `descriptionEn` unabhängig gepflegt.
 
 ### `PATCH /admin/units/:unitId/deactivate`
 

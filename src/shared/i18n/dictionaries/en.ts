@@ -45,6 +45,95 @@ export const en = {
 			resetLabel: "Try again",
 		},
 	},
+	faqPage: {
+		metadata: {
+			title: "FAQ | RoomFull 2.0",
+			description:
+				"Answers about choosing, equipping, and booking coworking desks and rooms.",
+		},
+		title: "FAQs",
+		subtitle: "Frequently asked questions",
+		intro:
+			"Find the desk or room that suits your plans and learn everything you need to know about equipment, booking times, and using the space.",
+		sections: {
+			matchingSpace: {
+				question: "Which desk or room is right for me?",
+				intro: "It depends on how you want to work:",
+				hotDesk:
+					"A Hot Desk is ideal for focused solo work—spontaneous, flexible, and available in either the open area or the quieter “Quiet Place.”",
+				booth:
+					"A Booth gives you more privacy for focused work, calls, and confidential conversations.",
+				teamRoom:
+					"A Team Room is ideal for working together, brainstorming, and creative sessions.",
+				meetingRoom:
+					"A Meeting Room provides the right setting for presentations, decisions, and larger discussions.",
+			},
+			areas: {
+				question: "What is the difference between Open World and Quiet Place?",
+				openWorld:
+					"Open World is a livelier, more social working environment. It is a good fit if you enjoy being around others and do not mind everyday workspace noise.",
+				quietPlace:
+					"Quiet Place is designed for calm, focused work. Conversations and longer calls should be avoided there.",
+			},
+			basicEquipment: {
+				question: "What basic equipment is included?",
+				answer:
+					"Every desk and room includes fast Wi-Fi, easily accessible power outlets, and ergonomic seating.",
+				trafficLight:
+					"Every desk and room also has a discreet booking light that reminds you when your booking is about to end.",
+			},
+			equipment: {
+				question: "How are the individual desks and rooms equipped?",
+				hotDesk: "Hot Desks include a monitor and a docking station.",
+				booth:
+					"Booths are sound-reduced and include a monitor, table, power outlets, and comfortable lighting.",
+				teamRoom:
+					"Team Rooms include a large display, a whiteboard, and facilitation materials for collaborative sessions.",
+				meetingRoom:
+					"Meeting Rooms include a projector, a whiteboard wall, and a video conferencing system.",
+			},
+			booking: {
+				question: "How does booking work?",
+				intro:
+					"First, think about what you need for your workday. Then choose your date and time.",
+				selection:
+					"For a Hot Desk, you choose an area and RoomFull automatically assigns an available desk there. For Booths, Team Rooms, and Meeting Rooms, you select the room yourself.",
+				account:
+					"You need a user account to make a confirmed booking. You can then find your reservation later under “My bookings.”",
+			},
+			duration: {
+				question: "How long can I book for?",
+				intro:
+					"The minimum and maximum duration depends on the desk or room you choose:",
+				hotDesk: "Hot Desk: 30 minutes to 4 hours",
+				booth: "Booth: 1 to 4 hours",
+				teamRoom: "Team Room: 1 to 8 hours",
+				meetingRoom: "Meeting Room: 1 to 8 hours",
+			},
+			openingHours: {
+				question: "When can I book?",
+				answer:
+					"Bookings are available Monday through Friday between 8:00 a.m. and 10:00 p.m. Past time periods and desks or rooms that are already booked are not available for selection.",
+			},
+			cancellation: {
+				question: "Can I cancel my booking?",
+				answer:
+					"Yes. You can find your future bookings under “My bookings” and cancel one there if your plans change.",
+			},
+			overtime: {
+				question:
+					"What happens if I accidentally use my desk or room for longer than I booked?",
+				intro:
+					"Don’t worry—it can happen. To help you keep track of the end time, every desk and room has a discreet status light:",
+				green:
+					"Green: Your booking is active. The light begins to pulse gently 15 minutes before it ends.",
+				yellow: "Yellow: 5 minutes remaining—time to start wrapping up.",
+				red: "Red: Your booking time has ended.",
+				outro:
+					"Once the light turns red, please free up your desk or room promptly. The next person may already be waiting for their booking.",
+			},
+		},
+	},
 	home: {
 		metadata: {
 			title: "Book coworking spaces | RoomFull 2.0",
@@ -112,32 +201,32 @@ export const en = {
 				label: "Work",
 				title: "Hot Desk",
 				description:
-					"A flexible single desk in an open work area. Ideal when you need a productive place quickly.",
-				variants: ["Open area", "Quiet zone"],
+					"A flexible single desk, either in the open area or in our quiet zone. Ideal when you need a productive place to work at short notice.",
+				descriptionEmphasis: null,
 				cta: "Choose desk",
 			},
 			BOOTH: {
 				label: "Focus",
 				title: "Booth",
 				description:
-					"A compact retreat for focused work, calls, or short deep-work sessions.",
-				variants: ["Phone Booth", "Focus Booth", "Deep Work Booth"],
+					"Small retreats for focus, calls, and deep work – perfect when you want to switch off for a moment, work with full concentration, or talk in peace.",
+				descriptionEmphasis: null,
 				cta: "View booths",
 			},
 			TEAM_ROOM: {
 				label: "Team",
 				title: "Team Room",
 				description:
-					"A room for teamwork, alignment, and workshops with space for shared sessions.",
-				variants: ["Sprint Room", "Workshop Room", "Project Room"],
+					"A room for working together, creative sessions, and bringing your ideas to life – fully equipped for productive team moments.",
+				descriptionEmphasis: null,
 				cta: "View team rooms",
 			},
 			MEETING_ROOM: {
 				label: "Meet",
 				title: "Meeting Room",
 				description:
-					"A larger room for meetings, presentations, and workshops with more people.",
-				variants: ["Client Meeting", "Board Room", "Presentation Room"],
+					"More room for interactive exchange, decisions, and presentations – welcoming, spacious, and made for the good meetings.",
+				descriptionEmphasis: "good",
 				cta: "View meeting rooms",
 			},
 		},
@@ -178,7 +267,8 @@ export const en = {
 				sideLabel: "Work",
 				title: "Hot Desk",
 				description:
-					"A flexible single desk in an open work area. Choose an area, then secure an available desk.",
+					"A flexible single desk, either in the open area or in our quiet zone. Ideal when you need a productive place to work at short notice.",
+				descriptionEmphasis: null,
 				selectionLabel: "Area selection",
 				selectionHeading: "Choose your area",
 				cta: "Book hot desk",
@@ -187,7 +277,8 @@ export const en = {
 				sideLabel: "Focus",
 				title: "Booth",
 				description:
-					"A compact retreat for focused work, calls, or short deep-work sessions.",
+					"Small retreats for focus, calls, and deep work – perfect when you want to switch off for a moment, work with full concentration, or talk in peace.",
+				descriptionEmphasis: null,
 				selectionLabel: "Room selection",
 				selectionHeading: "Choose your booth",
 				cta: "Book booth",
@@ -196,7 +287,8 @@ export const en = {
 				sideLabel: "Team",
 				title: "Team Room",
 				description:
-					"A room for teamwork, alignment, and workshops with space for shared sessions.",
+					"A room for working together, creative sessions, and bringing your ideas to life – fully equipped for productive team moments.",
+				descriptionEmphasis: null,
 				selectionLabel: "Room selection",
 				selectionHeading: "Choose your team room",
 				cta: "Book team room",
@@ -205,7 +297,8 @@ export const en = {
 				sideLabel: "Meet",
 				title: "Meeting Room",
 				description:
-					"A larger room for meetings, presentations, and workshops with more people.",
+					"More room for interactive exchange, decisions, and presentations – welcoming, spacious, and made for the good meetings.",
+				descriptionEmphasis: "good",
 				selectionLabel: "Room selection",
 				selectionHeading: "Choose your meeting room",
 				cta: "Book meeting room",
@@ -604,7 +697,8 @@ export const en = {
 				fields: {
 					name: "Name",
 					capacity: "Capacity",
-					description: "Description",
+					descriptionDe: "Description (German)",
+					descriptionEn: "Description (English)",
 					unitType: "Unit type",
 					area: "Area",
 					displayOrder: "Display order",
@@ -619,7 +713,8 @@ export const en = {
 				reactivate: "Reactivate unit",
 				validation: {
 					name: "Name must not be empty.",
-					description: "Description must not be empty.",
+					descriptionDe: "The German description must not be empty.",
+					descriptionEn: "The English description must not be empty.",
 					capacity: "Capacity must be greater than 0.",
 					unitType: "A unit type is required.",
 					area: "A hot desk requires an area.",

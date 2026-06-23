@@ -6,7 +6,7 @@ import {
 } from "@/entities/booking-option";
 import type { Dictionary, Locale } from "@/shared/i18n";
 import { localizedPath } from "@/shared/routing";
-import { FeedbackBox } from "@/shared/ui";
+import { EmphasizedText, FeedbackBox } from "@/shared/ui";
 
 type BookingOptionsListProps = {
 	bookingOptions: BookingOption[];
@@ -77,6 +77,16 @@ function getDurationLabel(option: BookingOption, template: string): string {
 	return formatCountTemplate(template, option.unitType.minDurationMinutes);
 }
 
+function getOptionPreviews(
+	option: BookingOption,
+): Array<{ id: string; name: string }> {
+	if (option.key === "HOT_DESK") {
+		return option.areas.map((area) => ({ id: area.id, name: area.name }));
+	}
+
+	return option.units;
+}
+
 export function BookingOptionsList({
 	bookingOptions,
 	copy,
@@ -102,6 +112,7 @@ export function BookingOptionsList({
 			{orderedBookingOptions.map((option) => {
 				const panelCopy = copy.options[option.key];
 				const panelStyle = bookingOptionPanelStyles[option.key];
+				const optionPreviews = getOptionPreviews(option);
 
 				return (
 					<Link
@@ -124,18 +135,21 @@ export function BookingOptionsList({
 
 							<h2 className="type-panel-title mt-8">{panelCopy.title}</h2>
 							<p className="mt-5 text-sm font-semibold leading-6 md:text-base">
-								{panelCopy.description}
+								<EmphasizedText
+									emphasis={panelCopy.descriptionEmphasis}
+									text={panelCopy.description}
+								/>
 							</p>
 						</div>
 
 						<div className="mt-8">
 							<div className="space-y-2">
-								{panelCopy.variants.map((variant) => (
+								{optionPreviews.map((preview) => (
 									<span
-										key={variant}
+										key={preview.id}
 										className="block bg-primary/10 px-3 py-2 text-sm font-black"
 									>
-										{variant}
+										{preview.name}
 									</span>
 								))}
 							</div>

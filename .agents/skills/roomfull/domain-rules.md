@@ -66,6 +66,7 @@ BookingOptions haben:
 - `status`: `AVAILABLE` oder `UNAVAILABLE`
 - `totalActiveUnits`
 - `areas`
+- `units` als schlanke Vorschau konkreter BookableUnits bei `CHOOSE_UNIT`
 
 `status` beschreibt nur grundsätzliche Verfügbarkeit ohne Zeitraum. Zeitbezogene Availability wird separat geprüft.
 
@@ -95,6 +96,8 @@ Zusätzliche Area-Regeln:
 - `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` dürfen optional eine Area haben
 - im Public BookingOptions-Contract werden `areas[]` nur für `HOT_DESK` befüllt
 - `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern im BookingOptions-Contract `areas: []`
+- konkrete Hot-Desk-IDs werden nicht veröffentlicht; `HOT_DESK` liefert `units: []`
+- `CHOOSE_UNIT`-Optionen liefern aktive BookableUnits als `units[]` in `displayOrder`
 
 ## Booking-Regeln
 

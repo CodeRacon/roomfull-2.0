@@ -10,6 +10,7 @@ Diese Entscheidungen beschreiben das Zielbild fuer den Customer-BookingFlow. Ein
   - `/booking-options/booth`
   - `/booking-options/team-room`
   - `/booking-options/meeting-room`
+- Die Booking Options Page zeigt aktive Area- oder Unit-Namen als Vorschau; sie sind dort noch keine konkrete Auswahl.
 - Angebotsuebersichten sind public und enthalten noch keine zeitbezogene Verfuegbarkeit.
 - Gueltiger UnitType ohne aktive Angebote zeigt einen Empty State.
 - Ungueltiger Slug/UnitType fuehrt zu `404`.

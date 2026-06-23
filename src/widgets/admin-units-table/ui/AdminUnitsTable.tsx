@@ -1,8 +1,8 @@
 import { clsx } from "clsx";
 import type {
+	AdminUnit,
 	AdminUnitContextUnitType,
 	AdminUnitStatusFilter,
-	Unit,
 	UnitTypeName,
 } from "@/entities/unit";
 import { formatUnitTypeName } from "@/entities/unit";
@@ -16,10 +16,10 @@ type AdminUnitsTableProps = {
 		unitType: UnitTypeName | "all";
 		search: string;
 	};
-	onEditUnit: (unit: Unit) => void;
+	onEditUnit: (unit: AdminUnit) => void;
 	onFiltersChange: (filters: AdminUnitsTableProps["filters"]) => void;
 	unitTypes: AdminUnitContextUnitType[];
-	units: Unit[];
+	units: AdminUnit[];
 };
 
 const statusFilters: {
@@ -27,7 +27,7 @@ const statusFilters: {
 }[] = [{ value: "active" }, { value: "deactivated" }, { value: "all" }];
 
 function getStatusBadge(
-	unit: Unit,
+	unit: AdminUnit,
 	copy: Dictionary["adminWorkspaces"]["units"]["table"]["status"],
 ) {
 	return unit.isActive ? (
@@ -37,7 +37,7 @@ function getStatusBadge(
 	);
 }
 
-function formatArea(unit: Unit): string {
+function formatArea(unit: AdminUnit): string {
 	return unit.area?.name ?? "-";
 }
 

@@ -43,6 +43,96 @@ export const de = {
 			resetLabel: "Erneut versuchen",
 		},
 	},
+	faqPage: {
+		metadata: {
+			title: "FAQ | RoomFull 2.0",
+			description:
+				"Antworten zur Wahl, Ausstattung und Buchung von Coworking-Plätzen und Räumen.",
+		},
+		title: "FAQs",
+		subtitle: "Häufige Fragen",
+		intro:
+			"Finde den Platz oder Raum, der zu deinem Vorhaben passt, und erfahre alles Wichtige zu Ausstattung, Buchungszeiten und Nutzung.",
+		sections: {
+			matchingSpace: {
+				question: "Welcher Platz oder Raum passt zu mir?",
+				intro: "Das hängt davon ab, wie du arbeiten möchtest:",
+				hotDesk:
+					"Ein Hot Desk ist ideal für konzentriertes Arbeiten allein – spontan, flexibel und wahlweise im offenen Bereich oder im ruhigen „Quiet Place“.",
+				booth:
+					"Eine Booth bietet dir mehr Rückzug für Fokusphasen, Calls und vertrauliche Gespräche.",
+				teamRoom:
+					"Ein Team Room eignet sich für gemeinsames Arbeiten, Brainstormings und kreative Sessions.",
+				meetingRoom:
+					"Ein Meeting Room bietet den passenden Rahmen für Präsentationen, Entscheidungen und größere Gesprächsrunden.",
+			},
+			areas: {
+				question: "Was unterscheidet „Open World“ und „Quiet Place“?",
+				openWorld:
+					"In der Open World sitzt du in einer lebendigeren, kommunikativen Arbeitsumgebung. Sie passt gut, wenn du den Austausch mit anderen magst und dich normale Arbeitsgeräusche nicht stören.",
+				quietPlace:
+					"Der Quiet Place ist für ruhiges, konzentriertes Arbeiten gedacht. Gespräche und längere Calls sollten dort vermieden werden.",
+			},
+			basicEquipment: {
+				question: "Welche Grundausstattung ist enthalten?",
+				answer:
+					"Alle Arbeitsplätze und Räume verfügen über schnelles WLAN, gut erreichbare Stromanschlüsse und ergonomische Sitzmöglichkeiten.",
+				trafficLight:
+					"Zusätzlich befindet sich an jedem Platz und in jedem Raum eine dezente Buchungsampel, die dich rechtzeitig an das Ende deiner Buchung erinnert.",
+			},
+			equipment: {
+				question: "Wie sind die einzelnen Plätze und Räume ausgestattet?",
+				hotDesk:
+					"Hot Desks verfügen über einen Monitor und eine Dockingstation.",
+				booth:
+					"Booths sind schallgedämpft und mit Monitor, Tisch, Stromanschlüssen und angenehmer Beleuchtung ausgestattet.",
+				teamRoom:
+					"Team Rooms bieten einen großen Bildschirm, ein Whiteboard und Moderationsmaterial für gemeinsame Sessions.",
+				meetingRoom:
+					"Meeting Rooms verfügen über Beamer, Whiteboard-Wall und ein Videokonferenzsystem.",
+			},
+			booking: {
+				question: "Wie funktioniert die Buchung?",
+				intro:
+					"Überlege zuerst, was du für deinen Arbeitstag brauchst. Anschließend bestimmst du Datum und Uhrzeit.",
+				selection:
+					"Bei Hot Desks entscheidest du dich für einen Bereich; RoomFull weist dir dort automatisch einen verfügbaren Platz zu. Bei Booths, Team Rooms und Meeting Rooms wählst du den gewünschten Raum selbst aus.",
+				account:
+					"Für eine verbindliche Buchung benötigst du ein Benutzer-Konto. So findest du deine Reservierung später auch unter „Meine Buchungen“ wieder.",
+			},
+			duration: {
+				question: "Wie lange kann ich buchen?",
+				intro:
+					"Die Mindest- und Maximaldauer hängt vom gewählten Platz oder Raum ab:",
+				hotDesk: "Hot Desk: 30 Minuten bis 4 Stunden",
+				booth: "Booth: 1 bis 4 Stunden",
+				teamRoom: "Team Room: 1 bis 8 Stunden",
+				meetingRoom: "Meeting Room: 1 bis 8 Stunden",
+			},
+			openingHours: {
+				question: "Zu welchen Zeiten kann ich buchen?",
+				answer:
+					"Buchungen sind montags bis freitags zwischen 08:00 und 22:00 Uhr möglich. Vergangene Zeiträume und bereits gebuchte Plätze oder Räume stehen nicht zur Auswahl.",
+			},
+			cancellation: {
+				question: "Kann ich meine Buchung stornieren?",
+				answer:
+					"Ja. Deine zukünftigen Buchungen findest du unter „Meine Buchungen“. Dort kannst du eine Buchung stornieren, wenn sich deine Pläne ändern.",
+			},
+			overtime: {
+				question:
+					"Was passiert, wenn ich meinen Platz oder Raum versehentlich länger nutze?",
+				intro:
+					"Keine Sorge – das kann passieren. Damit du das Buchungsende rechtzeitig im Blick hast, befindet sich an jedem Platz und in jedem Raum eine dezente Statusampel:",
+				green:
+					"Grün: Deine Buchung läuft. 15 Minuten vor dem Ende beginnt die Anzeige dezent zu pulsieren.",
+				yellow: "Gelb: Noch 5 Minuten – Zeit, langsam zusammenzupacken.",
+				red: "Rot: Deine Buchungszeit ist beendet.",
+				outro:
+					"Sobald die Ampel rot leuchtet, gib deinen Platz oder Raum bitte zügig frei. Möglicherweise wartet bereits die nächste Person auf ihre Buchung.",
+			},
+		},
+	},
 	home: {
 		metadata: {
 			title: "Coworking Spaces buchen | RoomFull 2.0",
@@ -110,32 +200,32 @@ export const de = {
 				label: "Work",
 				title: "Hot Desk",
 				description:
-					"Flexibler Einzelplatz in einem offenen Arbeitsbereich. Ideal, wenn du schnell einen produktiven Platz brauchst.",
-				variants: ["Offener Bereich", "Ruhige Zone"],
+					"Flexibler Einzelplatz, wahlweise im offenen Bereich oder in unserer Pssst!-Zone. Ideal, wenn du spontan einen produktiven Platz zum Arbeiten brauchst.",
+				descriptionEmphasis: null,
 				cta: "Platz wählen",
 			},
 			BOOTH: {
 				label: "Focus",
 				title: "Booth",
 				description:
-					"Kompakter Rückzugsort für konzentriertes Arbeiten, Telefonate oder kurze Fokus-Sessions.",
-				variants: ["Phone Booth", "Focus Booth", "Deep Work Booth"],
+					"Kleine Rückzugsorte für Fokus, Calls und Deep Work – perfekt, wenn du kurz abschalten, konzentriert arbeiten oder in Ruhe sprechen willst.",
+				descriptionEmphasis: null,
 				cta: "Booths ansehen",
 			},
 			TEAM_ROOM: {
 				label: "Team",
 				title: "Team Room",
 				description:
-					"Raum für Teamarbeit, Abstimmungen und Workshops mit genug Platz für gemeinsame Sessions.",
-				variants: ["Sprint Room", "Workshop Room", "Project Room"],
+					"Raum für gemeinsames Arbeiten, kreative Sessions und die Umsetzung eurer Ideen – voll ausgestattet für produktive Team-Momente.",
+				descriptionEmphasis: null,
 				cta: "Teamräume ansehen",
 			},
 			MEETING_ROOM: {
 				label: "Meet",
 				title: "Meeting Room",
 				description:
-					"Großer Raum für Meetings, Präsentationen und Workshops mit mehr Personen.",
-				variants: ["Client Meeting", "Board Room", "Presentation Room"],
+					"Mehr Raum für interaktiven Austausch, Entscheidungen und Präsentationen – einladend, großzügig und gemacht für die guten Meetings.",
+				descriptionEmphasis: "guten",
 				cta: "Meetingräume ansehen",
 			},
 		},
@@ -176,7 +266,8 @@ export const de = {
 				sideLabel: "Work",
 				title: "Hot Desk",
 				description:
-					"Flexibler Einzelplatz in einem offenen Arbeitsbereich. Wähle einen Bereich und sichere dir danach einen freien Platz.",
+					"Flexibler Einzelplatz, wahlweise im offenen Bereich oder in unserer Pssst!-Zone. Ideal, wenn du spontan einen produktiven Platz zum Arbeiten brauchst.",
+				descriptionEmphasis: null,
 				selectionLabel: "Bereichsauswahl",
 				selectionHeading: "Wähle deinen Bereich",
 				cta: "Hot Desk buchen",
@@ -185,7 +276,8 @@ export const de = {
 				sideLabel: "Focus",
 				title: "Booth",
 				description:
-					"Kompakter Rückzugsort für konzentriertes Arbeiten, Telefonate oder kurze Fokus-Sessions.",
+					"Kleine Rückzugsorte für Fokus, Calls und Deep Work – perfekt, wenn du kurz abschalten, konzentriert arbeiten oder in Ruhe sprechen willst.",
+				descriptionEmphasis: null,
 				selectionLabel: "Raumauswahl",
 				selectionHeading: "Wähle deine Booth",
 				cta: "Booth buchen",
@@ -194,7 +286,8 @@ export const de = {
 				sideLabel: "Team",
 				title: "Team Room",
 				description:
-					"Raum für Teamarbeit, Abstimmungen und Workshops mit genug Platz für gemeinsame Sessions.",
+					"Raum für gemeinsames Arbeiten, kreative Sessions und die Umsetzung eurer Ideen – voll ausgestattet für produktive Team-Momente.",
+				descriptionEmphasis: null,
 				selectionLabel: "Raumauswahl",
 				selectionHeading: "Wähle deinen Team Room",
 				cta: "Team Room buchen",
@@ -203,7 +296,8 @@ export const de = {
 				sideLabel: "Meet",
 				title: "Meeting Room",
 				description:
-					"Großer Raum für Meetings, Präsentationen und Workshops mit mehr Personen.",
+					"Mehr Raum für interaktiven Austausch, Entscheidungen und Präsentationen – einladend, großzügig und gemacht für die guten Meetings.",
+				descriptionEmphasis: "guten",
 				selectionLabel: "Raumauswahl",
 				selectionHeading: "Wähle deinen Meeting Room",
 				cta: "Meeting Room buchen",
@@ -603,7 +697,8 @@ export const de = {
 				fields: {
 					name: "Name",
 					capacity: "Kapazität",
-					description: "Beschreibung",
+					descriptionDe: "Beschreibung (Deutsch)",
+					descriptionEn: "Description (English)",
 					unitType: "Unit-Typ",
 					area: "Area",
 					displayOrder: "Display Order",
@@ -618,7 +713,8 @@ export const de = {
 				reactivate: "Unit reaktivieren",
 				validation: {
 					name: "Name darf nicht leer sein.",
-					description: "Beschreibung darf nicht leer sein.",
+					descriptionDe: "Die deutsche Beschreibung darf nicht leer sein.",
+					descriptionEn: "Die englische Beschreibung darf nicht leer sein.",
 					capacity: "Kapazität muss größer als 0 sein.",
 					unitType: "Unit-Typ ist erforderlich.",
 					area: "Ein Hot Desk braucht eine Area.",

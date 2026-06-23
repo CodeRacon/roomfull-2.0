@@ -7,4 +7,5 @@ export type {
 	BookingOptionListResponse,
 	BookingOptionSlug,
 	BookingOptionStatus,
+	BookingOptionUnit,
 } from "./types";

@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "@/entities/session";
 import {
+	type AdminUnit,
 	type AdminUnitContextUnitType,
 	type AdminUnitStatusFilter,
 	getAdminUnitContext,
 	listAdminUnits,
-	type Unit,
 	type UnitTypeName,
 } from "@/entities/unit";
 import { AdminUnitFormPanel } from "@/features/admin/manage-unit";
@@ -46,8 +46,8 @@ export function AdminUnitsPageClient({ copy }: AdminUnitsPageClientProps) {
 	const [areas, setAreas] = useState<
 		Awaited<ReturnType<typeof getAdminUnitContext>>["areas"]
 	>([]);
-	const [units, setUnits] = useState<Unit[]>([]);
-	const [selectedUnit, setSelectedUnit] = useState<Unit | null>(null);
+	const [units, setUnits] = useState<AdminUnit[]>([]);
+	const [selectedUnit, setSelectedUnit] = useState<AdminUnit | null>(null);
 	const [formMode, setFormMode] = useState<"create" | "edit" | null>(null);
 	const [isContextLoading, setIsContextLoading] = useState(true);
 	const [isUnitsLoading, setIsUnitsLoading] = useState(true);
@@ -142,7 +142,7 @@ export function AdminUnitsPageClient({ copy }: AdminUnitsPageClientProps) {
 		setFormMode("create");
 	}
 
-	function openEditPanel(unit: Unit): void {
+	function openEditPanel(unit: AdminUnit): void {
 		setSelectedUnit(unit);
 		setFormMode("edit");
 	}
