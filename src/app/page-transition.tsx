@@ -247,11 +247,11 @@ export function PageTransitionProvider({
 				<div
 					aria-hidden="true"
 					className={clsx(
-						"pointer-events-none fixed inset-0 z-50 overflow-hidden transition-[clip-path,transform] duration-[520ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:hidden",
+						"pointer-events-none fixed inset-0 z-50 overflow-hidden transition-[clip-path,transform] duration-520 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:hidden",
 						transition.variant === "single-stripe" && "grid place-items-center",
 						transition.variant === "stripe-board" && "grid grid-cols-4",
 						transition.phase === "revealing" &&
-							"-translate-y-full duration-[430ms] ease-in",
+							"-translate-y-full duration-430 ease-in",
 						transition.variant === "single-stripe" && transition.colorClassName,
 					)}
 					style={overlayStyle}

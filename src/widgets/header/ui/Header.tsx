@@ -90,23 +90,14 @@ export function Header({
 	const focusClass =
 		"focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus";
 	const menuTriggerClass =
-		"border-primary! bg-background! text-primary! hover:bg-primary! hover:text-on-primary!";
+		"border-primary! bg-background! hover:bg-primary! hover:text-on-primary!";
 	const menuTriggerOpenClass = "bg-primary! text-on-primary!";
 
 	return (
 		<header
 			ref={headerRef}
-			className="app-header sticky top-0 z-30 flex h-[var(--app-header-height)] w-full shrink-0 items-center justify-center px-4 md:px-6"
+			className="app-header sticky top-0 z-30 flex h-(--app-header-height) w-full shrink-0 items-center justify-center px-4 md:px-6"
 		>
-			<div
-				aria-hidden="true"
-				className="pointer-events-none absolute inset-0 z-0 grid grid-cols-4"
-			>
-				<span className="border-background border-r bg-unit-hot-desk/15" />
-				<span className="border-background border-r bg-unit-booth/15" />
-				<span className="border-background border-r bg-unit-team-room/15" />
-				<span className="bg-unit-meeting-room/15" />
-			</div>
 			<nav className="relative z-10 flex h-full w-full max-w-7xl items-center justify-between gap-8">
 				<Link
 					href={appRoutes.home(locale)}

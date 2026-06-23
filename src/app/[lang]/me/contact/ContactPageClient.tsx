@@ -13,7 +13,7 @@ export function ContactPageClient({ copy }: ContactPageClientProps) {
 	return (
 		<RequireAuth allowedRoles={["CUSTOMER"]}>
 			<div className="mt-8 grid gap-4 md:grid-cols-[0.75fr_1fr]">
-				<Panel>
+				<Panel className="border-primary!">
 					<p className="text-sm font-medium text-muted">{copy.intro.eyebrow}</p>
 					<h2 className="mt-2 text-2xl font-black leading-tight">
 						{copy.intro.title}

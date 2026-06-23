@@ -117,7 +117,7 @@ export function CreateContactRequestForm({
 						{contactRequestTypeOptions.map((option) => (
 							<label
 								key={option.value}
-								className="flex min-h-11 cursor-pointer items-center gap-3 border-2 border-primary/40 bg-background px-3 py-2 text-sm font-black text-primary transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-on-primary hover:border-primary"
+								className="flex min-h-11 cursor-pointer items-center gap-3 border-2 border-primary bg-background px-3 py-2 text-sm font-black text-primary transition-colors has-checked:border-primary has-checked:bg-primary has-checked:text-on-primary hover:border-primary"
 							>
 								<input
 									type="radio"
@@ -125,7 +125,7 @@ export function CreateContactRequestForm({
 									value={option.value}
 									checked={type === option.value}
 									onChange={() => setType(option.value)}
-									className="size-4 accent-current"
+									className="size-4 accent-accent"
 								/>
 								<span>{copy.types[option.value]}</span>
 							</label>
@@ -147,14 +147,14 @@ export function CreateContactRequestForm({
 						onChange={(event) => setMessage(event.target.value)}
 						required
 						rows={7}
-						className="min-h-40 w-full resize-y border-2 border-primary/40 bg-background px-3 py-2 text-sm font-semibold leading-6 text-text transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70"
+						className="min-h-40 w-full resize-y border-2 border-primary bg-background px-3 py-2 text-sm font-semibold leading-6 text-text transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70"
 						placeholder={copy.messagePlaceholder}
 						disabled={isSubmitting}
 					/>
 				</Field>
 			</div>
 
-			<div className="flex justify-end border-t-2 border-primary! px-5 py-5">
+			<div className="flex justify-end px-5 pb-5">
 				<Button type="submit" disabled={isSubmitting}>
 					{isSubmitting ? copy.submitPending : copy.submit}
 				</Button>

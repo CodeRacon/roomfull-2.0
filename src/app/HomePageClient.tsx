@@ -345,7 +345,7 @@ export function HomePageClient({
 					<nav
 						ref={stripeNavRef}
 						aria-label={copy.bookingOptionsAriaLabel}
-						className="grid overflow-hidden sm:flex sm:h-[30rem] sm:w-full sm:justify-self-start min-[1328px]:h-[34rem] min-[1328px]:max-h-[calc(100svh-var(--app-home-content-offset))] min-[1328px]:min-h-[28rem]"
+						className="grid overflow-hidden sm:flex sm:h-120 sm:w-full sm:justify-self-start min-[1328px]:h-136 min-[1328px]:max-h-[calc(100svh-var(--app-home-content-offset))] min-[1328px]:min-h-112"
 						onBlur={(event) => {
 							if (
 								event.relatedTarget instanceof Node &&
@@ -402,7 +402,7 @@ export function HomePageClient({
 										activateBookingOption(option.key);
 									}}
 									className={clsx(
-										"relative grid min-h-24 min-w-0 grid-cols-[2.5rem_5.25rem_minmax(0,1fr)] items-center gap-x-2 overflow-hidden px-2 py-3 transition-[opacity,transform] duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus min-[530px]:grid-cols-[3.75rem_minmax(6rem,0.85fr)_minmax(10rem,1fr)_auto] min-[530px]:gap-x-3 min-[530px]:px-4 sm:block sm:min-h-0 sm:min-w-20 sm:basis-0 sm:p-0 sm:transition-[flex-grow,opacity,transform] sm:[flex-grow:var(--stripe-flex-grow)]",
+										"relative grid min-h-24 min-w-0 grid-cols-[2.5rem_5.25rem_minmax(0,1fr)] items-center gap-x-2 overflow-hidden px-2 py-3 transition-[opacity,transform] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus min-[530px]:grid-cols-[3.75rem_minmax(6rem,0.85fr)_minmax(10rem,1fr)_auto] min-[530px]:gap-x-3 min-[530px]:px-4 sm:block sm:min-h-0 sm:min-w-20 sm:basis-0 sm:p-0 sm:transition-[flex-grow,opacity,transform] sm:grow-(--stripe-flex-grow)",
 										getStripeClassName(option.key),
 									)}
 								>
@@ -418,7 +418,7 @@ export function HomePageClient({
 									</span>
 									<span
 										className={clsx(
-											"hidden text-4xl font-black text-white leading-none transition-[opacity,transform] duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:absolute sm:left-4 sm:top-1/2 sm:block sm:-translate-y-1/2 sm:rotate-180 sm:[writing-mode:vertical-rl] lg:text-5xl",
+											"hidden text-4xl font-black text-white leading-none transition-[opacity,transform] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:absolute sm:left-4 sm:top-1/2 sm:block sm:-translate-y-1/2 sm:rotate-180 sm:[writing-mode:vertical-rl] lg:text-5xl",
 											isActive ? "sm:opacity-0" : "sm:opacity-65",
 											!isActive &&
 												activeBookingOptionKey !== null &&
@@ -429,7 +429,7 @@ export function HomePageClient({
 									</span>
 									<span
 										className={clsx(
-											"hidden text-5xl font-black leading-none transition-[opacity,transform] duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:absolute sm:left-8 sm:top-8 sm:block",
+											"hidden text-5xl font-black leading-none transition-[opacity,transform] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none sm:absolute sm:left-8 sm:top-8 sm:block",
 											isActive ? "sm:opacity-100" : "sm:opacity-0",
 										)}
 									>
@@ -441,7 +441,7 @@ export function HomePageClient({
 									</span>
 									<span
 										className={clsx(
-											"flex min-w-0 w-full flex-col items-stretch gap-2 justify-self-stretch text-xs font-semibold transition-[opacity,transform] duration-[1000ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none min-[425px]:flex-row min-[425px]:items-center min-[425px]:justify-between min-[530px]:block min-[530px]:space-y-1 sm:absolute sm:bottom-8 sm:left-8 sm:w-72 sm:overflow-hidden sm:whitespace-nowrap sm:text-sm",
+											"flex min-w-0 w-full flex-col items-stretch gap-2 justify-self-stretch text-xs font-semibold transition-[opacity,transform] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none min-[425px]:flex-row min-[425px]:items-center min-[425px]:justify-between min-[530px]:block min-[530px]:space-y-1 sm:absolute sm:bottom-8 sm:left-8 sm:w-72 sm:overflow-hidden sm:whitespace-nowrap sm:text-sm",
 											isActive ? "sm:opacity-100" : "sm:opacity-0",
 										)}
 									>
