@@ -144,6 +144,7 @@ Bei Änderungen, Unsicherheiten oder Detailfragen prüfe zusätzlich:
 - [Frontend Conventions](.agents/skills/roomfull/frontend-conventions.md)
 - [Backend Conventions](.agents/skills/roomfull/backend-conventions.md)
 - [Project Decisions](.agents/skills/roomfull/project-decisions.md)
+- [Implementierte Architektur-Optimierungen](docs/architecture/implemented-optimizations.md)
 
 ## Tech Stack
 

@@ -1,4 +1,6 @@
-docs/
+docs/*
+!docs/architecture/
+!docs/architecture/implemented-optimizations.md
 !backend/docs/
 !backend/docs/**/*.md
 
