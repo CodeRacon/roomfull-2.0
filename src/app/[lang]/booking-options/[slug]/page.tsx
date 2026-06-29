@@ -237,10 +237,7 @@ export default async function BookingOptionPage({
 					</div>
 
 					<div className="mt-14 self-end lg:mt-20">
-						<p className="text-sm font-black uppercase tracking-[0.18em]">
-							{copy.eyebrow}
-						</p>
-						<h1 id="booking-option-title" className="type-display-page mt-3">
+						<h1 id="booking-option-title" className="type-display-page">
 							{optionCopy.title}
 						</h1>
 						<p className="mt-5 max-w-2xl text-base font-semibold leading-7 md:text-lg">
@@ -271,7 +268,7 @@ export default async function BookingOptionPage({
 					<div className="grid border-y-4 border-primary lg:grid-cols-[18rem_1fr]">
 						<div className="bg-primary p-5 text-on-primary md:p-6">
 							<p className="text-sm font-black uppercase tracking-[0.18em]">
-								{copy.selection.eyebrow}
+								{optionCopy.selectionEyebrow}
 							</p>
 							<h2 id="selection-title" className="type-section-title mt-5">
 								{optionCopy.selectionHeading}

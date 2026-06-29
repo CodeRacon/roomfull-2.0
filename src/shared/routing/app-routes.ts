@@ -180,6 +180,15 @@ export const appRoutes = {
 	myBookings(locale: Locale): string {
 		return localizedPath(locale, "/me/bookings");
 	},
+	myBookingShare(locale: Locale, bookingId: string): string {
+		return localizedPath(locale, `/me/bookings/${bookingId}/share`);
+	},
+	myTeams(locale: Locale): string {
+		return localizedPath(locale, "/me/teams");
+	},
+	myTeamDetail(locale: Locale, teamId: string): string {
+		return localizedPath(locale, `/me/teams/${teamId}`);
+	},
 	account(locale: Locale): string {
 		return localizedPath(locale, "/me/account");
 	},

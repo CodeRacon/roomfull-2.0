@@ -194,6 +194,14 @@ export function Header({
 										</MenuLinkItem>
 										{isCustomer && (
 											<MenuLinkItem
+												href={appRoutes.myTeams(locale)}
+												onClick={closeMenus}
+											>
+												{copy.teams}
+											</MenuLinkItem>
+										)}
+										{isCustomer && (
+											<MenuLinkItem
 												href={appRoutes.contact(locale)}
 												onClick={closeMenus}
 											>
@@ -303,6 +311,14 @@ export function Header({
 							>
 								{copy.account}
 							</MenuLinkItem>
+							{isCustomer && (
+								<MenuLinkItem
+									href={appRoutes.myTeams(locale)}
+									onClick={closeMenus}
+								>
+									{copy.teams}
+								</MenuLinkItem>
+							)}
 							{isCustomer && (
 								<MenuLinkItem
 									href={appRoutes.contact(locale)}

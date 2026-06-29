@@ -4,6 +4,7 @@ export {
 	getAdminBookingOperations,
 	getBookingAvailability,
 	getBookingContext,
+	getBookingShareContext,
 	getDirectBookingCalendarState,
 	listMyBookings,
 } from "./api";
@@ -29,6 +30,8 @@ export type {
 	BookingContextUnitType,
 	BookingListResponse,
 	BookingResponse,
+	BookingShareContext,
+	BookingShareContextResponse,
 	BookingStatus,
 	CreateAutoAssignBookingInput,
 	CreateBookingInput,

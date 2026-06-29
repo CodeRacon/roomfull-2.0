@@ -187,6 +187,18 @@ export function AccountPageClient({ copy, locale }: AccountPageClientProps) {
 						{user.role === "CUSTOMER" && (
 							<div className="mt-6 border-t-2 border-primary/20 pt-5">
 								<p className="text-sm font-medium text-muted">
+									{copy.teams.title}
+								</p>
+								<div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-b-2 border-primary/10 pb-5">
+									<p className="max-w-md text-sm font-semibold leading-6 text-muted">
+										{copy.teams.description}
+									</p>
+									<Anchor href={appRoutes.myTeams(locale)} variant="secondary">
+										{copy.teams.action}
+									</Anchor>
+								</div>
+
+								<p className="text-sm font-medium text-muted">
 									{copy.contact.title}
 								</p>
 								<div className="mt-3 flex flex-wrap items-center justify-between gap-3">

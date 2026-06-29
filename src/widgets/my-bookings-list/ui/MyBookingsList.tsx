@@ -1,5 +1,6 @@
 import ChevronRightIcon from "@public/icons/general/ic-chevron-right.svg";
 import { clsx } from "clsx";
+import Link from "next/link";
 import { useState } from "react";
 import {
 	type Booking,
@@ -16,6 +17,7 @@ import {
 } from "@/features/booking/cancel-booking";
 import { ExportBookingCalendarButton } from "@/features/booking/export-booking-calendar";
 import type { Dictionary, Locale } from "@/shared/i18n";
+import { appRoutes } from "@/shared/routing";
 import { Calendar, FeedbackBox } from "@/shared/ui";
 
 type MyBookingsListProps = {
@@ -220,6 +222,10 @@ function canCancelMyBooking(booking: MyBooking): boolean {
 	);
 }
 
+function canShareBooking(booking: MyBooking, tone: BookingCardTone): boolean {
+	return tone === "active" && booking.status === "ACTIVE";
+}
+
 function BookingMetaTag({ children }: { children: string }) {
 	return (
 		<span className="inline-flex min-h-8 items-center bg-primary/10 px-3 py-1.5 text-xs font-black text-primary">
@@ -337,6 +343,7 @@ function BookingCard({
 	const isPast = tone === "past";
 	const canExportCalendar = canExportBooking(booking, tone);
 	const canCancelBooking = canCancelMyBooking(booking);
+	const canShare = canShareBooking(booking, tone);
 
 	return (
 		<article
@@ -380,6 +387,14 @@ function BookingCard({
 				</div>
 
 				<div className="mt-auto flex flex-wrap gap-3 pt-8">
+					{canShare && (
+						<Link
+							href={appRoutes.myBookingShare(locale, booking.id)}
+							className={calendarExportButtonClassName}
+						>
+							{copy.actions.shareTeam}
+						</Link>
+					)}
 					{canExportCalendar && (
 						<ExportBookingCalendarButton
 							ariaLabel={copy.actions.downloadIcsAriaLabel}
@@ -415,6 +430,7 @@ function BookingListRow({
 	const isPast = tone === "past";
 	const canExportCalendar = canExportBooking(booking, tone);
 	const canCancelBooking = canCancelMyBooking(booking);
+	const canShare = canShareBooking(booking, tone);
 
 	return (
 		<article
@@ -453,8 +469,16 @@ function BookingListRow({
 						</BookingMetaTag>
 						{isPast && <BookingMetaTag>{copy.status.past}</BookingMetaTag>}
 					</div>
-					{(canExportCalendar || canCancelBooking) && (
+					{(canShare || canExportCalendar || canCancelBooking) && (
 						<div className="flex shrink-0 flex-wrap items-center gap-2">
+							{canShare && (
+								<Link
+									href={appRoutes.myBookingShare(locale, booking.id)}
+									className={calendarExportButtonClassName}
+								>
+									{copy.actions.shareTeamShort}
+								</Link>
+							)}
 							{canExportCalendar && (
 								<ExportBookingCalendarButton
 									ariaLabel={copy.actions.downloadIcsAriaLabel}

@@ -235,6 +235,10 @@ export async function apiDelete<TResponse>(
 		throw new ApiRequestError(message, response.status);
 	}
 
+	if (response.status === 204) {
+		return undefined as TResponse;
+	}
+
 	const data = (await response.json()) as TResponse;
 	return data;
 }

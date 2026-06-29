@@ -14,6 +14,8 @@ export type {
 	BookingContextUnitType,
 	BookingListResponse,
 	BookingResponse,
+	BookingShareContext,
+	BookingShareContextResponse,
 	BookingStatus,
 	CreateAutoAssignBookingInput,
 	CreateBookingInput,

@@ -7,8 +7,9 @@ export const en = {
 	},
 	navigation: {
 		homeAriaLabel: "Go to homepage",
-		bookingOptions: "Book",
+		bookingOptions: "Find a space",
 		myBookings: "My bookings",
+		teams: "My teams",
 		admin: "Admin",
 		adminDashboard: "Admin dashboard",
 		profile: "Profile",
@@ -141,12 +142,12 @@ export const en = {
 				"Find the right coworking setup for focus, calls, or teamwork and start booking in a few steps.",
 		},
 		hero: {
-			titleLines: ["Book", "Coworking", "Spaces"],
+			titleLines: ["Room", "for great", "work."],
 			intro:
-				"Find the right setup for focused work, calls, or teamwork. Choose a booking option, check availability, and secure your time slot.",
+				"Whether it’s deep work, a team session, or an important meeting, RoomFull has the space that fits your day.",
 		},
 		ctas: {
-			bookingOptions: "Book now",
+			bookingOptions: "Find your space",
 			myBookings: "My bookings",
 			login: "Sign in",
 		},
@@ -187,13 +188,12 @@ export const en = {
 	},
 	bookingOptionsPage: {
 		metadata: {
-			title: "Choose your work mode | RoomFull 2.0",
-			description:
-				"Choose between hot desks, booths, team rooms, and meeting rooms, then continue with the right booking option.",
+			title: "Find a coworking space | RoomFull 2.0",
+			description: "Find the right hot desk, booth, or room for your workday.",
 		},
-		title: "Choose your work mode",
+		title: "What do you need for your day?",
 		intro:
-			"Whether you need a focused desk, a quiet booth, or a room for your team: compare the options, then open the right selection.",
+			"Whether you want to focus, step away for a call, or get together with your team, you’ll find the right space for your plans here.",
 		listAriaLabel: "Compare booking options",
 		emptyState: "No bookable desks or rooms are available right now.",
 		options: {
@@ -247,17 +247,15 @@ export const en = {
 		metadata: {
 			titleTemplate: "Book {title} | RoomFull 2.0",
 			descriptionTemplate:
-				"Choose a concrete option for {title}, then start your booking for the active time slot.",
+				"Explore available areas or rooms for {title} and start your booking.",
 		},
 		backToOptions: "Back to overview",
-		eyebrow: "Booking option",
 		stats: {
-			selection: "Selection",
+			selection: "Booking",
 			duration: "Duration",
 			available: "Available",
 		},
 		selection: {
-			eyebrow: "Concrete selection",
 			areaDescriptionFallback: "An area with bookable single desks.",
 			emptyState:
 				"There are currently no bookable desks or rooms for this option.",
@@ -269,8 +267,9 @@ export const en = {
 				description:
 					"A flexible single desk, either in the open area or in our quiet zone. Ideal when you need a productive place to work at short notice.",
 				descriptionEmphasis: null,
-				selectionLabel: "Area selection",
-				selectionHeading: "Choose your area",
+				selectionLabel: "Choose an area",
+				selectionEyebrow: "Your environment",
+				selectionHeading: "Where would you like to work?",
 				cta: "Book hot desk",
 			},
 			BOOTH: {
@@ -279,8 +278,9 @@ export const en = {
 				description:
 					"Small retreats for focus, calls, and deep work – perfect when you want to switch off for a moment, work with full concentration, or talk in peace.",
 				descriptionEmphasis: null,
-				selectionLabel: "Room selection",
-				selectionHeading: "Choose your booth",
+				selectionLabel: "Choose your room",
+				selectionEyebrow: "Our booths",
+				selectionHeading: "Which booth works for you?",
 				cta: "Book booth",
 			},
 			TEAM_ROOM: {
@@ -289,8 +289,9 @@ export const en = {
 				description:
 					"A room for working together, creative sessions, and bringing your ideas to life – fully equipped for productive team moments.",
 				descriptionEmphasis: null,
-				selectionLabel: "Room selection",
-				selectionHeading: "Choose your team room",
+				selectionLabel: "Choose your room",
+				selectionEyebrow: "Our rooms",
+				selectionHeading: "Which room works for your team?",
 				cta: "Book team room",
 			},
 			MEETING_ROOM: {
@@ -299,8 +300,9 @@ export const en = {
 				description:
 					"More room for interactive exchange, decisions, and presentations – welcoming, spacious, and made for the good meetings.",
 				descriptionEmphasis: "good",
-				selectionLabel: "Room selection",
-				selectionHeading: "Choose your meeting room",
+				selectionLabel: "Choose your room",
+				selectionEyebrow: "Our rooms",
+				selectionHeading: "Which room works for you?",
 				cta: "Book meeting room",
 			},
 		},
@@ -333,25 +335,25 @@ export const en = {
 	},
 	createBooking: {
 		page: {
-			title: "Create booking",
-			intro: "Choose the date and time for your concrete bookable unit.",
-			loadingContext: "Loading booking context...",
+			title: "Your booking",
+			intro: "Choose a date and time—we’ll guide you through the rest.",
+			loadingContext: "Loading your selection...",
 		},
 		gate: {
-			invalidContext: "Invalid booking context.",
-			loadingContext: "Loading booking context...",
-			preparingContext: "Preparing booking context...",
+			invalidContext: "This selection is invalid.",
+			loadingContext: "Loading your selection...",
+			preparingContext: "Preparing your selection...",
 			contextUnavailable: "This offer is no longer bookable.",
-			contextError: "Booking context could not be loaded.",
+			contextError: "Your selection could not be loaded.",
 			unknownError: "An unknown error occurred.",
 		},
 		context: {
-			eyebrow: "Booking context",
+			eyebrow: "Your selection",
 			selection: "Selection",
 			capacity: "Capacity",
 			duration: "Duration",
-			directMode: "Direct unit",
-			autoAssignMode: "Auto-assign",
+			directMode: "Room selected by you",
+			autoAssignMode: "We’ll choose a desk for you",
 			fallbackAreaDescription: "Hot-desk area with bookable single desks.",
 			sideLabels: {
 				HOT_DESK: "Areas",
@@ -369,9 +371,8 @@ export const en = {
 		},
 		calendar: {
 			sectionEyebrow: "Date",
-			title: "Choose your weekday",
-			intro:
-				"Choose an available weekday. Weekends and past days cannot be booked.",
+			title: "When would you like to come?",
+			intro: "Choose an available day.",
 			loadingLabel: "Loading occupancy...",
 			previousMonth: "Back",
 			nextMonth: "Next",
@@ -408,7 +409,7 @@ export const en = {
 			},
 		},
 		submit: {
-			label: "Create booking",
+			label: "Book now",
 			pending: "Creating booking...",
 		},
 		errors: {
@@ -425,7 +426,7 @@ export const en = {
 		page: {
 			title: "My bookings",
 			intro:
-				"Keep track of upcoming visits, calendar downloads, and cancellations in one place.",
+				"Upcoming, past, or cancelled: find all your bookings at a glance.",
 			preparing: "Preparing your bookings...",
 		},
 		client: {
@@ -452,6 +453,8 @@ export const en = {
 			listCrossDay: "{start} to {end}",
 		},
 		actions: {
+			shareTeam: "Share with team",
+			shareTeamShort: "Share team",
 			downloadIcs: "Download .ics",
 			downloadIcsShort: ".ics",
 			downloadIcsAriaLabel: "Download booking as ICS",
@@ -491,6 +494,89 @@ export const en = {
 			bookingsMany: "bookings",
 		},
 	},
+	bookingShare: {
+		page: {
+			title: "Share booking with team",
+			intro:
+				"Choose a team, adjust recipients if needed, then copy the BCC list, subject, message, or the calendar file.",
+			back: "Back to my bookings",
+		},
+		loading: {
+			page: "Loading share data...",
+			team: "Loading team contacts...",
+		},
+		errors: {
+			notFound:
+				"This booking does not exist or does not belong to your account.",
+			conflict: "This booking is no longer eligible for a team share.",
+			teamLoad: "The contacts for this team could not be loaded.",
+			fallback: "The share page could not be loaded.",
+		},
+		summary: {
+			eyebrow: "Booking context",
+			unitType: "Type: {unitType}",
+			capacity: "Capacity: {capacity}",
+			time: "Time: {time}",
+		},
+		notice: {
+			title: "Privacy and product boundary",
+			description:
+				"RoomFull does not send anything itself. Paste copied addresses into BCC in your mail tool and attach the calendar file manually.",
+		},
+		selection: {
+			title: "Choose team and recipients",
+			description:
+				"Empty teams stay visible but cannot be used for shares yet. Your personal message stays when you switch teams.",
+			noTeams:
+				"You have not created a team yet. Create a private contact group first.",
+			openTeams: "Open my teams",
+			manageEmptyTeam: "Manage empty team",
+			select: "Choose team",
+			selected: "Selected",
+			emptyTeam: "0 contacts",
+			memberOne: "1 contact",
+			membersMany: "{count} contacts",
+			membersTitle: "Recipients from {teamName}",
+			membersDescription:
+				"After choosing a team, all contacts are preselected. You can deselect them for this share.",
+			messageLabel: "Personal message",
+			messagePlaceholder: "Optional: a short personal note for your team.",
+			messageHint: "{remaining} characters remaining.",
+			capacityWarning:
+				"Warning: {selected} selected contacts for capacity {capacity}. This does not block the share.",
+		},
+		package: {
+			title: "Share package",
+			description:
+				"Copy each part separately or download the calendar file. Without selected recipients, all actions stay disabled.",
+			copyBcc: "Copy BCC addresses",
+			copySubject: "Copy subject",
+			copyMessage: "Copy message",
+			downloadIcs: "Download calendar file",
+			bccHint:
+				"Please place recipients in BCC instead of visible To or CC fields.",
+			bccSuccess: "BCC addresses copied.",
+			subjectSuccess: "Subject copied.",
+			messageSuccess: "Message copied.",
+			icsSuccess: "Calendar file created.",
+			copyFallback: "Copying did not work. Please try again or copy manually.",
+			greeting: "Hello everyone,",
+			bookingLine:
+				"I would like to share this RoomFull booking with you: {unitName} ({unitType}).",
+			timeLine: "Time: {time}",
+			calendarHint:
+				"Please attach the calendar file manually to your invitation if needed.",
+			subject: "RoomFull: {unitName} ({unitType}) on {time}",
+			dateTime: {
+				locale: "en-US",
+				sameDay: "{date} from {start} to {end}",
+			},
+			ics: {
+				summary: "RoomFull: {unitName} ({unitType})",
+				description: "Shared event from RoomFull\\nTime: {time}",
+			},
+		},
+	},
 	account: {
 		page: {
 			title: "My account",
@@ -511,6 +597,12 @@ export const en = {
 			description: "Contact us directly from your customer account.",
 			action: "Get in touch",
 		},
+		teams: {
+			title: "Private team contacts",
+			description:
+				"Create contact groups for recurring booking shares and manage them in one place.",
+			action: "Open my teams",
+		},
 		nextBooking: {
 			title: "Next booking",
 			loading: "Loading your next booking...",
@@ -529,28 +621,27 @@ export const en = {
 			title: "Contact",
 		},
 		intro: {
-			eyebrow: "Customer self-service",
-			title: "Questions, feedback, and criticism about RoomFull.",
+			eyebrow: "Your direct line to RoomFull",
+			title: "How can we help?",
 			description:
-				"Tell us briefly what you need. Your message will be linked to your customer account.",
+				"Whether you have a question about a booking, some feedback, or something isn’t working as it should, send us a message. We’re here to help.",
 		},
 		form: {
-			title: "Get in touch",
-			description:
-				"Tell us what matters regarding your booking or your account.",
-			typeLabel: "Request type",
+			title: "Send us a message",
+			description: "The more detail you share, the better we can help.",
+			typeLabel: "What’s this about?",
 			types: {
 				QUESTION: "Question",
 				FEEDBACK: "Feedback",
 				CRITICISM: "Criticism",
 			},
 			messageLabel: "Message",
-			messagePlaceholder: "What is this about?",
+			messagePlaceholder: "Tell us how we can help.",
 			messageRequired: "The message must not be empty.",
 			emptyMessage: "Please briefly describe what this is about.",
 			submit: "Send message",
 			submitPending: "Sending...",
-			success: "Your message has been received.",
+			success: "Thank you! We’ve received your message.",
 			errors: {
 				badRequest: "Please check your request type and message.",
 				forbidden: "You cannot send a message with this account.",
@@ -558,19 +649,166 @@ export const en = {
 			},
 		},
 	},
+	myTeams: {
+		page: {
+			title: "My teams",
+			intro:
+				"Manage private contact groups for recurring booking shares. RoomFull only stores your contacts' names and email addresses.",
+			preparing: "Preparing teams...",
+		},
+		client: {
+			loading: "Loading your teams...",
+			loadError: "Your teams could not be loaded.",
+		},
+		intro: {
+			eyebrow: "Private contact groups",
+			title: "Who do you want to invite faster next time?",
+			description:
+				"A team in RoomFull is only a personal contact list for you. It is not a shared organization and does not trigger automatic emails.",
+		},
+		notice: {
+			title: "Responsible contact data use",
+			description:
+				"Only use fictitious demo contacts in the portfolio instance. For local tests, only use addresses you control yourself.",
+		},
+		form: {
+			title: "Create a new team",
+			description:
+				"Start with a team name only. You can add contacts in team management in the next step.",
+			nameLabel: "Team name",
+			namePlaceholder: "For example Workshop Crew",
+			nameRequired: "Please enter a team name.",
+			submit: "Create team",
+			submitPending: "Creating...",
+			success: "Team created.",
+			errors: {
+				badRequest: "Please check the team name.",
+				conflict:
+					"This team name already exists, or your team limit has been reached.",
+				forbidden: "This account cannot manage teams.",
+				fallback: "The team could not be created.",
+			},
+		},
+		list: {
+			title: "Your teams",
+			description:
+				"Teams are sorted alphabetically in the active language. Empty teams can be filled with contacts later.",
+			empty:
+				"You have not created a team yet. Start with a small contact group for recurring invitations.",
+			memberOne: "1 contact",
+			membersMany: "{count} contacts",
+			openTeam: "Manage",
+		},
+		detail: {
+			page: {
+				title: "Manage team",
+				intro:
+					"Maintain your team's name and contacts. RoomFull only stores the data you need for later booking shares.",
+				back: "Back to my teams",
+			},
+			client: {
+				loading: "Loading team...",
+				loadError: "This team could not be loaded.",
+				notFound:
+					"This team does not exist or does not belong to your account.",
+			},
+			summary: {
+				eyebrow: "Your team",
+				memberCount: "{count} contacts in this team",
+			},
+			notice: {
+				title: "Responsible contact data use",
+				description:
+					"Only use fictitious demo contacts in the portfolio instance. For local tests, only use addresses you control yourself.",
+			},
+			settings: {
+				title: "Team settings",
+				description:
+					"Rename your team or delete it permanently. Deleting the team also removes all related contacts.",
+				rename: {
+					nameLabel: "Team name",
+					namePlaceholder: "For example Workshop Crew",
+					nameRequired: "Please enter a team name.",
+					action: "Save team name",
+					pending: "Saving...",
+					success: "Team name saved.",
+					errors: {
+						badRequest: "Please check the team name.",
+						conflict:
+							"This team name already exists, or your team limit has been reached.",
+						forbidden: "This account cannot edit this team.",
+						notFound:
+							"This team does not exist or does not belong to your account.",
+						fallback: "The team name could not be saved.",
+					},
+				},
+				delete: {
+					action: "Delete team",
+					pending: "Deleting...",
+					confirmation:
+						"This team and all contacts inside it will be permanently deleted. Continue?",
+					errors: {
+						forbidden: "This account cannot delete this team.",
+						notFound:
+							"This team does not exist or does not belong to your account.",
+						fallback: "The team could not be deleted.",
+					},
+				},
+			},
+			members: {
+				title: "Contacts",
+				description:
+					"Add contacts for recurring booking shares. Contacts are sorted alphabetically by name and then by email.",
+				required: "Please fill out both name and email.",
+				empty:
+					"This team is still empty. Add your first contact so you can use it later for team shares.",
+				create: {
+					nameLabel: "Name",
+					namePlaceholder: "For example Anna Example",
+					emailLabel: "Email",
+					emailPlaceholder: "anna@example.com",
+					action: "Add contact",
+					pending: "Adding...",
+					success: "Contact added.",
+				},
+				update: {
+					start: "Edit",
+					cancel: "Cancel",
+					nameLabel: "Name",
+					emailLabel: "Email",
+					action: "Save changes",
+					pending: "Saving...",
+					success: "Contact saved.",
+				},
+				delete: {
+					action: "Remove",
+					pending: "Removing...",
+					confirmation: "Remove contact “{name}”?",
+					success: "Contact “{name}” removed.",
+				},
+				errors: {
+					badRequest: "Please check the name and email.",
+					conflict:
+						"This email already exists in this team, or the contact limit has been reached.",
+					forbidden: "This account cannot edit this team.",
+					notFound: "This team or contact does not exist for your account.",
+					fallback: "The contact change could not be saved.",
+				},
+			},
+		},
+	},
 	adminShell: {
 		page: {
 			eyebrow: "Admin",
 			title: "Admin dashboard",
-			description:
-				"Manage booking operations and the inventory available for booking.",
+			description: "Bookings, demand, and inventory at a glance.",
 		},
 		navigation: {
 			ariaLabel: "Admin navigation",
 			dashboard: "Dashboard",
-			bookings: "Booking operations",
-			units: "Unit inventory",
-			contactRequests: "Contact inbox",
+			bookings: "Bookings",
+			units: "Rooms & desks",
+			contactRequests: "Contact requests",
 			unreadContactRequests: "Unread contact requests:",
 		},
 		analytics: {
@@ -596,9 +834,8 @@ export const en = {
 		bookings: {
 			page: {
 				eyebrow: "Admin",
-				title: "Booking operations",
-				description:
-					"Review upcoming, current, and completed bookings in daily operations.",
+				title: "Bookings",
+				description: "All bookings at a glance.",
 			},
 			filters: {
 				today: "Today",
@@ -652,9 +889,8 @@ export const en = {
 		units: {
 			page: {
 				eyebrow: "Admin",
-				title: "Unit inventory",
-				description:
-					"Manage active and deactivated bookable units for booking operations.",
+				title: "Rooms & desks",
+				description: "Manage bookable rooms and workspaces.",
 			},
 			newUnit: "New unit",
 			loading: "Loading units...",
@@ -664,8 +900,8 @@ export const en = {
 				listFallback: "The units could not be loaded.",
 			},
 			table: {
-				title: "Unit inventory",
-				description: "Filter by status, unit type, or name.",
+				title: "Rooms & desks",
+				description: "Filter by status, type, or name.",
 				unitOne: "1 unit",
 				unitsMany: "{count} units",
 				status: {
@@ -732,9 +968,8 @@ export const en = {
 		contactInbox: {
 			page: {
 				eyebrow: "Admin",
-				title: "Contact inbox",
-				description:
-					"Read incoming customer messages, filter by request type, and mark handled requests as read.",
+				title: "Contact requests",
+				description: "Read and manage incoming messages.",
 			},
 			summary: {
 				current: "Current",

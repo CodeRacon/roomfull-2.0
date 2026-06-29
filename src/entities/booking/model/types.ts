@@ -154,6 +154,26 @@ export type AdminBookingOperations = {
 
 export type BookingResponse = { booking: Booking };
 
+export type BookingShareContext = {
+	booking: {
+		id: string;
+		startTime: string;
+		endTime: string;
+	};
+	unit: {
+		id: string;
+		name: string;
+		capacity: number;
+		unitType: {
+			name: UnitTypeName;
+		};
+	};
+};
+
+export type BookingShareContextResponse = {
+	shareContext: BookingShareContext;
+};
+
 export type CreateDirectBookingInput = {
 	unitId: string;
 	date: string;
