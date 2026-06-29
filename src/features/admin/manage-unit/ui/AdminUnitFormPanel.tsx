@@ -13,7 +13,16 @@ import {
 } from "@/entities/unit";
 import { ApiRequestError } from "@/shared/api";
 import type { Dictionary } from "@/shared/i18n";
-import { Button, FeedbackBox, Field, Panel, TextInput } from "@/shared/ui";
+import {
+	Button,
+	Checkbox,
+	FeedbackBox,
+	Field,
+	Panel,
+	Select,
+	Textarea,
+	TextInput,
+} from "@/shared/ui";
 
 type AdminUnitFormMode = "create" | "edit";
 
@@ -333,11 +342,13 @@ export function AdminUnitFormPanel({
 						htmlFor="admin-unit-description-de"
 						errorText={errors.descriptionDe}
 					>
-						<textarea
+						<Textarea
 							id="admin-unit-description-de"
-							className="min-h-28 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-xs transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-1 focus-visible:outline-focus"
+							name="descriptionDe"
+							autoComplete="off"
+							className="min-h-28"
 							value={formState.descriptionDe}
-							aria-invalid={Boolean(errors.descriptionDe) || undefined}
+							invalid={Boolean(errors.descriptionDe)}
 							onChange={(event) =>
 								updateField("descriptionDe", event.target.value)
 							}
@@ -348,11 +359,13 @@ export function AdminUnitFormPanel({
 						htmlFor="admin-unit-description-en"
 						errorText={errors.descriptionEn}
 					>
-						<textarea
+						<Textarea
 							id="admin-unit-description-en"
-							className="min-h-28 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text shadow-xs transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-1 focus-visible:outline-focus"
+							name="descriptionEn"
+							autoComplete="off"
+							className="min-h-28"
 							value={formState.descriptionEn}
-							aria-invalid={Boolean(errors.descriptionEn) || undefined}
+							invalid={Boolean(errors.descriptionEn)}
 							onChange={(event) =>
 								updateField("descriptionEn", event.target.value)
 							}
@@ -366,45 +379,43 @@ export function AdminUnitFormPanel({
 						htmlFor="admin-unit-type"
 						errorText={errors.unitTypeId}
 					>
-						<select
+						<Select
 							id="admin-unit-type"
-							className="min-h-10 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+							name="unitTypeId"
 							value={formState.unitTypeId}
-							aria-invalid={Boolean(errors.unitTypeId) || undefined}
-							onChange={(event) =>
-								updateField("unitTypeId", event.target.value)
-							}
-						>
-							{unitTypes.map((unitType) => (
-								<option key={unitType.id} value={unitType.id}>
-									{formatUnitTypeName(unitType.name)}
-								</option>
-							))}
-						</select>
+							invalid={Boolean(errors.unitTypeId)}
+							options={unitTypes.map((unitType) => ({
+								label: formatUnitTypeName(unitType.name),
+								value: unitType.id,
+							}))}
+							onValueChange={(value) => updateField("unitTypeId", value)}
+						/>
 					</Field>
 					<Field
 						label={copy.fields.area}
 						htmlFor="admin-unit-area"
 						errorText={errors.areaId}
 					>
-						<select
+						<Select
 							id="admin-unit-area"
-							className="min-h-10 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+							name="areaId"
 							value={formState.areaId}
-							aria-invalid={Boolean(errors.areaId) || undefined}
-							onChange={(event) => updateField("areaId", event.target.value)}
-						>
-							<option value="">
-								{selectedUnitTypeName === "HOT_DESK"
-									? copy.areaSelect
-									: copy.noArea}
-							</option>
-							{areas.map((area) => (
-								<option key={area.id} value={area.id}>
-									{area.name}
-								</option>
-							))}
-						</select>
+							invalid={Boolean(errors.areaId)}
+							options={[
+								{
+									value: "",
+									label:
+										selectedUnitTypeName === "HOT_DESK"
+											? copy.areaSelect
+											: copy.noArea,
+								},
+								...areas.map((area) => ({
+									label: area.name,
+									value: area.id,
+								})),
+							]}
+							onValueChange={(value) => updateField("areaId", value)}
+						/>
 					</Field>
 					<Field
 						label={copy.fields.displayOrder}
@@ -426,17 +437,12 @@ export function AdminUnitFormPanel({
 				</div>
 
 				<Field>
-					<label className="inline-flex items-center gap-3 text-sm font-semibold text-text">
-						<input
-							type="checkbox"
-							className="size-4 rounded border-border text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-							checked={formState.isActive}
-							onChange={(event) =>
-								updateField("isActive", event.target.checked)
-							}
-						/>
-						{copy.fields.active}
-					</label>
+					<Checkbox
+						name="isActive"
+						label={copy.fields.active}
+						checked={formState.isActive}
+						onChange={(event) => updateField("isActive", event.target.checked)}
+					/>
 				</Field>
 
 				<div className="flex flex-wrap items-center justify-between gap-3 border-border border-t pt-5">

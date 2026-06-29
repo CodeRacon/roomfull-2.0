@@ -7,7 +7,7 @@ import type {
 } from "@/entities/unit";
 import { formatUnitTypeName } from "@/entities/unit";
 import type { Dictionary } from "@/shared/i18n";
-import { Badge, FeedbackBox, TextInput } from "@/shared/ui";
+import { Badge, FeedbackBox, Select, TextInput } from "@/shared/ui";
 
 type AdminUnitsTableProps = {
 	copy: Dictionary["adminWorkspaces"]["units"]["table"];
@@ -89,7 +89,7 @@ export function AdminUnitsTable({
 			</div>
 			<div className="border-primary border-x-2 bg-background p-5">
 				<div className="grid w-full gap-3 lg:grid-cols-[auto_13rem_16rem] lg:items-end">
-					<div className="grid grid-cols-3 border-2 border-primary">
+					<div className="grid h-14 grid-cols-3 border-2 border-primary">
 						{statusFilters.map((statusFilter) => {
 							const isSelected = filters.status === statusFilter.value;
 
@@ -98,7 +98,7 @@ export function AdminUnitsTable({
 									key={statusFilter.value}
 									type="button"
 									className={clsx(
-										"h-14 border-primary border-l-2 px-3 py-2 text-sm font-black transition-colors first:border-l-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus",
+										"h-full border-primary border-l-2 px-3 py-2 text-sm font-black transition-colors first:border-l-0 focus-visible:z-10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-focus",
 										isSelected
 											? getStatusFilterSelectedClassName(statusFilter.value)
 											: "bg-background text-primary hover:bg-primary/10",
@@ -111,28 +111,32 @@ export function AdminUnitsTable({
 							);
 						})}
 					</div>
-					<label className="block">
-						<span className="mb-1 block text-xs font-semibold text-muted">
+					<div className="block">
+						<label
+							htmlFor="admin-unit-type-filter"
+							className="mb-1 block text-xs font-semibold text-muted"
+						>
 							{copy.unitType}
-						</span>
-						<select
-							className="h-14 w-full border-2 border-primary/40 bg-background px-3 py-2 text-sm font-semibold text-text transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+						</label>
+						<Select
+							id="admin-unit-type-filter"
 							name="admin-unit-type-filter"
 							value={filters.unitType}
-							onChange={(event) =>
+							options={[
+								{ label: copy.allUnitTypes, value: "all" },
+								...unitTypes.map((unitType) => ({
+									label: formatUnitTypeName(unitType.name),
+									value: unitType.name,
+								})),
+							]}
+							className="h-14"
+							onValueChange={(value) =>
 								updateFilters({
-									unitType: event.target.value as UnitTypeName | "all",
+									unitType: value as UnitTypeName | "all",
 								})
 							}
-						>
-							<option value="all">{copy.allUnitTypes}</option>
-							{unitTypes.map((unitType) => (
-								<option key={unitType.id} value={unitType.name}>
-									{formatUnitTypeName(unitType.name)}
-								</option>
-							))}
-						</select>
-					</label>
+						/>
+					</div>
 					<div className="block">
 						<label
 							htmlFor="admin-unit-search"

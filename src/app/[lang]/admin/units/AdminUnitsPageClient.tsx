@@ -51,6 +51,7 @@ export function AdminUnitsPageClient({ copy }: AdminUnitsPageClientProps) {
 	const [formMode, setFormMode] = useState<"create" | "edit" | null>(null);
 	const [isContextLoading, setIsContextLoading] = useState(true);
 	const [isUnitsLoading, setIsUnitsLoading] = useState(true);
+	const [hasLoadedUnits, setHasLoadedUnits] = useState(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
 	useEffect(() => {
@@ -104,6 +105,7 @@ export function AdminUnitsPageClient({ copy }: AdminUnitsPageClientProps) {
 			});
 
 			setUnits(adminUnits);
+			setHasLoadedUnits(true);
 		} catch (error) {
 			if (error instanceof ApiRequestError) {
 				if (error.status === 401) {
@@ -135,7 +137,7 @@ export function AdminUnitsPageClient({ copy }: AdminUnitsPageClientProps) {
 		void loadUnits();
 	}, [loadUnits]);
 
-	const isLoading = isContextLoading || isUnitsLoading;
+	const isInitialLoading = isContextLoading || !hasLoadedUnits;
 
 	function openCreatePanel(): void {
 		setSelectedUnit(null);
@@ -175,13 +177,15 @@ export function AdminUnitsPageClient({ copy }: AdminUnitsPageClientProps) {
 					unitTypes={unitTypes}
 				/>
 			)}
-			{isLoading && <Panel className="mt-8">{copy.loading}</Panel>}
+			{(isInitialLoading || isUnitsLoading) && (
+				<Panel className="mt-8">{copy.loading}</Panel>
+			)}
 			{errorMessage && (
 				<FeedbackBox variant="error" className="mt-8">
 					{errorMessage}
 				</FeedbackBox>
 			)}
-			{!isLoading && !errorMessage && (
+			{!isInitialLoading && !errorMessage && (
 				<AdminUnitsTable
 					copy={copy.table}
 					filters={filters}

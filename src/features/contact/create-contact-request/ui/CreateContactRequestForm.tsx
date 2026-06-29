@@ -8,7 +8,7 @@ import {
 import { useSession } from "@/entities/session";
 import { ApiRequestError } from "@/shared/api";
 import type { Dictionary } from "@/shared/i18n";
-import { Button, FeedbackBox, Field } from "@/shared/ui";
+import { Button, FeedbackBox, Field, Textarea } from "@/shared/ui";
 
 type FormSubmitHandler = NonNullable<
 	ComponentPropsWithoutRef<"form">["onSubmit"]
@@ -140,14 +140,15 @@ export function CreateContactRequestForm({
 						isMessageInvalid && errorMessage ? copy.messageRequired : undefined
 					}
 				>
-					<textarea
+					<Textarea
 						id="contact-message"
 						name="message"
+						autoComplete="off"
 						value={message}
 						onChange={(event) => setMessage(event.target.value)}
 						required
 						rows={7}
-						className="min-h-40 w-full resize-y border-2 border-primary bg-background px-3 py-2 text-sm font-semibold leading-6 text-text transition-colors placeholder:text-muted hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted disabled:opacity-70"
+						className="border-primary"
 						placeholder={copy.messagePlaceholder}
 						disabled={isSubmitting}
 					/>
