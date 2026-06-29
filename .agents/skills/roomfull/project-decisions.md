@@ -48,9 +48,9 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - `/booking-options` bleibt eine schlanke Kategorie-Übersicht; konkrete Area- oder Unit-Auswahl passiert auf `/booking-options/[slug]`
 - Angebots-Teaser auf der Home Page verlinken auf `/booking-options/[slug]`, nicht direkt auf `/bookings/new`
 - Die Home Page nennt diese Teaser in der UI `Arbeitsbereiche`; fachlich bleiben es `BookingOption`s
-- Die Home Page nutzt `BookingOption`s als Datenbasis, präsentiert sie aber kuratiert mit service-orientierten Texten und Medien
+- Die Home Page nutzt `BookingOption`s als Datenbasis, präsentiert sie aber kuratiert mit service-orientierten Texten und eigenen SVG-Icons
 - Varianten werden auf der Home Page nur angeteasert; konkrete Area- oder Unit-Auswahl passiert auf `/booking-options/[slug]`
-- Die Home Page braucht visuelle Arbeitsbereich-Signale; der erste Slice darf vorhandene Assets nutzen und soll spätere Bilder pro Arbeitsbereich ermöglichen
+- Die Home Page nutzt eigene SVG-Icons als visuelle Arbeitsbereich-Signale
 - Die Home Page nutzt auth-aware CTAs:
   - anonym: `Jetzt buchen`, `Registrieren`, `Einloggen`
   - angemeldet: `Jetzt buchen`, `Meine Buchungen`
@@ -138,7 +138,7 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 - Admin darf Bookings lesen und ebenfalls Bookings anlegen
 - Admin nutzt für operative oder testweise Booking-Erstellung bewusst den normalen Customer-Flow über `/booking-options`
 - Es gibt in V1 keinen separaten Admin-Einstieg für "Buchungsflow prüfen"
-- kein Admin-Fremd-Storno in V1 (späterer Ausbau)
+- kein Admin-Fremd-Storno
 
 ## Fachliche Wahrheit
 
@@ -159,16 +159,16 @@ Diese Datei hält bewusste Produkt- und Architekturentscheidungen für RoomFull 
 
 ## Admin Analytics Charting
 
-- V2-Analytics auf `/admin` nutzt Recharts direkt als Chart-Engine
+- Das umgesetzte Analytics Dashboard auf `/admin` nutzt Recharts direkt als Chart-Engine
 - Recharts wird als Engine verwendet, nicht als eigenes Designsystem
 - Styling, Layout, Empty States und Dashboard-Komposition bleiben RoomFull-eigene UI
-- Keine Dashboard-Komplettbibliothek als Basis für den ersten Analytics-Ausbau
+- Keine Dashboard-Komplettbibliothek als UI-Basis
 - Nicht gewählt für den ersten Slice:
   - Chart.js, weil Canvas weniger gut zur bestehenden React-/Tailwind-Komposition passt
   - Nivo, weil der Umfang für die ersten RoomFull-Charts zu groß ist
   - Tremor als UI-Library, weil RoomFull sein eigenes UI-System behält
   - eigenes D3, weil die ersten Charts keine Low-Level-Visualisierung brauchen
-- Die erste Chart-Ausbaustufe bleibt auf Nachfrageentwicklung fokussiert:
+- Das Chart-Set bleibt auf Nachfrageentwicklung fokussiert:
   - Nachfrageverlauf
   - Nachfrage nach UnitType
   - Stornoquote

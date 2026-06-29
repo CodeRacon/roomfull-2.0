@@ -13,6 +13,7 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 - `public units`
 - `bookings`
 - `customer contact`
+- `customer teams`
 - `admin units`
 
 ## Endpunkte
@@ -65,10 +66,24 @@ Ungültige `unitType`-Werte liefern `400 Bad Request`.
 - `GET /bookings/availability?date=YYYY-MM-DD&areaId=...&unitType=HOT_DESK`
 - `POST /bookings`
 - `GET /me/bookings`
+- `GET /me/bookings/:bookingId/share-context`
 - `GET /units/:unitId/calendar-state?month=YYYY-MM`
 - `DELETE /bookings/:bookingId`
 
 `GET /me/bookings` liefert eigene Bookings inklusive minimaler Unit-Anzeigedaten (`unit.id`, `unit.name`, `unit.unitType.name`), damit die UI Buchungen typgerecht darstellen kann.
+
+`GET /me/bookings/:bookingId/share-context` ist Customer-only und liefert fuer eine eigene eligible Booking die Team-Share-Daten:
+
+- `booking.id`
+- `booking.startTime`
+- `booking.endTime`
+- `unit.id`
+- `unit.name`
+- `unit.capacity`
+- `unit.unitType.name`
+
+Eligible bedeutet `status=ACTIVE` und `endTime >= now`.
+Fehlende oder fremde Bookings liefern `404`; stornierte oder vergangene eigene Bookings liefern `409`.
 
 ### Customer Contact
 
@@ -83,6 +98,55 @@ Request:
 
 Neue Contact Requests starten mit globalem `isRead=false`.
 Visitors erhalten `401`, Admins erhalten `403`.
+
+### Customer Teams
+
+- `GET /me/teams`
+- `POST /me/teams`
+- `GET /me/teams/:teamId`
+- `PUT /me/teams/:teamId`
+- `DELETE /me/teams/:teamId`
+- `POST /me/teams/:teamId/members`
+- `PUT /me/teams/:teamId/members/:memberId`
+- `DELETE /me/teams/:teamId/members/:memberId`
+
+Alle Team-Endpunkte sind Customer-only und session-scoped. Requests enthalten keine `userId`.
+
+`GET /me/teams` liefert eigene Team Summaries:
+
+- `id`
+- `name`
+- `memberCount`
+
+`GET /me/teams/:teamId` liefert ein eigenes Team inklusive `members` mit `id`, `name` und normalisierter `email`.
+Fehlende und fremde Teams liefern identisch `404`.
+
+`POST /me/teams` legt ein leeres privates Team an.
+Der Teamname wird getrimmt, darf 1 bis 80 Zeichen haben und ist pro Customer ueber einen normalisierten Key case-insensitive eindeutig.
+Ein Customer darf maximal 20 Teams besitzen.
+
+`PUT /me/teams/:teamId` benennt ein eigenes Team um und nutzt dieselben Teamnamen-Regeln wie Create.
+Der unveraenderte eigene Teamname ist erlaubt, doppelte Namen anderer eigener Teams liefern `409`.
+
+`DELETE /me/teams/:teamId` loescht ein eigenes Team endgueltig.
+Zugehoerige Members werden per Cascade entfernt.
+
+`POST /me/teams/:teamId/members` fuegt einem eigenen Team einen Kontakt hinzu.
+Member-Namen werden getrimmt und duerfen 1 bis 100 Zeichen haben.
+Member-E-Mails werden getrimmt, kleingeschrieben, duerfen hoechstens 254 Zeichen haben und sind pro Team case-insensitive eindeutig.
+Dieselbe E-Mail ist in anderen Teams erlaubt.
+Ein Team darf maximal 50 Members besitzen.
+Fehlende und fremde Teams liefern identisch `404`.
+
+`PUT /me/teams/:teamId/members/:memberId` aktualisiert einen Kontakt in einem eigenen Team und nutzt dieselben Member-Regeln wie Create.
+Die unveraenderte eigene E-Mail ist erlaubt, doppelte E-Mails anderer Members im selben Team liefern `409`.
+Fehlende und fremde Teams oder Members liefern identisch `404`.
+
+`DELETE /me/teams/:teamId/members/:memberId` loescht einen Kontakt aus einem eigenen Team endgueltig.
+Fehlende und fremde Teams oder Members liefern identisch `404`.
+
+Visitors erhalten `401`, Admins erhalten `403`.
+Ungueltige Team- oder Member-Felder liefern `400`, doppelte Teamnamen oder Member-E-Mails und erreichte Team- oder Memberlimits liefern `409`.
 
 ### Admin
 

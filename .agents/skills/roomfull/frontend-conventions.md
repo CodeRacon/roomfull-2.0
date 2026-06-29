@@ -99,7 +99,7 @@ Ein Einstieg zu Customer Contact ist für Customers erlaubt, weil Contact fachli
 
 Logout bleibt in V1 im Header-Profilmenü und wird nicht zusätzlich auf `/me/account` platziert.
 
-Keine sichtbaren Platzhalter für spätere Account-Einstellungen. Profilbearbeitung, Passwortänderung und Booking-Präferenzen werden erst sichtbar, wenn sie als eigene Feature-Slices umgesetzt werden.
+Keine sichtbaren Platzhalter für geplante Account-Aktionen. Profilbearbeitung und Passwortänderung werden erst sichtbar, wenn sie als eigene Feature-Slices aus der `ROADMAP.md` umgesetzt werden.
 
 Solange dort nur Name, E-Mail und Rolle angezeigt werden, braucht sie keine eigene Feature-Slice und keinen eigenen Backend-Endpoint.
 
@@ -147,7 +147,7 @@ Globale Error-Pages duerfen HTTP-Statuscodes wie `404` und `500` sichtbar darste
 
 API- und Formularfehler werden im Frontend ueber stabile Status- oder Fehlercodes auf lokalisierte Copy gemappt. Backend-Message-Strings sind technische Fallbacks und keine kanonische UI-Copy.
 
-Der erste i18n-Slice fuehrt keine neuen Backend-Application-Error-Codes ein. Solche Codes sind ein eigenes Backend-Contract-Slice mit Tests, OpenAPI und Bruno-Folgearbeit.
+Der erste i18n-Slice fuehrte keine neuen Backend-Application-Error-Codes ein. Stabile Backend-Error-Codes sind als eigener Contract-Slice mit Tests, OpenAPI und Bruno-Folgearbeit in der `ROADMAP.md` vorgemerkt.
 
 Der erste i18n-Slice umfasst technische Locale-Infrastruktur, kanonische lokalisierte Routen, Header/Footer mit Language Switcher, Home, Booking Options, Booking Option Detail, locale-aware Auth-Kanten und lokalisierte globale Error-Pages. Admin, Account und weitere Booking-Ansichten folgen in kleineren Slices.
 
@@ -198,7 +198,7 @@ Es gibt in V1 keinen separaten Admin-Einstieg für "Buchungsflow prüfen"; der H
 
 ## Admin Analytics Charts
 
-V2-Analytics auf `/admin` nutzt Recharts direkt als Chart-Engine.
+Das umgesetzte Analytics Dashboard auf `/admin` nutzt Recharts direkt als Chart-Engine.
 
 Chart-Code wird nach Verantwortung platziert:
 
@@ -213,7 +213,7 @@ Nicht nach `shared` gehören:
 - UnitType- oder Storno-Fachlogik
 - Dashboard-Komposition
 
-Keine Dashboard-Komplettbibliothek als UI-Basis für den ersten Analytics-Ausbau. Recharts liefert nur die Visualisierungs-Engine; RoomFull behält Layout, Farben und UI-Zustände selbst.
+Keine Dashboard-Komplettbibliothek als UI-Basis. Recharts liefert nur die Visualisierungs-Engine; RoomFull behält Layout, Farben und UI-Zustände selbst.
 
 ## Shared-Regel
 

@@ -1,0 +1,5 @@
+# Managed split deployment for the portfolio application
+
+RoomFull uses managed services instead of a self-operated VPS: the Next.js frontend runs on Vercel Hobby at `roomfull.michael-buschmann.dev`, the always-on Express backend runs on Render Starter in Frankfurt at `api.roomfull.michael-buschmann.dev`, and PostgreSQL runs on Neon Free in Frankfurt. Hostinger Premium remains responsible for DNS and existing hosting duties because it supports neither the required Node.js runtime nor PostgreSQL.
+
+This split keeps the existing Next.js, Express, Prisma, and PostgreSQL architecture intact while avoiding VPS administration and Docker in production. The application is a non-commercial portfolio and learning project, so Production data is disposable and recoverable through migrations plus an explicit seed; local development and Production are the only permanent environments. Merges to protected `main` deploy automatically after CI, while Prisma migrations run before backend deployment and seeding or admin bootstrap remain explicit setup operations.

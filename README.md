@@ -69,6 +69,8 @@ Nicht Teil des Admin-MVP:
 - mehrere Standorte
 - AI-Funktionen
 
+Geplante Themen stehen ausschliesslich in der [Roadmap](ROADMAP.md).
+
 ## Fachlicher Kern
 
 Eine Buchung verbindet:

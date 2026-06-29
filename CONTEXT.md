@@ -314,6 +314,170 @@ _Avoid_: Sonderlogik-Typ
 Eine Reservierung einer konkreten BookableUnit für einen Zeitraum.
 _Avoid_: Anfrage, Slot
 
+**Team Booking Share**:
+Ein optionaler, vom Customer kontrollierter Uebergabepunkt fuer eine eigene Booking mit kopierbaren Team-Member-Adressen, vorbereitetem Einladungstext und empfaengerfreundlichem Kalenderexport ohne garantierten Gaeste- oder Antwortfluss.
+_Avoid_: RSVP-Versprechen, RoomFull als Absender, automatische E-Mail, persistierte Share-Historie
+
+**Team Booking Share Handoff**:
+Nach dem Kopieren oder Herunterladen uebernimmt der Customer den Versand und die weitere Kommunikation ausserhalb von RoomFull; verwendetes Team, Empfaengerauswahl und Nachricht werden nicht an der Booking gespeichert.
+_Avoid_: Versandstatus in RoomFull, persistierte Booking-Team-Zuordnung, Synchronisation mit E-Mail- oder Kalender-Clients
+
+**Team Booking Share Package**:
+Die clientneutrale Uebergabe aus vier getrennten Aktionen fuer BCC-Adressen, Betreff, Einladungstext und Team Booking Share Calendar Export.
+_Avoid_: `mailto:`-Flow, automatisches Oeffnen eines Versandclients, automatische Dateianhaenge, kombinierte Senden-Aktion
+
+**Booking Invitation (superseded)**:
+Der verworfene Ansatz einer lokal importierten `.ics` mit Organizer, Attendees und RSVP, der im Apple-Calendar-Prototyp weder Gaeste noch Nachricht oder bewussten Versandpfad uebernahm.
+_Avoid_: Booking Invitation als aktueller Feature-Name, erneute Implementierung ohne neue Produktentscheidung
+
+**Team Booking Share Entry**:
+Eine optionale Aktion an einer erfolgreich erstellten eigenen Booking in "Meine Buchungen", die aus Karten-, Listen- und Kalenderansicht auf dieselbe Team Booking Share Page fuehrt.
+_Avoid_: verpflichtendes Team, Share vor erfolgreicher Booking, Team-Auswahl im Buchungsformular, unterschiedliche Aktionen je My-Bookings-Darstellung
+
+**Team Booking Share Page**:
+Die geschuetzte Seite `/me/bookings/[bookingId]/share` fuer eine eligible eigene Booking mit Team- und Empfaengerauswahl, persoenlicher Nachricht, Warnungen und Team Booking Share Package.
+_Avoid_: alte `/invite`-Route, umfangreicher Share inline in Booking-Darstellungen, Modal mit bis zu 50 Members
+
+**Team Booking Share Empty State**:
+Ohne ein nicht leeres eigenes Team verweist die Team Booking Share Page auf My Teams, ohne Team-Erstellung in den Share einzubetten.
+_Avoid_: leeres Team auswaehlen, Inline-Team-CRUD, versteckter automatischer Ruecksprung
+
+**Team Booking Share Team Availability**:
+Die Share-Seite zeigt alle eigenen Team Summaries; leere Teams bleiben mit Member-Anzahl `0` sichtbar, sind nicht auswaehlbar und fuehren zur Teamverwaltung, waehrend ohne verwendbares Team zusaetzlich der Empty State erscheint.
+_Avoid_: leere Teams verstecken, leeres Team auswaehlen, Members im Share anlegen
+
+**Team Booking Share Team Selection**:
+Der Customer waehlt genau ein nicht leeres Team ausdruecklich aus; kein Team wird automatisch vorausgewaehlt, und erst die Auswahl laedt dessen Detail und markiert alle Members initial als Empfaenger.
+_Avoid_: einziges Team automatisch waehlen, Member-Daten beim Seitenaufruf vorladen, mehrere Teams kombinieren
+
+**Team Booking Share Team Change**:
+Beim Wechsel des ausgewaehlten Teams bleibt die Booking-bezogene persoenliche Nachricht erhalten, waehrend die Empfaengerauswahl verworfen und mit allen Members des neuen Teams neu aufgebaut wird.
+_Avoid_: Member-Ausnahmen zwischen Teams uebertragen, persoenliche Nachricht beim Teamwechsel verlieren, Members mehrerer Teams vermischen
+
+**Team Booking Share Recipient Selection**:
+Die fluechtige Auswahl verwendet genau ein Team, markiert zunaechst alle Team Members und erlaubt deren Abwahl, ohne das gespeicherte Team zu veraendern.
+_Avoid_: mehrere kombinierte Teams, persistierte Auswahl an der Booking, Team bearbeiten muessen fuer einen einmaligen Share
+
+**Team Booking Share Readiness**:
+Alle vier Aktionen des Team Booking Share Package sind erst nach bewusster Teamwahl mit mindestens einem ausgewaehlten Team Member verfuegbar.
+_Avoid_: Share ohne Empfaenger, einzelne Package-Aktion vorzeitig freigeben, leere BCC-Uebergabe kopieren
+
+**Team Booking Share Recipient Privacy**:
+Ausgewaehlte Team-Member-Adressen werden fuer das BCC-Feld des externen Versandwerkzeugs uebergeben, damit Empfaenger ihre Adressen nicht gegenseitig sehen.
+_Avoid_: Adressen fuer sichtbares An oder CC vorbereiten, gegenseitige Sichtbarkeit voraussetzen, Datenschutzwirkung eines fremden Versandwerkzeugs garantieren
+
+**Team Booking Share Recipient Format**:
+Die BCC-Uebergabe besteht ausschliesslich aus normalisierten kleingeschriebenen E-Mail-Adressen in einer mit Komma und Leerzeichen getrennten Liste.
+_Avoid_: Member-Namen im Clipboard, `Name <email>`-Format, semikolon- oder clientspezifische Ausgabe
+
+**Team Booking Share Message**:
+Ein optionaler, nicht gespeicherter Text des Customers, der zusammen mit den Booking-Daten als kopierbarer Einladungstext vorbereitet wird.
+_Avoid_: gespeicherte Nachrichtenvorlage, Nachrichtenhistorie, Freitext an der Booking
+
+**Team Booking Share Content**:
+Der generierte Betreff und Einladungstext aus nicht editierbaren Booking-Fakten, neutraler Begruessung, optionaler persoenlicher Nachricht und Hinweis auf den manuell anzuhaengenden Kalenderexport.
+_Avoid_: editierbare Booking-Fakten im Share, nur die persoenliche Nachricht kopieren, vom gespeicherten Booking-Zeitraum abweichende Angaben erzeugen
+
+**Team Booking Share Language**:
+Die aktive Localized Route bestimmt Sprache sowie Datums- und Textformat des Team Booking Share Content; der Share besitzt keinen eigenen Sprachzustand.
+_Avoid_: separater Sprachschalter im Share, von der UI-Locale abweichende Copy-Locale, sprachunabhaengige feste deutsche Share-Copy
+
+**Personal Booking Calendar Export**:
+Die bestehende getrennte Aktion "Zum Kalender hinzufuegen" erzeugt fuer eine eigene aktive anstehende Booking eine persoenliche Kalenderdatei ohne Team Members.
+_Avoid_: Team Booking Share voraussetzen, durch Team Booking Share ersetzen, Gaeste oder RSVP in den persoenlichen Export aufnehmen
+
+**Team Booking Share Calendar Export**:
+Die empfaengerfreundliche Kalenderdatei des Share Package mit Titel, Zeitraum, BookableUnit und stabiler Booking Calendar UID, aber ohne sichtbare Booking-ID, internen Status, persoenliche Nachricht, Organizer, Attendees oder RSVP.
+_Avoid_: Personal Booking Calendar Export unveraendert weitergeben, interne Booking-Metadaten offenlegen, Share-Nachricht in der Datei duplizieren
+
+**Booking Calendar UID**:
+Eine stabile Kalenderidentitaet pro Booking, die Personal Booking Calendar Export und Team Booking Share Calendar Export als dasselbe Ereignis kennzeichnet.
+_Avoid_: neue UID pro Download, unterschiedliche UIDs fuer persoenlichen und empfaengerfreundlichen Export, Booking-ID als sichtbare Share-Historie
+
+**Team Booking Share Context**:
+Der Customer-eigene Backend-Contract fuer die autorisierte Booking- und BookableUnit-Grundlage einer Team Booking Share Page, der Ownership und Eligibility aus der Session prueft.
+_Avoid_: alle eigenen Bookings laden und im Frontend suchen, `userId` im Request, Frontend als fachliche Eligibility-Quelle
+
+**Team Booking Share Context Errors**:
+Der Share Context nutzt `401` ohne Session, `403` fuer Nicht-Customers, `404` gleichermassen fuer fehlende und fremde Bookings sowie `409` fuer eine eigene, aber nicht mehr eligible Booking.
+_Avoid_: Ownership-Leak durch `403`, fremde Booking von fehlender unterscheiden, eigene ineligible Booking als unbekannt behandeln
+
+**Team Booking Share Eligibility**:
+Ein Team Booking Share darf nur fuer eine eigene Booking mit `status=ACTIVE` und `endTime >= now` vorbereitet werden; gerade laufende Bookings und der exakte Endzeitpunkt sind eingeschlossen.
+_Avoid_: Share fuer fremde, stornierte oder beendete Bookings, laufende Booking vorzeitig ausschliessen
+
+**Team Booking Share Capacity Warning**:
+Uebersteigt die Zahl ausgewaehlter Team Members die Kapazitaet der gebuchten BookableUnit, warnt RoomFull ohne den Team Booking Share zu blockieren.
+_Avoid_: Customer automatisch mitzaehlen, Kapazitaetswarnung als neue Booking-Regel, Share technisch verhindern
+
+**Team**:
+Eine private, benannte Kontaktgruppe eines Customers, die leer angelegt werden darf und ab einem Team Member fuer Team Booking Shares nutzbar ist.
+_Avoid_: Organisation, geteilter Workspace, kollaborative RoomFull-Mitgliedschaft
+
+**Team Name Uniqueness**:
+Ein normalisierter Teamname identifiziert innerhalb der privaten Teams eines Customers genau ein Team.
+_Avoid_: gleich benannte Teams desselben Customers, globale Namenseindeutigkeit ueber verschiedene Customers
+
+**Team Deletion**:
+Die bestaetigte, endgueltige Entfernung eines Teams einschliesslich aller zugeordneten Team Members sowie die automatische Entfernung aller Teams bei spaeterer Loeschung ihres Customers.
+_Avoid_: Soft Delete, Papierkorb, verwaiste Teams oder Team Members, Einladungsverlauf erhalten
+
+**Team Collection Limits**:
+Ein Customer darf hoechstens 20 Teams mit jeweils hoechstens 50 Team Members verwalten.
+_Avoid_: unbegrenzte private Kontaktdatenhaltung, Limits nur im Frontend
+
+**Team Input Limits**:
+Teamnamen erlauben 1 bis 80, Team-Member-Namen 1 bis 100, E-Mail-Adressen hoechstens 254 und persoenliche Einladungsnachrichten hoechstens 500 Zeichen.
+_Avoid_: unbegrenzte Freitexte, leere Namen, Limits nur im Frontend
+
+**My Teams**:
+Der geschuetzte Customer-Bereich `/me/teams` mit Teamname und Member-Anzahl je Eintrag, erreichbar ueber Profilmenue und Account Overview.
+_Avoid_: Team-CRUD direkt in Account Overview, alle Members verschachtelt in der Uebersicht, globale Hauptnavigation, Admin-Verwaltungsbereich
+
+**Team Detail**:
+Die geschuetzte Customer-Seite `/me/teams/[teamId]` fuer Umbenennen und Loeschen genau eines eigenen Teams sowie Hinzufuegen, Bearbeiten und Entfernen seiner Team Members.
+_Avoid_: fremde Teams ueber erratene IDs, Member-Verwaltung ohne Teamkontext, alle Teams in einem verschachtelten Formular
+
+**Team Creation Flow**:
+Ein Customer legt zuerst das benannte Team an und fuegt Team Members anschliessend einzeln in dessen Verwaltung hinzu.
+_Avoid_: verschachtelte atomare Erstellung von Team und beliebig vielen Team Members, Members vor gespeichertem Team
+
+**Team Display Order**:
+Teams und Team Members erscheinen gemaess aktiver UI-Sprache alphabetisch, bei gleichen Member-Namen zusaetzlich nach E-Mail-Adresse.
+_Avoid_: Erstellreihenfolge als fachliche Ordnung, manuelle Sortierung, sprachunabhaengige rohe DB-Sortierung
+
+**Customer Team Permission**:
+Ausschliesslich Customers duerfen eigene Teams verwalten und fuer Team Booking Shares verwenden.
+_Avoid_: Admin-Teamverwaltung, fremde Teams lesen oder veraendern, Rolle nur im Frontend pruefen
+
+**My Teams API**:
+Der Customer-eigene CRUD-Contract fuer Teams und verschachtelte Team Members unter `/api/me/teams`, der Rolle und Ownership ausschliesslich aus der authentifizierten Session ableitet.
+_Avoid_: `userId` im Client-Request, fremde Teamressourcen adressieren, nur clientseitiger Zugriffsschutz, ICS-Generate-Endpoint
+
+**Team Summary Contract**:
+Die Teamliste liefert nur ID, Name und Member-Anzahl, waehrend personenbezogene Team-Member-Daten erst ueber das Detail des geoeffneten oder ausgewaehlten Teams geladen werden.
+_Avoid_: alle Members aller Teams in der Listenresponse, personenbezogene Daten auf Vorrat laden
+
+**My Teams API Errors**:
+Der Team-Contract nutzt `400` fuer Input, `401` fuer fehlende Authentifizierung, `403` fuer falsche Rollen, `404` gleichermassen fuer fehlende und fremde Ressourcen sowie `409` fuer Duplikate und erreichte Mengenlimits.
+_Avoid_: `403` als Ownership-Leak, unterschiedliche Fehler fuer fehlende und fremde IDs, vorgezogene Application-Error-Codes nur fuer Teams
+
+**Team Contact Transparency**:
+"Meine Teams" erklaert dauerhaft die verantwortliche Speicherung und externe Verwendung der gepflegten Kontaktdaten; der Team Booking Share weist auf das Einfuegen der ausgewaehlten Adressen in BCC hin.
+_Avoid_: versteckte Datenverwendung, wiederholte Pflicht-Checkbox pro Team Member, rechtliche Einwilligung durch UI behaupten
+
+**Team Demo Data Boundary**:
+Die oeffentliche Portfolio-Instanz erlaubt fuer Teams nur fiktive Demo-Kontakte; echte Einladungstests bleiben lokal auf eigene kontrollierte Adressen begrenzt.
+_Avoid_: reale Kontaktdaten Dritter in Production, Production als echter Coworking-Service
+
+**Team Member**:
+Ein genau einem Team zugeordneter Kontakt aus Name und E-Mail-Adresse, der weder einen RoomFull-Account benoetigt noch mit bestehenden Users abgeglichen wird.
+_Avoid_: zentraler teamuebergreifender Kontakt, Team Member als Synonym fuer User, Registrierungspflicht, Account-Verknuepfung, Zustimmungsworkflow
+
+**Team Member Email Uniqueness**:
+Eine normalisierte E-Mail-Adresse identifiziert innerhalb eines Teams genau einen Team Member, darf aber in anderen Teams desselben Customers erneut vorkommen.
+_Avoid_: doppelte Empfaenger innerhalb eines Teams, globale E-Mail-Eindeutigkeit ueber alle Teams
+
 **Customer Booking Permission**:
 In V1 dürfen Customers eigene Bookings erstellen und eigene zukünftige Bookings stornieren.
 _Avoid_: Storno fremder Bookings
@@ -375,7 +539,7 @@ Eine deaktivierte BookableUnit gehoert bis zur Reaktivierung nicht zum neu buchb
 _Avoid_: Deaktivierung als Wartungsfenster mit Start- und Endzeit verstehen
 
 **Unit Blockout**:
-Eine zeitlich begrenzte Sperrung einer ansonsten aktiven BookableUnit waere ein eigener spaeterer Use Case und gehoert nicht zum MVP Admin Unit Management.
+Eine zeitlich begrenzte Sperrung einer ansonsten aktiven BookableUnit ist als eigener Use Case in der `ROADMAP.md` vorgemerkt und gehoert nicht zum aktuellen Admin Unit Management.
 _Avoid_: temporaere Sperrzeiten in `isActive` oder Deaktivierung hineinmodellieren
 
 **Admin Unit Editable Fields**:
@@ -406,10 +570,6 @@ _Avoid_: Mindest- oder Maximaldauer einzelner BookableUnits im Admin-Formular pf
 Eine Admin-Sicht fuer den Tagesbetrieb, die anstehende Bookings priorisiert und abgeschlossene oder stornierte Bookings nur bei Bedarf einblendet.
 _Avoid_: unstrukturierte Gesamtliste aller Bookings als Default, Analytics-Dashboard
 
-**Admin Booking Calendar View**:
-Ein spaeterer Admin-Ausbau zur visuellen Tages- oder Wochenansicht von Bookings.
-_Avoid_: V1-Default fuer Listenarbeit, Ersatz fuer die Operations View
-
 **Admin Booking Filter**:
 Die V1-Filter der Admin Booking Operations View: Heute, Anstehend, Abgeschlossen, Storniert und Alle.
 _Avoid_: unklare Mischung aus Status und Zeitraum ohne definierte Bedeutung
@@ -423,23 +583,23 @@ Kleine operative Kennzahlen der Admin Booking Operations View fuer Heute, Ansteh
 _Avoid_: Charts oder Analytics-Auswertung in V1
 
 **Admin Analytics Dashboard**:
-Ein V2-Dashboard auf `/admin`, das Buchungs- und Inventardaten als auswertbare Kennzahlen und Charts darstellt.
-_Avoid_: reine Arbeitsbereich-Navigation, V1-Operationsliste, dekorative Graphen ohne Admin-Entscheidungswert
+Das umgesetzte Dashboard auf `/admin` stellt Buchungsdaten als auswertbare Kennzahlen und Charts dar.
+_Avoid_: reine Arbeitsbereich-Navigation, dekorative Graphen ohne Admin-Entscheidungswert
 
 **Admin Analytics Primary Question**:
-Die zentrale V2-Frage des Admin Analytics Dashboard ist, wie sich Nachfrage ueber Zeit entwickelt.
+Die zentrale Frage des Admin Analytics Dashboard ist, wie sich Nachfrage ueber Zeit entwickelt.
 _Avoid_: Revenue-Auswertung ohne Pricing, reine Inventarverwaltung, Chart-Auswahl ohne Leitfrage
 
 **Admin Booking Demand**:
-Die V2-Nachfrage-Metrik fuer Analytics ist die Anzahl aktiver Bookings gruppiert nach Booking-Startdatum.
+Die Nachfrage-Metrik fuer Analytics ist die Anzahl aktiver Bookings gruppiert nach Booking-Startdatum.
 _Avoid_: Availability-Checks, Seitenaufrufe, gebuchte Stunden als erste Nachfrage-Definition
 
 **Admin Analytics Default Window**:
-Das V2-Default-Fenster fuer Analytics umfasst 30 Tage zurueck und 30 Tage voraus, jeweils nach Booking-Startdatum.
+Das Default-Fenster fuer Analytics umfasst 30 Tage zurueck und 30 Tage voraus, jeweils nach Booking-Startdatum.
 _Avoid_: rein historische Auswertung als Default, Erstellzeitpunkt der Booking als Nachfragezeitpunkt
 
 **Admin Analytics Chart Set**:
-Die erste V2-Ausbaustufe zeigt Nachfrageverlauf, Nachfrage nach UnitType und Stornoquote im gewaehlten Zeitraum.
+Das Admin Analytics Dashboard zeigt Nachfrageverlauf, Nachfrage nach UnitType und Stornoquote im gewaehlten Zeitraum.
 _Avoid_: Inventarstatus als Hauptchart, Revenue-Charts ohne Pricing, dekorative Charts ohne Nachfragebezug
 
 **Admin Booking Query**:
@@ -468,7 +628,7 @@ Der `status`-Querywert der Admin Booking Query: `upcoming`, `today`, `completed`
 _Avoid_: rohe DB-Statuswerte `ACTIVE` und `CANCELLED` als alleinige Admin-Filter
 
 **Admin Cancel Scope**:
-In V1 gibt es kein separates Fremd-Storno durch Admin; ein späterer Admin-Cancel-Use-Case ist bewusst offen.
+Admins duerfen keine fremden Bookings stornieren.
 _Avoid_: implizites Fremd-Storno ohne expliziten Endpoint
 
 **Opening Hours**:
@@ -490,6 +650,49 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - Eine **Area** gruppiert mehrere **BookableUnits**.
 - Eine **BookableUnit** kann viele **Bookings** haben.
 - Eine **Booking** gehört genau einer **BookableUnit** und genau einem **User**.
+- Der buchende **Customer** kontrolliert den **Team Booking Share Handoff**; RoomFull versendet weder E-Mail noch Kalendereinladung.
+- Der **Team Booking Share Handoff** trennt die gespeicherte **Booking** von Versand und Kommunikation ausserhalb RoomFull.
+- Das **Team Booking Share Package** uebergibt BCC-Adressen, Betreff, Einladungstext und **Team Booking Share Calendar Export** ueber getrennte clientneutrale Aktionen.
+- Die **Booking Invitation** ist durch den fehlgeschlagenen Apple-Calendar-Prototyp als aktueller Loesungsansatz verworfen.
+- Der **Team Booking Share Entry** haelt **Teams** und Shares optional und vom Create-Booking-Flow getrennt.
+- Karten-, Listen- und Kalenderansicht fuehren mit derselben Aktion zur **Team Booking Share Page**.
+- Der **Team Booking Share Empty State** unterbricht den Flow bewusst, bis der Customer ein verwendbares Team in **My Teams** gepflegt hat.
+- **Team Booking Share Team Availability** haelt leere Teams sichtbar, aber nicht auswaehlbar.
+- **Team Booking Share Team Selection** macht die bewusste Teamwahl zur Grenze vor dem Laden personenbezogener Member-Daten.
+- **Team Booking Share Team Change** erhaelt Booking-bezogenen Text und setzt Team-bezogene Empfaenger zurueck.
+- **Personal Booking Calendar Export** und **Team Booking Share Calendar Export** bleiben getrennte Artefakte derselben eligible Booking.
+- Die **Booking Calendar UID** kennzeichnet beide Kalenderartefakte als dasselbe Ereignis.
+- Der **Team Booking Share Context** schuetzt und liefert die Booking-Grundlage der **Team Booking Share Page** unabhaengig von den Team-Daten.
+- **Team Booking Share Context Errors** verbergen fremde Bookings und machen einen Eligibility-Verlust der eigenen Booking unterscheidbar.
+- **Team Booking Share Eligibility** entspricht dem fachlichen Geltungsbereich des persoenlichen Kalenderexports fuer eigene Bookings.
+- Die **Team Booking Share Capacity Warning** weist auf ein moegliches Missverhaeltnis hin, ohne eine gespeicherte Teilnehmerzahl oder Anwesenheit des Customers zu behaupten.
+- Die **Team Booking Share Recipient Selection** leitet Empfaenger aus einem **Team** ab, veraendert oder persistiert dieses aber nicht.
+- **Team Booking Share Readiness** verlangt mindestens einen ausgewaehlten Empfaenger fuer alle vier Aktionen des **Team Booking Share Package**.
+- **Team Booking Share Recipient Privacy** macht BCC zum vorgesehenen externen Empfaengerfeld, ohne den Versandclient zu kontrollieren.
+- **Team Booking Share Recipient Format** haelt die BCC-Uebergabe auf eine einfache kommagetrennte Adressliste beschraenkt.
+- Die **Team Booking Share Message** existiert nur waehrend der Vorbereitung und im anschliessend kopierten Inhalt.
+- **Team Booking Share Content** verbindet die fachlich unveraenderten Booking-Daten mit der optionalen persoenlichen Nachricht.
+- **Team Booking Share Language** leitet die Share-Copy aus der aktiven Localized Route ab.
+- Ein **Customer** besitzt seine privaten **Teams**; andere Users werden dadurch nicht zu Teammitgliedern innerhalb RoomFull.
+- **Team Name Uniqueness** haelt die privaten Teams eines Customers in Auswahl und Verwaltung unterscheidbar.
+- **Team Deletion** entfernt die private Kontaktgruppe vollstaendig, da weder Bookings noch Team Booking Shares auf sie verweisen.
+- Eine spaetere Loeschung des owning **Customers** loest **Team Deletion** fuer alle zugeordneten Teams aus.
+- **Team Collection Limits** werden als verbindliche Backend-Regeln unabhaengig von aktuellen Raumkapazitaeten durchgesetzt.
+- **Team Input Limits** werden verbindlich im Backend und unterstuetzend im Frontend validiert.
+- **My Teams** ist ein eigener Customer-Bereich neben Account Overview und My Bookings.
+- Ein Eintrag in **My Teams** fuehrt zur **Team Detail** seines eigenen Teams.
+- Der **Team Creation Flow** nutzt die erlaubte leere Ausgangsform eines **Teams** fuer kleine, getrennt validierbare Schritte.
+- **Team Display Order** wird als lokalisierte Darstellung angewendet und ist kein gespeichertes Teamattribut.
+- **Customer Team Permission** schuetzt Teamverwaltung und Share-Nutzung im Backend sowie ihre Einstiege im Frontend.
+- Die **My Teams API** setzt **Customer Team Permission**, Ownership und Teamregeln als fachliche Wahrheit im Backend durch.
+- Der **Team Summary Contract** trennt schlanke Team-Auswahl von bedarfsgeladenen Team-Member-Daten.
+- **My Teams API Errors** verbergen fremde Teamressourcen und bleiben bis zum separaten Error-Code-Slice bei HTTP-Status plus technischer Fallback-Message.
+- **Team Contact Transparency** begleitet Speicherung und konkrete Verwendung der Team-Member-Daten an den jeweils relevanten UI-Stellen.
+- **Team Demo Data Boundary** konkretisiert die globale Demo-Daten-Policy fuer private Teamkontakte und Team Booking Shares.
+- Ein **Team** enthaelt mehrere **Team Members**; dieselbe Person darf als unabhaengiger Kontakt in mehreren Teams vorkommen.
+- Ein leeres **Team** ist gueltig, kann aber erst ab einem **Team Member** fuer einen **Team Booking Share** verwendet werden.
+- Ein **Team Member** ist ein Kontakt des Customers und kein **User** von RoomFull.
+- **Team Member Email Uniqueness** verhindert doppelte Teilnehmende innerhalb eines Teams, ohne teamuebergreifende Kontakte einzufuehren.
 - **Booking Target** ist die **BookableUnit**.
 - **Booking Request Modes** vereinheitlichen direkte Unit-Buchung und Area-basierte Hot-Desk-Auto-Zuweisung über alle Booking-Flow-Schritte.
 - **Booking Time Input** wird durch **Booking Time Grid**, Öffnungszeiten und **Duration Policy** validiert.
@@ -500,7 +703,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - Die **Home Page** nennt BookingOption-Teaser in der UI "Arbeitsbereiche".
 - Die **Home Page** nutzt **BookingOptions** als Datenbasis, praesentiert sie aber kuratiert als Service-Angebote.
 - Die **Home Page** teasert Varianten nur an; konkrete Area- oder Unit-Varianten werden erst auf `/booking-options/[slug]` ausgewaehlt.
-- Die **Home Page** braucht visuelle Arbeitsbereich-Signale; der erste Slice darf vorhandene Assets nutzen, soll aber spaetere Medien je Arbeitsbereich ermoeglichen.
+- Die **Home Page** nutzt eigene SVG-Icons als visuelle Arbeitsbereich-Signale.
 - Die **Booking Options Page** bleibt eine Kategorie-Übersicht und zeigt aktive Area- oder Unit-Namen nur als Vorschau; konkrete Auswahl passiert auf `/booking-options/[slug]`.
 - Die **Create Booking Page** ist der gemeinsame UI-Einstieg fuer beide Booking Request Modes.
 - Der **Create Booking Entry Context** entscheidet, welcher Booking Request Mode vorbereitet wird.
@@ -536,7 +739,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Account Overview** zeigt das Registrierungsdatum als "Nutzer seit" an.
 - **Account Overview** darf die nächste **Upcoming Booking** als Navigation zur eigenen Buchungsliste zeigen, bleibt aber selbst Account-Inhalt.
 - Logout bleibt Teil des **Session Lifecycle** im Header und gehoert in V1 nicht auf **Account Overview**.
-- Profilbearbeitung, Passwortaenderung und Booking-Praeferenzen sind spaetere eigene Account-Feature-Slices, keine Platzhalter in **Account Overview**.
+- Profilbearbeitung und Passwortaenderung sind als eigene Account-Feature-Slices in der `ROADMAP.md` vorgemerkt und keine Platzhalter in **Account Overview**.
 - **Frontend Session** ist die zentrale Quelle fuer Auth-Zustand im Frontend; Header und auth-required UI konsumieren sie statt direkt Token Storage zu lesen.
 - **Session User** haelt die Session-relevanten User-Daten ohne direkte Kopplung an das User-Entity-Modell.
 - **Session Lifecycle** trennt Nutzeraktionen wie Login/Register/Logout von der internen Token-Speicherung.
@@ -561,11 +764,10 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Admin Booking Permission** erlaubt operative Booking-Erstellung plus Lesesicht.
 - **Admin Booking Creation Entry** haelt operative/testweise Admin-Buchungen im normalen Customer-Flow.
 - **Admin Booking Operations View** strukturiert Admin-Lesesicht zuerst nach Tagesbetrieb und anstehenden Bookings.
-- **Admin Booking Calendar View** ist ein spaeterer Zusatz zur Operations View, kein V1-Default.
 - **Admin Booking Filter** nutzt "Anstehend" als Default; "Heute" ist der operative Tagesfilter.
 - **Admin Booking Sort Order** passt sich dem gewaehlten Filter an.
 - **Admin Booking Summary** zeigt in V1 nur operative Zahlen, keine Graphs.
-- **Admin Analytics Dashboard** ersetzt in V2 die reine `/admin`-Navigation durch entscheidungsorientierte Auswertungen.
+- **Admin Analytics Dashboard** erweitert `/admin` um entscheidungsorientierte Auswertungen.
 - **Admin Analytics Primary Question** priorisiert Nachfrageentwicklung vor reiner Navigation oder Inventarpflege.
 - **Admin Booking Demand** beantwortet die Nachfragefrage zuerst ueber aktive Bookings nach Startdatum.
 - **Admin Analytics Default Window** verbindet historische Nutzung mit erwarteter Nachfrage.
@@ -575,19 +777,72 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Admin Booking Date Range** filtert tageweise, nicht nach Uhrzeit.
 - **Admin Booking Query Default Window** verhindert unlimitierte Admin-Listen.
 - **Admin Booking View Status** mappt Admin-Filter auf DB-Status und Zeitlogik: upcoming, today, completed, cancelled, all.
-- **Admin Cancel Scope** trennt V1 bewusst von späterem Admin-Fremd-Storno.
+- **Admin Cancel Scope** schliesst Fremd-Stornos durch Admins aus.
 
 ## Example dialogue
 
 > **Dev:** "Ist ein Hot Desk bei uns ein Bereich mit vielen parallelen Plätzen?"
 > **Domain expert:** "Nein. In V1 ist Hot Desk ein einzelner buchbarer Space, wie jeder andere UnitType auch."
+>
+> **Dev:** "Muessen die Kollegen aus Manfreds HR-Team bei RoomFull registriert sein?"
+> **Domain expert:** "Nein. Manfred pflegt sie als Team Members und uebernimmt Empfaenger, Text und die empfaengerfreundliche Kalenderdatei aus dem Team Booking Share in sein eigenes Versandwerkzeug."
 
 ## Flagged ambiguities
 
+- "Bleibt eine echte RSVP-faehige Kalendereinladung Teil des MVP?" war offen; aufgeloest: nein, der gescheiterte **Booking Invitation**-Ansatz wird durch **Team Booking Share** ohne Gaeste- oder Antwortversprechen ersetzt.
+- "Wer versendet an Team Members?" war offen; aufgeloest: ausschliesslich der **Customer** ausserhalb RoomFull; RoomFull versendet keine E-Mail oder Kalendereinladung.
+- "Was uebergibt RoomFull fuer den Versand?" war offen; aufgeloest: kopierbare Empfaengeradressen, einen vorbereiteten Einladungstext und den **Team Booking Share Calendar Export**.
+- "Oeffnet RoomFull automatisch ein Mailprogramm?" war offen; aufgeloest: nein, das **Team Booking Share Package** bleibt clientneutral und vermeidet `mailto:` sowie automatische Anhaenge.
+- "Speichert RoomFull verwendetes Team, Empfaengerauswahl, Nachricht oder Versandstatus?" war offen; aufgeloest: nein, der **Team Booking Share Handoff** ist fluechtig und endet an der Systemgrenze.
+- "Wann waehlt der Customer ein Team fuer den Share?" war offen; aufgeloest: erst nach erfolgreicher Booking ueber den optionalen **Team Booking Share Entry**, nicht im Buchungsformular.
+- "Wo findet der Team Booking Share statt?" war offen; aufgeloest: auf der **Team Booking Share Page** `/me/bookings/[bookingId]/share`, erreichbar mit Action Parity aus allen My-Bookings-Darstellungen.
+- "Was passiert ohne verwendbares Team?" war offen; aufgeloest: Der **Team Booking Share Empty State** verlinkt zu My Teams, ohne Team-CRUD einzubetten.
+- "Werden leere Teams im Share versteckt?" war offen; aufgeloest: nein, **Team Booking Share Team Availability** zeigt sie mit `0 Members` deaktiviert und verlinkt ihre Verwaltung.
+- "Wird ein verwendbares Team automatisch vorausgewaehlt?" war offen; aufgeloest: nein, **Team Booking Share Team Selection** verlangt auch bei genau einem Team eine bewusste Auswahl.
+- "Was bleibt beim Wechsel des ausgewaehlten Teams erhalten?" war offen; aufgeloest: **Team Booking Share Team Change** behaelt die persoenliche Nachricht und setzt die Empfaengerauswahl auf alle Members des neuen Teams zurueck.
+- "Braucht eine Booking ein Team?" war offen; aufgeloest: nein, **Teams** und **Team Booking Shares** bleiben fuer den Create-Booking-Flow optional.
+- "Fuer welche Bookings darf ein Share vorbereitet werden?" war offen; aufgeloest: nur fuer eigene, aktive und anstehende Bookings gemaess **Team Booking Share Eligibility**.
+- "Darf eine bereits laufende Booking noch geteilt werden?" war offen; aufgeloest: ja, **Team Booking Share Eligibility** gilt bis zum Booking-Ende.
+- "Ist der exakte Booking-Endzeitpunkt noch eligible?" war offen; aufgeloest: ja, **Team Booking Share Eligibility** uebernimmt `endTime >= now` von **Upcoming Booking**.
+- "Wo wird Share-Ownership und Eligibility geprueft?" war offen; aufgeloest: im **Team Booking Share Context** unter `GET /api/me/bookings/:bookingId/share-context`, nicht aus einer Frontend-Liste.
+- "Wie unterscheiden sich fremde und eigene nicht mehr eligible Bookings?" war offen; aufgeloest: **Team Booking Share Context Errors** verwenden `404` fuer fehlend oder fremd und `409` fuer eigene ineligible Bookings.
+- "Blockiert eine zu grosse Empfaengerauswahl den Share?" war offen; aufgeloest: nein, die **Team Booking Share Capacity Warning** informiert deutlich, bleibt aber nicht blockierend.
+- "Muss fuer eine einmalige Abweichung das Team geaendert werden?" war offen; aufgeloest: nein, bei der **Team Booking Share Recipient Selection** duerfen einzelne Team Members fluechtig abgewaehlt werden.
+- "Darf der bestehende persoenliche Kalenderexport an Team Members weitergegeben werden?" war offen; aufgeloest: nein, wegen sichtbarer interner Booking-Metadaten nutzt das Share Package einen getrennten **Team Booking Share Calendar Export**.
+- "Ist der Team Booking Share Calendar Export ohne Empfaenger verfuegbar?" war offen; aufgeloest: nein, **Team Booking Share Readiness** schaltet alle vier Package-Aktionen gemeinsam frei; der separate persoenliche Export bleibt unabhaengig.
+- "Duerfen mehrere Teams fuer einen Share kombiniert werden?" war offen; aufgeloest: nein, die **Team Booking Share Recipient Selection** verwendet genau ein Team.
+- "Sollen Team Members die Adressen der anderen Empfaenger sehen?" war offen; aufgeloest: nein, **Team Booking Share Recipient Privacy** sieht die Uebergabe fuer BCC vor.
+- "Welches Format kopiert die BCC-Aktion?" war offen; aufgeloest: **Team Booking Share Recipient Format** nutzt nur normalisierte E-Mail-Adressen, getrennt durch `, `.
+- "Speichert RoomFull die persoenliche Share-Nachricht?" war offen; aufgeloest: nein, die **Team Booking Share Message** wird nur in den aktuell kopierten Einladungstext aufgenommen.
+- "Welche Inhalte darf der Customer im Share veraendern?" war offen; aufgeloest: nur die optionale persoenliche Nachricht; Betreff und Booking-Fakten des **Team Booking Share Content** werden aus der Booking erzeugt.
+- "Hat der Share eine eigene Sprachauswahl?" war offen; aufgeloest: nein, **Team Booking Share Language** folgt der aktiven Localized Route.
+- "Braucht ein Team Member einen RoomFull-Account?" war offen; aufgelöst: nein, **Team Members** sind vom Customer gepflegte Kontakte und keine **Users**.
+- "Werden registrierte Users mit Team Members verknuepft?" war offen; aufgelöst: nein, **Teams** bleiben private Kontaktgruppen ohne Account-Abgleich, Zustimmung oder In-App-Benachrichtigungen.
+- "Ist ein Team Member ein zentraler Kontakt fuer mehrere Teams?" war offen; aufgelöst: nein, jeder **Team Member** gehoert genau einem **Team**; dieselbe Person kann dort mehrfach unabhaengig gepflegt werden.
+- "Darf ein Team ohne Members existieren?" war offen; aufgelöst: ja, ein leeres **Team** ist gueltig, aber nicht fuer einen **Team Booking Share** nutzbar.
+- "Darf dieselbe E-Mail-Adresse mehrfach in einem Team vorkommen?" war offen; aufgelöst: nein, normalisierte E-Mail-Adressen sind pro **Team** eindeutig, nicht jedoch ueber mehrere Teams hinweg.
+- "Darf ein Customer gleich benannte Teams besitzen?" war offen; aufgelöst: nein, normalisierte Teamnamen sind pro **Customer** eindeutig.
+- "Bleibt die Schreibweise eines Teamnamens sichtbar erhalten?" war offen; aufgelöst: ja, Normalisierung dient nur Vergleich und Eindeutigkeit, nicht der sichtbaren Darstellung.
+- "Wird ein Team archiviert oder endgueltig geloescht?" war offen; aufgelöst: **Team Deletion** ist nach Bestaetigung ein Hard Delete inklusive aller Team Members.
+- "Was geschieht mit Teams bei spaeterer Account-Loeschung?" war offen; aufgelöst: Alle Teams und Team Members des Customers werden per Cascade endgueltig geloescht.
+- "Sind Anzahl von Teams und Team Members unbegrenzt?" war offen; aufgelöst: nein, **Team Collection Limits** erlauben maximal 20 Teams pro Customer und 50 Team Members pro Team.
+- "Welche Laengen duerfen Team- und Einladungseingaben haben?" war offen; aufgelöst: gemaess **Team Input Limits** 80 Zeichen fuer Teamnamen, 100 fuer Member-Namen, 254 fuer E-Mail-Adressen und 500 fuer persoenliche Nachrichten.
+- "Wo verwaltet der Customer seine Teams?" war offen; aufgelöst: im eigenen geschuetzten Bereich **My Teams** unter `/me/teams`, verlinkt aus Profilmenue und Account Overview.
+- "Verwaltet eine Seite alle Teams und Members gleichzeitig?" war offen; aufgelöst: nein, **My Teams** bleibt Uebersicht und jedes Team erhaelt eine eigene **Team Detail**.
+- "Welche Pflege erlaubt Team Detail?" war offen; aufgelöst: vollstaendiges Umbenennen und bestaetigtes Loeschen des Teams sowie Hinzufuegen, Bearbeiten und Entfernen seiner Team Members.
+- "Werden Team und Members gemeinsam angelegt?" war offen; aufgelöst: nein, der **Team Creation Flow** speichert zuerst nur das Team und ergaenzt Members anschliessend einzeln.
+- "Wie werden Teams und Members sortiert?" war offen; aufgelöst: locale-aware alphabetisch gemaess **Team Display Order**, ohne manuelle Reihenfolge.
+- "Duerfen Admins private Teams verwalten?" war offen; aufgelöst: nein, **Customer Team Permission** begrenzt Verwaltung und Einladungsnutzung auf Customers.
+- "Wie adressiert die API Customer-eigene Teams?" war offen; aufgelöst: ueber die session-scoped **My Teams API** `/api/me/teams` ohne `userId` im Request.
+- "Welche Operationen umfasst die My Teams API?" war offen; aufgelöst: vollstaendiges Team-CRUD und verschachteltes Team-Member-CRUD mit `PUT` fuer Updates, ohne ICS-Generate-Endpoint.
+- "Enthaelt die Teamliste bereits alle Members?" war offen; aufgelöst: nein, der **Team Summary Contract** liefert nur ID, Name und Member-Anzahl; Members kommen aus dem Team-Detail.
+- "Welche HTTP-Fehler bildet die My Teams API ab?" war offen; aufgelöst: gemaess **My Teams API Errors** mit `404` auch fuer fremde Ressourcen und `409` fuer Duplikate sowie Mengenlimits.
+- "Wie wird der Customer ueber fremde Kontaktdaten und sichtbare Teilnehmende informiert?" war offen; aufgelöst: durch dauerhafte und kontextuelle **Team Contact Transparency** ohne wiederholte Pflicht-Checkbox.
+- "Duerfen reale Teamkontakte in der Portfolio-Production gespeichert werden?" war offen; aufgelöst: nein, die **Team Demo Data Boundary** erlaubt dort nur fiktive Kontakte und beschraenkt echte Einladungstests auf lokale kontrollierte Adressen.
 - "Hot Desk" wurde semantisch als Bereich interpretiert; aufgelöst: In RoomFull V1 bedeutet es ein einzelner buchbarer Platz.
 - "Buchungen verwalten" bei Admin war unscharf; aufgelöst: In V1 darf Admin auch Buchungen erstellen (operativer HelpDesk-Fall).
 - "Braucht Admin einen eigenen Einstieg zum Buchungsflow-Pruefen?" war offen; aufgelöst: nein, Admin nutzt den normalen Customer-Flow ueber `/booking-options`.
-- "Admin darf stornieren" war unscharf; aufgelöst: kein Fremd-Storno in V1, aber explizit als späterer Ausbau vorgesehen.
+- "Admin darf stornieren" war unscharf; aufgelöst: Admins duerfen keine fremden Bookings stornieren.
 - "Ist das Kontaktformular public oder role-gated?" war offen; aufgelöst: **Customer Contact** ist nur fuer eingeloggte Customers, nicht fuer Visitors oder Admins.
 - "Wo liegt der Kontakt-Einstieg?" war offen; aufgelöst: Profilmenue, Account Settings und optional kontextuell in "Meine Buchungen", nicht als Top-Level-Hauptnavigation.
 - "Soll Customer Contact E-Mails versenden?" war offen; aufgelöst: nein, Kontaktanfragen werden gespeichert und in einer **Admin Contact Inbox** sichtbar.
@@ -629,13 +884,11 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Soll Account Overview das Registrierungsdatum zeigen?" war offen; aufgelöst: ja, als "Nutzer seit" aus dem Session User.
 - "Gehoert Meine Buchungen in Account Overview?" war offen; aufgelöst: nicht als generischer Link, sondern als optionaler Einstieg über die nächste **Upcoming Booking**.
 - "Soll Account Overview einen Logout-Button enthalten?" war offen; aufgelöst: nein, Logout bleibt im Header-Profilmenue.
-- "Sollen spaetere Account Settings als Platzhalter sichtbar sein?" war offen; aufgelöst: nein, spaetere Einstellungen werden erst als eigene Feature-Slices sichtbar.
+- "Sollen geplante Account-Aktionen als Platzhalter sichtbar sein?" war offen; aufgelöst: nein, Profilbearbeitung und Passwortaenderung werden erst mit ihren eigenen Feature-Slices sichtbar.
 - "Was ist der Hauptjob der Admin-Buchungsuebersicht?" war offen; aufgelöst: **Admin Booking Operations View** fuer Tagesbetrieb und anstehende Bookings, kein Analytics-Dashboard als Default.
-- "Soll Admin Bookings in V1 eine Kalenderansicht haben?" war offen; aufgelöst: nein, Kalender bleibt als spaeterer **Admin Booking Calendar View** vorgemerkt.
 - "Welche Filter braucht Admin Bookings in V1?" war offen; aufgelöst: **Admin Booking Filter** mit Heute, Anstehend, Abgeschlossen, Storniert und Alle; Default ist Anstehend.
 - "Wie sortiert Admin Bookings?" war offen; aufgelöst: **Admin Booking Sort Order** sortiert Anstehend/Heute nach Startzeit aufsteigend, Abgeschlossen nach Endzeit absteigend und Storniert nach Aktualisierung absteigend.
-- "Braucht Admin Bookings Graphs in V1?" war offen; aufgelöst: nein, V1 nutzt **Admin Booking Summary** mit Heute, Anstehend und Storniert; Analytics/Graphs bleiben spaeter.
-- "Sind Dashboard-Graphen V1-Polish oder V2-Feature?" war offen; aufgelöst: echtes **Admin Analytics Dashboard** als V2-Ausbau.
+- "Braucht Admin Bookings Graphs?" war offen; aufgelöst: Die Operations View nutzt **Admin Booking Summary**, das umgesetzte **Admin Analytics Dashboard** buendelt Graphen separat auf `/admin`.
 - "Welche Entscheidung soll das Admin Analytics Dashboard zuerst unterstuetzen?" war offen; aufgelöst: Nachfrageentwicklung verstehen.
 - "Was zaehlt als Nachfrage im Analytics-Dashboard?" war offen; aufgelöst: Anzahl aktiver Bookings nach Booking-Startdatum.
 - "Welchen Default-Zeitraum nutzt das Analytics-Dashboard?" war offen; aufgelöst: 30 Tage zurueck plus 30 Tage voraus nach Booking-Startdatum.
@@ -654,7 +907,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Was passiert beim Sprachwechsel?" war offen; aufgelöst: **Language Switch** erhaelt aktuellen Pfad und Query und speichert die gewaehlte Locale.
 - "Wie behandeln Auth-Flows den `next`-Parameter?" war offen; aufgelöst: **Localized Auth Redirect** erlaubt nur sichere interne lokalisierte App-Pfade und erhaelt die aktive Locale.
 - "Wer liefert sichtbare Fehlertexte?" war offen; aufgelöst: globale **HTTP Error Pages** uebersetzen ihre Page-Copy per Locale; API-/Formfehler nutzen **Localized API Error Copy** im Frontend statt Backend-Messages als UI-Quelle.
-- "Braucht der erste i18n-Slice stabile Backend-Application-Error-Codes?" war offen; aufgelöst: nein, Application Error Codes bleiben ein spaeteres Backend-Contract-Slice; i18n Slice 1 nutzt HTTP-Status, Flow-Kontext und Fallback-Copy.
+- "Braucht der erste i18n-Slice stabile Backend-Application-Error-Codes?" war offen; aufgelöst: nein, stabile Backend-Error-Codes sind als eigener Contract-Slice in der `ROADMAP.md` vorgemerkt; aktuell nutzt die UI HTTP-Status, Flow-Kontext und Fallback-Copy.
 - "Wo liegt i18n-Code im FSD?" war offen; aufgelöst: technische i18n- und Routing-Basis liegt in `shared`, der **Language Switch** als Nutzeraktion in einer Feature-Slice.
 - "Eigene Dictionaries oder i18n-Library?" war offen; aufgelöst: RoomFull startet mit einem eigenen typisierten **RoomFull UI Dictionary** nach Next.js-App-Router-Muster statt `next-intl`.
 - "Wie wird Dictionary-Vollstaendigkeit gesichert?" war offen; aufgelöst: `de` ist die strukturelle Dictionary-Quelle, `en` muss dieselbe Shape per TypeScript `satisfies typeof de` erfuellen.
@@ -670,7 +923,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Wie heissen Angebote auf der Home Page?" war offen; aufgelöst: UI nennt sie "Arbeitsbereiche", fachlich bleiben es **BookingOptions**.
 - "Sind Home-Arbeitsbereiche statisch oder API-basiert?" war offen; aufgelöst: Home nutzt **BookingOptions** als Datenbasis und kuratiert deren Praesentation.
 - "Wo werden Varianten ausgewaehlt?" war offen; aufgelöst: Home teasert Varianten nur an, konkrete Variantenwahl passiert auf `/booking-options/[slug]`.
-- "Braucht Home visuelle Medien?" war offen; aufgelöst: ja, Home braucht klare Arbeitsbereich-Signale; erster Slice kann vorhandene Assets nutzen und spaeter Bilder aufnehmen.
+- "Braucht Home visuelle Medien?" war offen; aufgelöst: ja, Home nutzt eigene SVG-Icons als klare Arbeitsbereich-Signale.
 - "Wer besitzt aktuellen Auth-Zustand im Frontend?" war offen; aufgelöst: **Frontend Session** besitzt ihn zentral, Token Storage bleibt Implementierungsdetail.
 - "Ist der aktuelle Session-User dasselbe wie das User-Entity?" war offen; aufgelöst: nein, **Session User** ist bewusst entkoppelt.
 - "Wer darf Auth Storage manipulieren?" war offen; aufgelöst: Session Lifecycle kapselt Storage; Features starten oder beenden Sessions ueber die Session API.

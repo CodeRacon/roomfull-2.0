@@ -1,6 +1,11 @@
 docs/*
 !docs/architecture/
 !docs/architecture/implemented-optimizations.md
+!docs/adr/
+!docs/adr/*.md
+!docs/adr/**/*.md
+!docs/deployment/
+!docs/deployment/**/*.md
 !backend/docs/
 !backend/docs/**/*.md
 
