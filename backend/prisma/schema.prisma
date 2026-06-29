@@ -44,10 +44,42 @@ model User {
   role         UserRole  @default(CUSTOMER)
   bookings     Booking[]
   contactRequests ContactRequest[]
+  teams        Team[]
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
   @@map("users")
+}
+
+model Team {
+  id      String       @id @default(cuid())
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members TeamMember[]
+
+  userId  String @map("user_id")
+  name    String
+  nameKey String @map("name_key")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, nameKey], map: "teams_user_id_name_key_key")
+  @@map("teams")
+}
+
+model TeamMember {
+  id   String @id @default(cuid())
+  team Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  teamId String @map("team_id")
+  name   String
+  email  String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([teamId, email], map: "team_members_team_id_email_key")
+  @@map("team_members")
 }
 
 model Area {

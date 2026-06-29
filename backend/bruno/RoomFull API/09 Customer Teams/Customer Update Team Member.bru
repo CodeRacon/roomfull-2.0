@@ -1,0 +1,28 @@
+meta {
+  name: Customer Update Team Member
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/me/teams/{{teamId}}/members/{{teamMemberId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "name": "Ada Byron",
+    "email": "ada.byron@example.com"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

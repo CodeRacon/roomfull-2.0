@@ -9,6 +9,10 @@ import {
 	listUserBookings,
 } from "../services/booking.service.js";
 import { getBookingAvailability } from "../services/booking-availability.js";
+import {
+	type BookingShareContextService,
+	bookingShareContextService,
+} from "../services/booking-share-context.js";
 import { getDirectBookingCalendarState } from "../services/direct-booking-calendar-state.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -243,6 +247,40 @@ function parseAdminBookingsQuery(query: Request["query"]): {
 		to: readStringQuery(query.to),
 	};
 }
+
+export function createGetBookingShareContextController(input: {
+	service: Pick<BookingShareContextService, "get">;
+}) {
+	return async function getBookingShareContextController(
+		req: Request<BookingParams>,
+		res: Response,
+		next: NextFunction,
+	): Promise<void> {
+		const customerId = parseAuthUserId(req.auth);
+		if (!customerId) {
+			fail(next, 401, "Nicht eingeloggt");
+			return;
+		}
+
+		const bookingId = parseBookingId(req.params);
+		if (!bookingId) {
+			fail(next, 400, "Ungültige Route-Parameter");
+			return;
+		}
+
+		try {
+			const shareContext = await input.service.get({ customerId, bookingId });
+			res.status(200).json({ shareContext });
+		} catch (error) {
+			next(error);
+		}
+	};
+}
+
+export const getBookingShareContextController =
+	createGetBookingShareContextController({
+		service: bookingShareContextService,
+	});
 
 export async function cancelBookingController(
 	req: Request<BookingParams>,

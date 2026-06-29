@@ -5,6 +5,7 @@ import {
 	getAdminBookingOperationsController,
 	getBookingAvailabilityController,
 	getBookingContextController,
+	getBookingShareContextController,
 	getDirectBookingCalendarStateController,
 	listMyBookingsController,
 } from "../controllers/bookings.controller.js";
@@ -23,6 +24,10 @@ bookingsRouter
 bookingsRouter.route("/bookings").post(createBookingController);
 
 bookingsRouter.route("/me/bookings").get(listMyBookingsController);
+
+bookingsRouter
+	.route("/me/bookings/:bookingId/share-context")
+	.get(requireRole("CUSTOMER"), getBookingShareContextController);
 
 bookingsRouter
 	.route("/units/:unitId/calendar-state")

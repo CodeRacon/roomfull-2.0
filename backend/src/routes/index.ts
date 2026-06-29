@@ -5,6 +5,7 @@ import { adminUnitsRouter } from "./admin-units.routes.js";
 import { authRouter } from "./auth.routes.js";
 import { bookingsRouter } from "./bookings.routes.js";
 import { contactRequestsRouter } from "./contact-requests.routes.js";
+import { customerTeamsRouter } from "./customer-teams.routes.js";
 import { publicUnitsRouter } from "./public-units.routes.js";
 
 export const apiRouter = Router();
@@ -12,6 +13,7 @@ export const apiRouter = Router();
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/public", publicUnitsRouter);
 apiRouter.use("/contact-requests", contactRequestsRouter);
+apiRouter.use("/", customerTeamsRouter);
 apiRouter.use("/admin", adminAnalyticsRouter);
 apiRouter.use("/admin", adminContactRequestsRouter);
 apiRouter.use("/admin", adminUnitsRouter);

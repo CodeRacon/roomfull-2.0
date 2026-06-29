@@ -1,0 +1,20 @@
+meta {
+  name: Customer List Teams
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/me/teams
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

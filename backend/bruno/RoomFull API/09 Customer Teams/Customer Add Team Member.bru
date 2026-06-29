@@ -1,0 +1,43 @@
+meta {
+  name: Customer Add Team Member
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/api/me/teams/{{teamId}}/members
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "name": "Ada Lovelace",
+    "email": "ada@example.com"
+  }
+}
+
+script:post-response {
+  let json = res.getBody();
+  if (typeof json === "string") {
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      json = null;
+    }
+  }
+
+  if (json && json.member && json.member.id) {
+    bru.setVar("teamMemberId", json.member.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

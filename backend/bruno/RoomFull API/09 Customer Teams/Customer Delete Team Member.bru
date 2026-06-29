@@ -1,0 +1,20 @@
+meta {
+  name: Customer Delete Team Member
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseUrl}}/api/me/teams/{{teamId}}/members/{{teamMemberId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

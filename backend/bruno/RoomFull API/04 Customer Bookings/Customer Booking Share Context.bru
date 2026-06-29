@@ -1,0 +1,20 @@
+meta {
+  name: Customer Booking Share Context
+  type: http
+  seq: 18
+}
+
+get {
+  url: {{baseUrl}}/api/me/bookings/{{bookingId}}/share-context
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{customerToken}}
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

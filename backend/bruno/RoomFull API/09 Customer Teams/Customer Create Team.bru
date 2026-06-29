@@ -1,0 +1,42 @@
+meta {
+  name: Customer Create Team
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/me/teams
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "name": "Workshop Crew"
+  }
+}
+
+script:post-response {
+  let json = res.getBody();
+  if (typeof json === "string") {
+    try {
+      json = JSON.parse(json);
+    } catch (e) {
+      json = null;
+    }
+  }
+
+  if (json && json.team && json.team.id) {
+    bru.setVar("teamId", json.team.id);
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

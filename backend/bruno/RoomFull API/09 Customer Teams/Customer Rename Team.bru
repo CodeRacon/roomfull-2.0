@@ -1,0 +1,27 @@
+meta {
+  name: Customer Rename Team
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/me/teams/{{teamId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{customerToken}}
+}
+
+body:json {
+  {
+    "name": "Product Circle"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

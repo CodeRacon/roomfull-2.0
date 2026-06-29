@@ -55,6 +55,23 @@ export type UserBookingRecord = Prisma.BookingGetPayload<{
 	};
 }>;
 
+export type BookingShareContextRecord = Prisma.BookingGetPayload<{
+	include: {
+		unit: {
+			select: {
+				id: true;
+				name: true;
+				capacity: true;
+				unitType: {
+					select: {
+						name: true;
+					};
+				};
+			};
+		};
+	};
+}>;
+
 export type AdminBookingRecord = Prisma.BookingGetPayload<{
 	include: {
 		user: {
@@ -179,6 +196,28 @@ export async function findBookingById(
 ): Promise<null | Booking> {
 	return prisma.booking.findUnique({
 		where: { id: input.bookingId },
+	});
+}
+
+export async function findBookingShareContext(input: {
+	bookingId: string;
+}): Promise<BookingShareContextRecord | null> {
+	return prisma.booking.findUnique({
+		where: { id: input.bookingId },
+		include: {
+			unit: {
+				select: {
+					id: true,
+					name: true,
+					capacity: true,
+					unitType: {
+						select: {
+							name: true,
+						},
+					},
+				},
+			},
+		},
 	});
 }
 

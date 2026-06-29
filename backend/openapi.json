@@ -17,6 +17,7 @@
 		{ "name": "Customer Bookings" },
 		{ "name": "Admin Bookings" },
 		{ "name": "Customer Contact" },
+		{ "name": "Customer Teams" },
 		{ "name": "Admin Contact" }
 	],
 	"paths": {
@@ -542,6 +543,286 @@
 				}
 			}
 		},
+		"/me/bookings/{bookingId}/share-context": {
+			"get": {
+				"tags": ["Customer Bookings"],
+				"summary": "Team Booking Share Context laden",
+				"description": "Liefert nur die fuer den Team Booking Share benoetigten Booking- und Unit-Daten einer eigenen aktiven Booking mit endTime >= now. Fremde und fehlende Bookings liefern identisch 404; stornierte oder vergangene eigene Bookings liefern 409.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "bookingId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Team Booking Share Context",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BookingShareContextResponse"
+								}
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" },
+					"409": { "$ref": "#/components/responses/Conflict" }
+				}
+			}
+		},
+		"/me/teams": {
+			"get": {
+				"tags": ["Customer Teams"],
+				"summary": "Eigene Team Summaries laden",
+				"description": "Liefert nur private Team Summaries des eingeloggten Customers. Member-Daten werden erst im Team Detail geladen.",
+				"security": [{ "bearerAuth": [] }],
+				"responses": {
+					"200": {
+						"description": "Eigene Teams",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/TeamSummaryListResponse" }
+							}
+						}
+					},
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" }
+				}
+			},
+			"post": {
+				"tags": ["Customer Teams"],
+				"summary": "Privates Team anlegen",
+				"description": "Legt ein leeres privates Team fuer den eingeloggten Customer an. Teamnamen werden getrimmt, duerfen 1 bis 80 Zeichen haben und sind pro Customer case-insensitive eindeutig.",
+				"security": [{ "bearerAuth": [] }],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/CreateTeamRequest" }
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Team angelegt",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/TeamSummaryResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"409": { "$ref": "#/components/responses/Conflict" }
+				}
+			}
+		},
+		"/me/teams/{teamId}": {
+			"get": {
+				"tags": ["Customer Teams"],
+				"summary": "Eigenes Team Detail laden",
+				"description": "Liefert ein eigenes Team inklusive Member-Daten. Fehlende und fremde Teams liefern identisch 404.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "teamId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Team Detail",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/TeamDetailResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			},
+			"put": {
+				"tags": ["Customer Teams"],
+				"summary": "Eigenes Team umbenennen",
+				"description": "Benennt ein eigenes Team um. Teamnamen werden getrimmt, duerfen 1 bis 80 Zeichen haben und sind pro Customer case-insensitive eindeutig. Der unveraenderte eigene Teamname ist erlaubt. Fehlende und fremde Teams liefern identisch 404.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "teamId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/CreateTeamRequest" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Team umbenannt",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/TeamSummaryResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" },
+					"409": { "$ref": "#/components/responses/Conflict" }
+				}
+			},
+			"delete": {
+				"tags": ["Customer Teams"],
+				"summary": "Eigenes Team loeschen",
+				"description": "Loescht ein eigenes Team endgueltig. Zugehoerige Members werden per Cascade entfernt. Fehlende und fremde Teams liefern identisch 404.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "teamId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"204": { "description": "Team geloescht" },
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
+		"/me/teams/{teamId}/members": {
+			"post": {
+				"tags": ["Customer Teams"],
+				"summary": "Team Member anlegen",
+				"description": "Fuegt einem eigenen Team einen Kontakt hinzu. Member-Namen werden getrimmt, E-Mails normalisiert kleingeschrieben und sind pro Team eindeutig. Fehlende und fremde Teams liefern identisch 404.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "teamId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/CreateTeamMemberRequest" }
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Team Member angelegt",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/TeamMemberResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" },
+					"409": { "$ref": "#/components/responses/Conflict" }
+				}
+			}
+		},
+		"/me/teams/{teamId}/members/{memberId}": {
+			"put": {
+				"tags": ["Customer Teams"],
+				"summary": "Team Member aktualisieren",
+				"description": "Aktualisiert einen Kontakt in einem eigenen Team. Member-Namen werden getrimmt, E-Mails normalisiert kleingeschrieben und sind pro Team eindeutig. Die unveraenderte eigene E-Mail ist erlaubt. Fehlende und fremde Teams oder Members liefern identisch 404.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "teamId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					},
+					{
+						"name": "memberId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/CreateTeamMemberRequest" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Team Member aktualisiert",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/TeamMemberResponse" }
+							}
+						}
+					},
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" },
+					"409": { "$ref": "#/components/responses/Conflict" }
+				}
+			},
+			"delete": {
+				"tags": ["Customer Teams"],
+				"summary": "Team Member loeschen",
+				"description": "Loescht einen Kontakt aus einem eigenen Team endgueltig. Fehlende und fremde Teams oder Members liefern identisch 404.",
+				"security": [{ "bearerAuth": [] }],
+				"parameters": [
+					{
+						"name": "teamId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					},
+					{
+						"name": "memberId",
+						"in": "path",
+						"required": true,
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"204": { "description": "Team Member geloescht" },
+					"400": { "$ref": "#/components/responses/BadRequest" },
+					"401": { "$ref": "#/components/responses/Unauthorized" },
+					"403": { "$ref": "#/components/responses/Forbidden" },
+					"404": { "$ref": "#/components/responses/NotFound" }
+				}
+			}
+		},
 		"/units/{unitId}/calendar-state": {
 			"get": {
 				"tags": ["Customer Bookings"],
@@ -933,6 +1214,101 @@
 					}
 				},
 				"required": ["contactRequest"]
+			},
+			"CreateTeamRequest": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 80,
+						"example": "Workshop Crew"
+					}
+				},
+				"required": ["name"]
+			},
+			"TeamSummary": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string", "example": "Workshop Crew" },
+					"memberCount": { "type": "integer", "minimum": 0 }
+				},
+				"required": ["id", "name", "memberCount"]
+			},
+			"TeamSummaryResponse": {
+				"type": "object",
+				"properties": {
+					"team": { "$ref": "#/components/schemas/TeamSummary" }
+				},
+				"required": ["team"]
+			},
+			"TeamSummaryListResponse": {
+				"type": "object",
+				"properties": {
+					"teams": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/TeamSummary" }
+					}
+				},
+				"required": ["teams"]
+			},
+			"TeamMember": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string", "example": "Anna Example" },
+					"email": {
+						"type": "string",
+						"format": "email",
+						"example": "anna@example.com"
+					}
+				},
+				"required": ["id", "name", "email"]
+			},
+			"CreateTeamMemberRequest": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 100,
+						"example": "Anna Example"
+					},
+					"email": {
+						"type": "string",
+						"format": "email",
+						"maxLength": 254,
+						"example": "anna@example.com"
+					}
+				},
+				"required": ["name", "email"]
+			},
+			"TeamMemberResponse": {
+				"type": "object",
+				"properties": {
+					"member": { "$ref": "#/components/schemas/TeamMember" }
+				},
+				"required": ["member"]
+			},
+			"TeamDetail": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "string" },
+					"name": { "type": "string", "example": "Workshop Crew" },
+					"members": {
+						"type": "array",
+						"items": { "$ref": "#/components/schemas/TeamMember" }
+					}
+				},
+				"required": ["id", "name", "members"]
+			},
+			"TeamDetailResponse": {
+				"type": "object",
+				"properties": {
+					"team": { "$ref": "#/components/schemas/TeamDetail" }
+				},
+				"required": ["team"]
 			},
 			"AdminContactRequestUser": {
 				"type": "object",
@@ -1453,6 +1829,54 @@
 					"booking": { "$ref": "#/components/schemas/Booking" }
 				},
 				"required": ["booking"]
+			},
+			"BookingShareContext": {
+				"type": "object",
+				"properties": {
+					"booking": {
+						"type": "object",
+						"properties": {
+							"id": { "type": "string" },
+							"startTime": { "type": "string", "format": "date-time" },
+							"endTime": { "type": "string", "format": "date-time" }
+						},
+						"required": ["id", "startTime", "endTime"]
+					},
+					"unit": {
+						"type": "object",
+						"properties": {
+							"id": { "type": "string" },
+							"name": { "type": "string" },
+							"capacity": { "type": "integer", "minimum": 1 },
+							"unitType": {
+								"type": "object",
+								"properties": {
+									"name": {
+										"type": "string",
+										"enum": [
+											"HOT_DESK",
+											"BOOTH",
+											"TEAM_ROOM",
+											"MEETING_ROOM"
+										]
+									}
+								},
+								"required": ["name"]
+							}
+						},
+						"required": ["id", "name", "capacity", "unitType"]
+					}
+				},
+				"required": ["booking", "unit"]
+			},
+			"BookingShareContextResponse": {
+				"type": "object",
+				"properties": {
+					"shareContext": {
+						"$ref": "#/components/schemas/BookingShareContext"
+					}
+				},
+				"required": ["shareContext"]
 			},
 			"MyBooking": {
 				"allOf": [
