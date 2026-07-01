@@ -10,10 +10,6 @@ get {
   auth: inherit
 }
 
-headers {
-  Authorization: Bearer {{customerToken}}
-}
-
 tests {
   test("returns hot desk auto assign booking context", function () {
     expect(res.getStatus()).to.equal(200);

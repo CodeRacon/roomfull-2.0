@@ -10,10 +10,6 @@ get {
   auth: inherit
 }
 
-headers {
-  Authorization: Bearer {{customerToken}}
-}
-
 tests {
   test("returns hot desk booking availability without unit ids", function () {
     expect(res.getStatus()).to.equal(200);

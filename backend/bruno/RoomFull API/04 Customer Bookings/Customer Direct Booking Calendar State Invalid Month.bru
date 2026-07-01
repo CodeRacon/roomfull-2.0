@@ -10,10 +10,6 @@ get {
   auth: inherit
 }
 
-headers {
-  Authorization: Bearer {{customerToken}}
-}
-
 tests {
   test("rejects invalid month query", function () {
     expect(res.getStatus()).to.equal(400);

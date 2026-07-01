@@ -10,10 +10,6 @@ get {
   auth: inherit
 }
 
-headers {
-  Authorization: Bearer {{customerToken}}
-}
-
 tests {
   test("returns direct booking calendar state", function () {
     expect(res.getStatus()).to.equal(200);
