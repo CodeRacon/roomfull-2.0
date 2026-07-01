@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
+import { clearAuthCookie, setAuthCookie } from "../lib/auth-cookie.js";
 import {
+	createDemoCustomerSession,
 	getCurrentUser,
 	loginUser,
 	registerUser,
@@ -81,7 +83,8 @@ export async function registerController(
 
 	try {
 		const authResponse = await registerUser(input);
-		res.status(201).json(authResponse);
+		setAuthCookie(res, authResponse.token);
+		res.status(201).json({ user: authResponse.user });
 	} catch (error) {
 		next(error);
 	}
@@ -101,7 +104,8 @@ export async function loginController(
 
 	try {
 		const authResponse = await loginUser(input);
-		res.status(200).json(authResponse);
+		setAuthCookie(res, authResponse.token);
+		res.status(200).json({ user: authResponse.user });
 	} catch (error) {
 		next(error);
 	}
@@ -125,4 +129,23 @@ export async function meController(
 	} catch (error) {
 		next(error);
 	}
+}
+
+export async function demoLoginController(
+	_req: Request,
+	res: Response,
+	next: NextFunction,
+): Promise<void> {
+	try {
+		const authResponse = await createDemoCustomerSession();
+		setAuthCookie(res, authResponse.token);
+		res.status(201).json({ user: authResponse.user });
+	} catch (error) {
+		next(error);
+	}
+}
+
+export function logoutController(_req: Request, res: Response): void {
+	clearAuthCookie(res);
+	res.status(204).end();
 }

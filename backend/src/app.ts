@@ -11,6 +11,7 @@ import { apiRouter } from "./routes/index.js";
 
 export const app = express();
 
+app.set("trust proxy", env.NODE_ENV === "production" ? 1 : false);
 app.use(helmet());
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(express.json());

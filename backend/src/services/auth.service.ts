@@ -1,4 +1,6 @@
+import { randomUUID } from "node:crypto";
 import type { User } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import {
 	createUser,
@@ -8,6 +10,7 @@ import {
 } from "../db/user.repository.js";
 import { AppError } from "../lib/app-error.js";
 import { signAccessToken } from "../lib/jwt.js";
+import { demoCustomerDataService } from "./demo-customer-data.service.js";
 
 type RegisterInput = {
 	name: string;
@@ -25,6 +28,8 @@ type PublicUser = {
 	name: string;
 	email: string;
 	role: User["role"];
+	isDemo: boolean;
+	demoExpiresAt: Date | null;
 	createdAt: Date;
 };
 
@@ -33,12 +38,40 @@ type AuthResponse = {
 	user: PublicUser;
 };
 
+type DemoCustomerDeps = {
+	createUser: typeof createUser;
+	now: () => Date;
+	populateDemoCustomerData: typeof demoCustomerDataService.populateDemoCustomerData;
+};
+
 const PASSWORD_HASH_ROUNDS = 12;
 const INVALID_LOGIN_MESSAGE = "Ungültige Login-Daten";
 const EMAIL_ALREADY_REGISTERED_MESSAGE = "E-Mail ist bereits registriert";
+const DEMO_CUSTOMER_NAME = "Demo Customer";
+const DEMO_CUSTOMER_EMAIL_PREFIX = "demo-visitor";
+const DEMO_CUSTOMER_EMAIL_DOMAIN = "roomfull-demo.test";
+const DEMO_SESSION_DURATION_MS = 24 * 60 * 60 * 1000;
+const DEMO_CUSTOMER_EMAIL_SUFFIX_LENGTH = 8;
+
+const defaultDemoCustomerDeps: DemoCustomerDeps = {
+	createUser,
+	now: () => new Date(),
+	populateDemoCustomerData:
+		demoCustomerDataService.populateDemoCustomerData.bind(
+			demoCustomerDataService,
+		),
+};
 
 function normalizeEmail(email: string): string {
 	return email.trim().toLowerCase();
+}
+
+function createDemoCustomerEmail(): string {
+	const suffix = randomUUID()
+		.replaceAll("-", "")
+		.slice(0, DEMO_CUSTOMER_EMAIL_SUFFIX_LENGTH);
+
+	return `${DEMO_CUSTOMER_EMAIL_PREFIX}-${suffix}@${DEMO_CUSTOMER_EMAIL_DOMAIN}`;
 }
 
 export async function registerUser(
@@ -112,6 +145,27 @@ export async function getCurrentUser(userId: string): Promise<PublicUser> {
 	return toPublicUser(user);
 }
 
+export async function createDemoCustomerSession(
+	deps: DemoCustomerDeps = defaultDemoCustomerDeps,
+): Promise<AuthResponse> {
+	const now = deps.now();
+	const expiresAt = new Date(now.getTime() + DEMO_SESSION_DURATION_MS);
+	const passwordHash = await bcrypt.hash(randomUUID(), PASSWORD_HASH_ROUNDS);
+
+	const demoCustomer = await deps.createUser({
+		name: DEMO_CUSTOMER_NAME,
+		email: createDemoCustomerEmail(),
+		passwordHash,
+		role: UserRole.CUSTOMER,
+		isDemo: true,
+		demoExpiresAt: expiresAt,
+	});
+
+	await deps.populateDemoCustomerData({ customerId: demoCustomer.id });
+
+	return buildAuthResponse(demoCustomer);
+}
+
 function buildAuthResponse(user: User): AuthResponse {
 	return {
 		token: signAccessToken({
@@ -128,6 +182,8 @@ function toPublicUser(user: User): PublicUser {
 		name: user.name,
 		email: user.email,
 		role: user.role,
+		isDemo: user.isDemo,
+		demoExpiresAt: user.demoExpiresAt,
 		createdAt: user.createdAt,
 	};
 }

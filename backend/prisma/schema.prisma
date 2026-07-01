@@ -42,6 +42,8 @@ model User {
   email        String    @unique
   passwordHash String    @map("password_hash")
   role         UserRole  @default(CUSTOMER)
+  isDemo       Boolean   @default(false) @map("is_demo")
+  demoExpiresAt DateTime? @map("demo_expires_at")
   bookings     Booking[]
   contactRequests ContactRequest[]
   teams        Team[]

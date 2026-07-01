@@ -7,6 +7,8 @@ export type CreateUserInput = {
 	email: string;
 	passwordHash: string;
 	role?: UserRole;
+	isDemo?: boolean;
+	demoExpiresAt?: Date | null;
 };
 
 export async function findUserByEmail(email: string): Promise<User | null> {
@@ -24,6 +26,8 @@ export async function createUser(input: CreateUserInput): Promise<User> {
 			email: input.email,
 			passwordHash: input.passwordHash,
 			role: input.role ?? UserRole.CUSTOMER,
+			isDemo: input.isDemo ?? false,
+			demoExpiresAt: input.demoExpiresAt ?? null,
 		},
 	});
 }

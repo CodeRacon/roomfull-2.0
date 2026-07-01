@@ -11,25 +11,45 @@
 		}
 	],
 	"tags": [
-		{ "name": "Auth" },
-		{ "name": "Public Units" },
-		{ "name": "Admin Units" },
-		{ "name": "Customer Bookings" },
-		{ "name": "Admin Bookings" },
-		{ "name": "Customer Contact" },
-		{ "name": "Customer Teams" },
-		{ "name": "Admin Contact" }
+		{
+			"name": "Auth"
+		},
+		{
+			"name": "Public Units"
+		},
+		{
+			"name": "Admin Units"
+		},
+		{
+			"name": "Customer Bookings"
+		},
+		{
+			"name": "Admin Bookings"
+		},
+		{
+			"name": "Customer Contact"
+		},
+		{
+			"name": "Customer Teams"
+		},
+		{
+			"name": "Admin Contact"
+		}
 	],
 	"paths": {
 		"/auth/register": {
 			"post": {
-				"tags": ["Auth"],
+				"tags": [
+					"Auth"
+				],
 				"summary": "Neuen User registrieren",
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/RegisterRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/RegisterRequest"
+							}
 						}
 					}
 				},
@@ -38,24 +58,37 @@
 						"description": "Registrierung erfolgreich",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AuthResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					},
+					"429": {
+						"": "#/components/responses/TooManyRequests"
+					}
 				}
 			}
 		},
 		"/auth/login": {
 			"post": {
-				"tags": ["Auth"],
+				"tags": [
+					"Auth"
+				],
 				"summary": "User einloggen",
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/LoginRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/LoginRequest"
+							}
 						}
 					}
 				},
@@ -64,20 +97,73 @@
 						"description": "Login erfolgreich",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AuthResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"429": {
+						"": "#/components/responses/TooManyRequests"
+					}
+				}
+			}
+		},
+		"/auth/demo-login": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Demo Customer Session erstellen",
+				"description": "Erzeugt einen frischen, isolierten Demo Customer fuer die Portfolio-Demo, setzt ein HttpOnly Auth-Cookie und gibt den Customer zurueck. Vollstaendige Demo-Daten werden in einem separaten Slice befuellt.",
+				"responses": {
+					"201": {
+						"description": "Demo Customer Session erstellt",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthResponse"
+								}
+							}
+						}
+					},
+					"429": {
+						"": "#/components/responses/TooManyRequests"
+					}
+				}
+			}
+		},
+		"/auth/logout": {
+			"post": {
+				"tags": [
+					"Auth"
+				],
+				"summary": "Aktuelle Session beenden",
+				"description": "Loescht das HttpOnly Auth-Cookie.",
+				"responses": {
+					"204": {
+						"description": "Session beendet"
+					}
 				}
 			}
 		},
 		"/auth/me": {
 			"get": {
-				"tags": ["Auth"],
+				"tags": [
+					"Auth"
+				],
 				"summary": "Eingeloggten User laden",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "User-Profil",
@@ -86,24 +172,38 @@
 								"schema": {
 									"type": "object",
 									"properties": {
-										"user": { "$ref": "#/components/schemas/PublicUser" }
+										"user": {
+											"$ref": "#/components/schemas/PublicUser"
+										}
 									},
-									"required": ["user"]
+									"required": [
+										"user"
+									]
 								}
 							}
 						}
 					},
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/contact-requests": {
 			"post": {
-				"tags": ["Customer Contact"],
+				"tags": [
+					"Customer Contact"
+				],
 				"summary": "Customer Contact Request absenden",
 				"description": "Speichert eine Customer-only Kontaktanfrage ohne E-Mail-Versand. Neue Anfragen starten global ungelesen.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -125,15 +225,26 @@
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"429": {
+						"": "#/components/responses/TooManyRequests"
+					}
 				}
 			}
 		},
 		"/public/units": {
 			"get": {
-				"tags": ["Public Units"],
+				"tags": [
+					"Public Units"
+				],
 				"summary": "Aktive Units laden",
 				"parameters": [
 					{
@@ -142,7 +253,12 @@
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+							"enum": [
+								"HOT_DESK",
+								"BOOTH",
+								"TEAM_ROOM",
+								"MEETING_ROOM"
+							]
 						},
 						"description": "Optionaler Filter nach UnitType"
 					},
@@ -152,7 +268,10 @@
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": ["de", "en"],
+							"enum": [
+								"de",
+								"en"
+							],
 							"default": "de"
 						},
 						"description": "Optionales Locale fuer lokalisierte Unit-/Area-Beschreibungen. Der Response liefert weiterhin `description`."
@@ -163,17 +282,23 @@
 						"description": "Liste aktiver Units",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/UnitListResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/UnitListResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					}
 				}
 			}
 		},
 		"/public/booking-options": {
 			"get": {
-				"tags": ["Public Units"],
+				"tags": [
+					"Public Units"
+				],
 				"summary": "Public BookingOptions laden",
 				"description": "Liefert die Customer-facing BookingOptions für den Homepage-Einstieg. Der Endpoint arbeitet ohne Zeitraum und beschreibt grundsätzliche Buchbarkeit.",
 				"responses": {
@@ -181,7 +306,9 @@
 						"description": "Liste öffentlicher BookingOptions",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/BookingOptionListResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/BookingOptionListResponse"
+								}
 							}
 						}
 					}
@@ -190,14 +317,18 @@
 		},
 		"/public/units/{unitId}": {
 			"get": {
-				"tags": ["Public Units"],
+				"tags": [
+					"Public Units"
+				],
 				"summary": "Aktive Unit per ID laden",
 				"parameters": [
 					{
 						"name": "unitId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					},
 					{
 						"name": "locale",
@@ -205,7 +336,10 @@
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": ["de", "en"],
+							"enum": [
+								"de",
+								"en"
+							],
 							"default": "de"
 						},
 						"description": "Optionales Locale fuer lokalisierte Unit-/Area-Beschreibungen. Der Response liefert weiterhin `description`."
@@ -216,20 +350,32 @@
 						"description": "Unitdetails",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/UnitResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/UnitResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/admin/units": {
 			"get": {
-				"tags": ["Admin Units"],
+				"tags": [
+					"Admin Units"
+				],
 				"summary": "Units für Admin-Inventar laden",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "status",
@@ -237,7 +383,11 @@
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": ["active", "deactivated", "all"],
+							"enum": [
+								"active",
+								"deactivated",
+								"all"
+							],
 							"default": "active"
 						}
 					},
@@ -247,14 +397,21 @@
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+							"enum": [
+								"HOT_DESK",
+								"BOOTH",
+								"TEAM_ROOM",
+								"MEETING_ROOM"
+							]
 						}
 					},
 					{
 						"name": "search",
 						"in": "query",
 						"required": false,
-						"schema": { "type": "string" },
+						"schema": {
+							"type": "string"
+						},
 						"description": "Einfache Suche nach Unit-Name"
 					}
 				],
@@ -263,24 +420,40 @@
 						"description": "Admin-Inventarliste",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AdminUnitListResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/AdminUnitListResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					}
 				}
 			},
 			"post": {
-				"tags": ["Admin Units"],
+				"tags": [
+					"Admin Units"
+				],
 				"summary": "Neue Unit erstellen",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/CreateUnitRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/CreateUnitRequest"
+							}
 						}
 					}
 				},
@@ -289,22 +462,38 @@
 						"description": "Unit erfolgreich erstellt",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AdminUnitResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/AdminUnitResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/admin/units/context": {
 			"get": {
-				"tags": ["Admin Units"],
+				"tags": [
+					"Admin Units"
+				],
 				"summary": "Auswahlwerte für Admin-Unit-Formular laden",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "Admin-Unit-Formular-Kontext",
@@ -316,29 +505,43 @@
 							}
 						}
 					},
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					}
 				}
 			}
 		},
 		"/admin/units/{unitId}": {
 			"put": {
-				"tags": ["Admin Units"],
+				"tags": [
+					"Admin Units"
+				],
 				"summary": "Unit aktualisieren",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "unitId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/UpdateUnitRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/UpdateUnitRequest"
+							}
 						}
 					}
 				},
@@ -347,28 +550,46 @@
 						"description": "Unit erfolgreich aktualisiert",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AdminUnitResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/AdminUnitResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/admin/units/{unitId}/deactivate": {
 			"patch": {
-				"tags": ["Admin Units"],
+				"tags": [
+					"Admin Units"
+				],
 				"summary": "Unit deaktivieren",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "unitId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"responses": {
@@ -376,43 +597,68 @@
 						"description": "Unit erfolgreich deaktiviert",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AdminUnitResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/AdminUnitResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/bookings/context": {
 			"get": {
-				"tags": ["Customer Bookings"],
+				"tags": [
+					"Customer Bookings"
+				],
 				"summary": "Booking Context für Create Booking Page laden",
 				"description": "Auth-required Endpoint für `/bookings/new`. Akzeptiert entweder `unitId` für Direktbuchung oder `unitType=HOT_DESK&areaId=...` für Hot-Desk-Auto-Assign.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "unitId",
 						"in": "query",
 						"required": false,
-						"schema": { "type": "string" },
+						"schema": {
+							"type": "string"
+						},
 						"description": "Konkrete Unit für Direct Booking"
 					},
 					{
 						"name": "unitType",
 						"in": "query",
 						"required": false,
-						"schema": { "type": "string", "enum": ["HOT_DESK"] },
+						"schema": {
+							"type": "string",
+							"enum": [
+								"HOT_DESK"
+							]
+						},
 						"description": "UnitType für Auto-Assign; in V1 nur HOT_DESK"
 					},
 					{
 						"name": "areaId",
 						"in": "query",
 						"required": false,
-						"schema": { "type": "string" },
+						"schema": {
+							"type": "string"
+						},
 						"description": "Area für Hot-Desk-Auto-Assign"
 					},
 					{
@@ -421,7 +667,10 @@
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": ["de", "en"],
+							"enum": [
+								"de",
+								"en"
+							],
 							"default": "de"
 						},
 						"description": "Optionales Locale fuer lokalisierte Unit-/Area-Beschreibungen. Der Response liefert weiterhin `description`."
@@ -432,22 +681,36 @@
 						"description": "Booking Context",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/BookingContextResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/BookingContextResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/bookings/availability": {
 			"get": {
-				"tags": ["Customer Bookings"],
+				"tags": [
+					"Customer Bookings"
+				],
 				"summary": "Booking Availability für einen Tag laden",
 				"description": "Auth-required Endpoint für die Create Booking Page. Akzeptiert entweder `unitId` für Direct Booking oder `areaId + unitType=HOT_DESK` für Hot-Desk-Auto-Assign. Liefert lokale HH:mm Availability Slots und blockierende Intervalle für den gewählten Tag.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "date",
@@ -463,21 +726,30 @@
 						"name": "unitId",
 						"in": "query",
 						"required": false,
-						"schema": { "type": "string" },
+						"schema": {
+							"type": "string"
+						},
 						"description": "Konkrete Unit für Direct Booking"
 					},
 					{
 						"name": "areaId",
 						"in": "query",
 						"required": false,
-						"schema": { "type": "string" },
+						"schema": {
+							"type": "string"
+						},
 						"description": "Area für Hot-Desk-Auto-Assign"
 					},
 					{
 						"name": "unitType",
 						"in": "query",
 						"required": false,
-						"schema": { "type": "string", "enum": ["HOT_DESK"] },
+						"schema": {
+							"type": "string",
+							"enum": [
+								"HOT_DESK"
+							]
+						},
 						"description": "UnitType für Auto-Assign; in V1 nur HOT_DESK"
 					}
 				],
@@ -486,26 +758,42 @@
 						"description": "Booking Availability für den Tag",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/BookingAvailabilityResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/BookingAvailabilityResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/bookings": {
 			"post": {
-				"tags": ["Customer Bookings"],
+				"tags": [
+					"Customer Bookings"
+				],
 				"summary": "Neue Buchung erstellen",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/CreateBookingRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/CreateBookingRequest"
+							}
 						}
 					}
 				},
@@ -514,47 +802,78 @@
 						"description": "Buchung erfolgreich erstellt",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/BookingResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/BookingResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"404": { "$ref": "#/components/responses/NotFound" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					},
+					"429": {
+						"": "#/components/responses/TooManyRequests"
+					}
 				}
 			}
 		},
 		"/me/bookings": {
 			"get": {
-				"tags": ["Customer Bookings"],
+				"tags": [
+					"Customer Bookings"
+				],
 				"summary": "Eigene Buchungen laden",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "Eigene Buchungen",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/BookingListResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/BookingListResponse"
+								}
 							}
 						}
 					},
-					"401": { "$ref": "#/components/responses/Unauthorized" }
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					}
 				}
 			}
 		},
 		"/me/bookings/{bookingId}/share-context": {
 			"get": {
-				"tags": ["Customer Bookings"],
+				"tags": [
+					"Customer Bookings"
+				],
 				"summary": "Team Booking Share Context laden",
 				"description": "Liefert nur die fuer den Team Booking Share benoetigten Booking- und Unit-Daten einer eigenen aktiven Booking mit endTime >= now. Fremde und fehlende Bookings liefern identisch 404; stornierte oder vergangene eigene Bookings liefern 409.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "bookingId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"responses": {
@@ -568,43 +887,73 @@
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					}
 				}
 			}
 		},
 		"/me/teams": {
 			"get": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Eigene Team Summaries laden",
 				"description": "Liefert nur private Team Summaries des eingeloggten Customers. Member-Daten werden erst im Team Detail geladen.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "Eigene Teams",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/TeamSummaryListResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/TeamSummaryListResponse"
+								}
 							}
 						}
 					},
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					}
 				}
 			},
 			"post": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Privates Team anlegen",
 				"description": "Legt ein leeres privates Team fuer den eingeloggten Customer an. Teamnamen werden getrimmt, duerfen 1 bis 80 Zeichen haben und sind pro Customer case-insensitive eindeutig.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/CreateTeamRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/CreateTeamRequest"
+							}
 						}
 					}
 				},
@@ -613,29 +962,47 @@
 						"description": "Team angelegt",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/TeamSummaryResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/TeamSummaryResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					}
 				}
 			}
 		},
 		"/me/teams/{teamId}": {
 			"get": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Eigenes Team Detail laden",
 				"description": "Liefert ein eigenes Team inklusive Member-Daten. Fehlende und fremde Teams liefern identisch 404.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "teamId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"responses": {
@@ -643,34 +1010,54 @@
 						"description": "Team Detail",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/TeamDetailResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/TeamDetailResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			},
 			"put": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Eigenes Team umbenennen",
 				"description": "Benennt ein eigenes Team um. Teamnamen werden getrimmt, duerfen 1 bis 80 Zeichen haben und sind pro Customer case-insensitive eindeutig. Der unveraenderte eigene Teamname ist erlaubt. Fehlende und fremde Teams liefern identisch 404.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "teamId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/CreateTeamRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/CreateTeamRequest"
+							}
 						}
 					}
 				},
@@ -679,58 +1066,98 @@
 						"description": "Team umbenannt",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/TeamSummaryResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/TeamSummaryResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					}
 				}
 			},
 			"delete": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Eigenes Team loeschen",
 				"description": "Loescht ein eigenes Team endgueltig. Zugehoerige Members werden per Cascade entfernt. Fehlende und fremde Teams liefern identisch 404.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "teamId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"responses": {
-					"204": { "description": "Team geloescht" },
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"204": {
+						"description": "Team geloescht"
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/me/teams/{teamId}/members": {
 			"post": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Team Member anlegen",
 				"description": "Fuegt einem eigenen Team einen Kontakt hinzu. Member-Namen werden getrimmt, E-Mails normalisiert kleingeschrieben und sind pro Team eindeutig. Fehlende und fremde Teams liefern identisch 404.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "teamId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/CreateTeamMemberRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/CreateTeamMemberRequest"
+							}
 						}
 					}
 				},
@@ -739,43 +1166,67 @@
 						"description": "Team Member angelegt",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/TeamMemberResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/TeamMemberResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					}
 				}
 			}
 		},
 		"/me/teams/{teamId}/members/{memberId}": {
 			"put": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Team Member aktualisieren",
 				"description": "Aktualisiert einen Kontakt in einem eigenen Team. Member-Namen werden getrimmt, E-Mails normalisiert kleingeschrieben und sind pro Team eindeutig. Die unveraenderte eigene E-Mail ist erlaubt. Fehlende und fremde Teams oder Members liefern identisch 404.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "teamId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					},
 					{
 						"name": "memberId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"requestBody": {
 					"required": true,
 					"content": {
 						"application/json": {
-							"schema": { "$ref": "#/components/schemas/CreateTeamMemberRequest" }
+							"schema": {
+								"$ref": "#/components/schemas/CreateTeamMemberRequest"
+							}
 						}
 					}
 				},
@@ -784,57 +1235,97 @@
 						"description": "Team Member aktualisiert",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/TeamMemberResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/TeamMemberResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					}
 				}
 			},
 			"delete": {
-				"tags": ["Customer Teams"],
+				"tags": [
+					"Customer Teams"
+				],
 				"summary": "Team Member loeschen",
 				"description": "Loescht einen Kontakt aus einem eigenen Team endgueltig. Fehlende und fremde Teams oder Members liefern identisch 404.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "teamId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					},
 					{
 						"name": "memberId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"responses": {
-					"204": { "description": "Team Member geloescht" },
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"204": {
+						"description": "Team Member geloescht"
+					},
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/units/{unitId}/calendar-state": {
 			"get": {
-				"tags": ["Customer Bookings"],
+				"tags": [
+					"Customer Bookings"
+				],
 				"summary": "Direct Booking Calendar State einer Unit für einen Monat laden",
 				"description": "Auth-required Endpoint für den BookingFlow. Liefert Monatszustände aus aktiven Bookings, aber keine rohen Booking-, User- oder Owner-Daten.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "unitId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					},
 					{
 						"name": "month",
@@ -852,27 +1343,43 @@
 						"description": "Calendar State für den Monat",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/DirectBookingCalendarStateResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/DirectBookingCalendarStateResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/bookings/{bookingId}": {
 			"delete": {
-				"tags": ["Customer Bookings"],
+				"tags": [
+					"Customer Bookings"
+				],
 				"summary": "Eigene zukünftige Buchung stornieren",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "bookingId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"responses": {
@@ -880,30 +1387,57 @@
 						"description": "Buchung erfolgreich storniert",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/BookingResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/BookingResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" },
-					"409": { "$ref": "#/components/responses/Conflict" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					},
+					"409": {
+						"$ref": "#/components/responses/Conflict"
+					},
+					"429": {
+						"": "#/components/responses/TooManyRequests"
+					}
 				}
 			}
 		},
 		"/admin/bookings": {
 			"get": {
-				"tags": ["Admin Bookings"],
+				"tags": [
+					"Admin Bookings"
+				],
 				"summary": "Buchungen gefiltert laden (Admin)",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "status",
 						"in": "query",
 						"schema": {
 							"type": "string",
-							"enum": ["upcoming", "today", "completed", "cancelled", "all"],
+							"enum": [
+								"upcoming",
+								"today",
+								"completed",
+								"cancelled",
+								"all"
+							],
 							"default": "upcoming"
 						}
 					},
@@ -922,7 +1456,12 @@
 						"description": "Rollierender Berliner Kalenderzeitraum; darf nicht mit from/to kombiniert werden.",
 						"schema": {
 							"type": "string",
-							"enum": ["week", "month", "quarter", "year"],
+							"enum": [
+								"week",
+								"month",
+								"quarter",
+								"year"
+							],
 							"default": "month"
 						}
 					},
@@ -960,29 +1499,47 @@
 						"description": "Admin Booking Operations Datensatz",
 						"content": {
 							"application/json": {
-								"schema": { "$ref": "#/components/schemas/AdminBookingOperationsResponse" }
+								"schema": {
+									"$ref": "#/components/schemas/AdminBookingOperationsResponse"
+								}
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					}
 				}
 			}
 		},
 		"/admin/contact-requests": {
 			"get": {
-				"tags": ["Admin Contact"],
+				"tags": [
+					"Admin Contact"
+				],
 				"summary": "Customer Contact Requests laden",
 				"description": "Liefert eingegangene Customer Contact Requests für die Admin Contact Inbox.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "type",
 						"in": "query",
 						"schema": {
 							"type": "string",
-							"enum": ["QUESTION", "FEEDBACK", "CRITICISM"]
+							"enum": [
+								"QUESTION",
+								"FEEDBACK",
+								"CRITICISM"
+							]
 						}
 					},
 					{
@@ -990,7 +1547,11 @@
 						"in": "query",
 						"schema": {
 							"type": "string",
-							"enum": ["all", "read", "unread"],
+							"enum": [
+								"all",
+								"read",
+								"unread"
+							],
 							"default": "all"
 						}
 					},
@@ -999,7 +1560,10 @@
 						"in": "query",
 						"schema": {
 							"type": "string",
-							"enum": ["received_desc", "received_asc"],
+							"enum": [
+								"received_desc",
+								"received_asc"
+							],
 							"default": "received_desc"
 						}
 					}
@@ -1015,18 +1579,30 @@
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					}
 				}
 			}
 		},
 		"/admin/contact-requests/unread-count": {
 			"get": {
-				"tags": ["Admin Contact"],
+				"tags": [
+					"Admin Contact"
+				],
 				"summary": "Ungelesene Customer Contact Requests zaehlen",
 				"description": "Liefert die globale Anzahl ungelesener Customer Contact Requests fuer dezente Admin-Hinweise.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"responses": {
 					"200": {
 						"description": "Anzahl ungelesener Kontaktanfragen",
@@ -1038,22 +1614,34 @@
 							}
 						}
 					},
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					}
 				}
 			}
 		},
 		"/admin/contact-requests/{contactRequestId}/read": {
 			"patch": {
-				"tags": ["Admin Contact"],
+				"tags": [
+					"Admin Contact"
+				],
 				"summary": "Customer Contact Request als gelesen markieren",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "contactRequestId",
 						"in": "path",
 						"required": true,
-						"schema": { "type": "string" }
+						"schema": {
+							"type": "string"
+						}
 					}
 				],
 				"responses": {
@@ -1067,19 +1655,33 @@
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" },
-					"404": { "$ref": "#/components/responses/NotFound" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					},
+					"404": {
+						"$ref": "#/components/responses/NotFound"
+					}
 				}
 			}
 		},
 		"/admin/analytics/booking-demand": {
 			"get": {
-				"tags": ["Admin Analytics"],
+				"tags": [
+					"Admin Analytics"
+				],
 				"summary": "Nachfrageverlauf für Admin Analytics laden",
 				"description": "Liefert aktive Bookings gruppiert nach Booking-Startdatum. Ohne Zeitraum nutzt der Endpoint 30 Tage zurück und 30 Tage voraus.",
-				"security": [{ "bearerAuth": [] }],
+				"security": [
+					{
+						"authCookie": []
+					}
+				],
 				"parameters": [
 					{
 						"name": "from",
@@ -1111,34 +1713,51 @@
 							}
 						}
 					},
-					"400": { "$ref": "#/components/responses/BadRequest" },
-					"401": { "$ref": "#/components/responses/Unauthorized" },
-					"403": { "$ref": "#/components/responses/Forbidden" }
+					"400": {
+						"$ref": "#/components/responses/BadRequest"
+					},
+					"401": {
+						"$ref": "#/components/responses/Unauthorized"
+					},
+					"403": {
+						"$ref": "#/components/responses/Forbidden"
+					}
 				}
 			}
 		}
 	},
 	"components": {
 		"securitySchemes": {
-			"bearerAuth": {
-				"type": "http",
-				"scheme": "bearer",
-				"bearerFormat": "JWT"
+			"authCookie": {
+				"type": "apiKey",
+				"in": "cookie",
+				"name": "roomfull_access_token"
 			}
 		},
 		"schemas": {
 			"RegisterRequest": {
 				"type": "object",
 				"properties": {
-					"name": { "type": "string", "example": "Max Mustermann" },
+					"name": {
+						"type": "string",
+						"example": "Max Mustermann"
+					},
 					"email": {
 						"type": "string",
 						"format": "email",
 						"example": "max@example.com"
 					},
-					"password": { "type": "string", "minLength": 8, "example": "secret123" }
+					"password": {
+						"type": "string",
+						"minLength": 8,
+						"example": "secret123"
+					}
 				},
-				"required": ["name", "email", "password"]
+				"required": [
+					"name",
+					"email",
+					"password"
+				]
 			},
 			"LoginRequest": {
 				"type": "object",
@@ -1148,39 +1767,86 @@
 						"format": "email",
 						"example": "max@example.com"
 					},
-					"password": { "type": "string", "example": "secret123" }
+					"password": {
+						"type": "string",
+						"example": "secret123"
+					}
 				},
-				"required": ["email", "password"]
+				"required": [
+					"email",
+					"password"
+				]
 			},
 			"PublicUser": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string", "example": "ckxyz123456" },
-					"name": { "type": "string", "example": "Max Mustermann" },
+					"id": {
+						"type": "string",
+						"example": "ckxyz123456"
+					},
+					"name": {
+						"type": "string",
+						"example": "Max Mustermann"
+					},
 					"email": {
 						"type": "string",
 						"format": "email",
 						"example": "max@example.com"
 					},
-					"role": { "type": "string", "enum": ["CUSTOMER", "ADMIN"], "example": "CUSTOMER" },
-					"createdAt": { "type": "string", "format": "date-time" }
+					"role": {
+						"type": "string",
+						"enum": [
+							"CUSTOMER",
+							"ADMIN"
+						],
+						"example": "CUSTOMER"
+					},
+					"isDemo": {
+						"type": "boolean",
+						"example": false
+					},
+					"demoExpiresAt": {
+						"type": "string",
+						"format": "date-time",
+						"nullable": true,
+						"example": null
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
 				},
-				"required": ["id", "name", "email", "role", "createdAt"]
+				"required": [
+					"id",
+					"name",
+					"email",
+					"role",
+					"isDemo",
+					"demoExpiresAt",
+					"createdAt"
+				]
 			},
 			"AuthResponse": {
 				"type": "object",
 				"properties": {
-					"token": { "type": "string" },
-					"user": { "$ref": "#/components/schemas/PublicUser" }
+					"user": {
+						"$ref": "#/components/schemas/PublicUser"
+					}
 				},
-				"required": ["token", "user"]
+				"required": [
+					"user"
+				]
 			},
 			"CreateContactRequestRequest": {
 				"type": "object",
 				"properties": {
 					"type": {
 						"type": "string",
-						"enum": ["QUESTION", "FEEDBACK", "CRITICISM"],
+						"enum": [
+							"QUESTION",
+							"FEEDBACK",
+							"CRITICISM"
+						],
 						"example": "QUESTION"
 					},
 					"message": {
@@ -1189,22 +1855,48 @@
 						"example": "Ich habe eine Frage zu meiner Buchung."
 					}
 				},
-				"required": ["type", "message"]
+				"required": [
+					"type",
+					"message"
+				]
 			},
 			"ContactRequest": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"userId": { "type": "string" },
+					"id": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string"
+					},
 					"type": {
 						"type": "string",
-						"enum": ["QUESTION", "FEEDBACK", "CRITICISM"]
+						"enum": [
+							"QUESTION",
+							"FEEDBACK",
+							"CRITICISM"
+						]
 					},
-					"message": { "type": "string" },
-					"isRead": { "type": "boolean", "example": false },
-					"createdAt": { "type": "string", "format": "date-time" }
+					"message": {
+						"type": "string"
+					},
+					"isRead": {
+						"type": "boolean",
+						"example": false
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
 				},
-				"required": ["id", "userId", "type", "message", "isRead", "createdAt"]
+				"required": [
+					"id",
+					"userId",
+					"type",
+					"message",
+					"isRead",
+					"createdAt"
+				]
 			},
 			"ContactRequestResponse": {
 				"type": "object",
@@ -1213,7 +1905,9 @@
 						"$ref": "#/components/schemas/ContactRequest"
 					}
 				},
-				"required": ["contactRequest"]
+				"required": [
+					"contactRequest"
+				]
 			},
 			"CreateTeamRequest": {
 				"type": "object",
@@ -1225,46 +1919,77 @@
 						"example": "Workshop Crew"
 					}
 				},
-				"required": ["name"]
+				"required": [
+					"name"
+				]
 			},
 			"TeamSummary": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string", "example": "Workshop Crew" },
-					"memberCount": { "type": "integer", "minimum": 0 }
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string",
+						"example": "Workshop Crew"
+					},
+					"memberCount": {
+						"type": "integer",
+						"minimum": 0
+					}
 				},
-				"required": ["id", "name", "memberCount"]
+				"required": [
+					"id",
+					"name",
+					"memberCount"
+				]
 			},
 			"TeamSummaryResponse": {
 				"type": "object",
 				"properties": {
-					"team": { "$ref": "#/components/schemas/TeamSummary" }
+					"team": {
+						"$ref": "#/components/schemas/TeamSummary"
+					}
 				},
-				"required": ["team"]
+				"required": [
+					"team"
+				]
 			},
 			"TeamSummaryListResponse": {
 				"type": "object",
 				"properties": {
 					"teams": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/TeamSummary" }
+						"items": {
+							"$ref": "#/components/schemas/TeamSummary"
+						}
 					}
 				},
-				"required": ["teams"]
+				"required": [
+					"teams"
+				]
 			},
 			"TeamMember": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string", "example": "Anna Example" },
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string",
+						"example": "Anna Example"
+					},
 					"email": {
 						"type": "string",
 						"format": "email",
 						"example": "anna@example.com"
 					}
 				},
-				"required": ["id", "name", "email"]
+				"required": [
+					"id",
+					"name",
+					"email"
+				]
 			},
 			"CreateTeamMemberRequest": {
 				"type": "object",
@@ -1282,46 +2007,81 @@
 						"example": "anna@example.com"
 					}
 				},
-				"required": ["name", "email"]
+				"required": [
+					"name",
+					"email"
+				]
 			},
 			"TeamMemberResponse": {
 				"type": "object",
 				"properties": {
-					"member": { "$ref": "#/components/schemas/TeamMember" }
+					"member": {
+						"$ref": "#/components/schemas/TeamMember"
+					}
 				},
-				"required": ["member"]
+				"required": [
+					"member"
+				]
 			},
 			"TeamDetail": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string", "example": "Workshop Crew" },
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string",
+						"example": "Workshop Crew"
+					},
 					"members": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/TeamMember" }
+						"items": {
+							"$ref": "#/components/schemas/TeamMember"
+						}
 					}
 				},
-				"required": ["id", "name", "members"]
+				"required": [
+					"id",
+					"name",
+					"members"
+				]
 			},
 			"TeamDetailResponse": {
 				"type": "object",
 				"properties": {
-					"team": { "$ref": "#/components/schemas/TeamDetail" }
+					"team": {
+						"$ref": "#/components/schemas/TeamDetail"
+					}
 				},
-				"required": ["team"]
+				"required": [
+					"team"
+				]
 			},
 			"AdminContactRequestUser": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string" },
-					"email": { "type": "string", "format": "email" }
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"email": {
+						"type": "string",
+						"format": "email"
+					}
 				},
-				"required": ["id", "name", "email"]
+				"required": [
+					"id",
+					"name",
+					"email"
+				]
 			},
 			"AdminContactRequest": {
 				"allOf": [
-					{ "$ref": "#/components/schemas/ContactRequest" },
+					{
+						"$ref": "#/components/schemas/ContactRequest"
+					},
 					{
 						"type": "object",
 						"properties": {
@@ -1329,7 +2089,9 @@
 								"$ref": "#/components/schemas/AdminContactRequestUser"
 							}
 						},
-						"required": ["user"]
+						"required": [
+							"user"
+						]
 					}
 				]
 			},
@@ -1340,7 +2102,9 @@
 						"$ref": "#/components/schemas/AdminContactRequest"
 					}
 				},
-				"required": ["contactRequest"]
+				"required": [
+					"contactRequest"
+				]
 			},
 			"AdminContactRequestListResponse": {
 				"type": "object",
@@ -1352,35 +2116,72 @@
 						}
 					}
 				},
-				"required": ["contactRequests"]
+				"required": [
+					"contactRequests"
+				]
 			},
 			"AdminContactRequestUnreadCountResponse": {
 				"type": "object",
 				"properties": {
-					"unreadCount": { "type": "integer", "minimum": 0 }
+					"unreadCount": {
+						"type": "integer",
+						"minimum": 0
+					}
 				},
-				"required": ["unreadCount"]
+				"required": [
+					"unreadCount"
+				]
 			},
 			"Unit": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string" },
-					"description": { "type": "string" },
-					"capacity": { "type": "integer" },
-					"isActive": { "type": "boolean" },
-					"displayOrder": { "type": "integer", "minimum": 0 },
-					"unitTypeId": { "type": "string" },
-					"areaId": { "type": "string", "nullable": true },
-					"unitType": { "$ref": "#/components/schemas/UnitType" },
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer"
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"displayOrder": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"unitTypeId": {
+						"type": "string"
+					},
+					"areaId": {
+						"type": "string",
+						"nullable": true
+					},
+					"unitType": {
+						"$ref": "#/components/schemas/UnitType"
+					},
 					"area": {
 						"oneOf": [
-							{ "$ref": "#/components/schemas/UnitArea" },
-							{ "type": "null" }
+							{
+								"$ref": "#/components/schemas/UnitArea"
+							},
+							{
+								"type": "null"
+							}
 						]
 					},
-					"createdAt": { "type": "string", "format": "date-time" },
-					"updatedAt": { "type": "string", "format": "date-time" }
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
 				},
 				"required": [
 					"id",
@@ -1399,13 +2200,26 @@
 			"UnitType": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
+					"id": {
+						"type": "string"
+					},
 					"name": {
 						"type": "string",
-						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						"enum": [
+							"HOT_DESK",
+							"BOOTH",
+							"TEAM_ROOM",
+							"MEETING_ROOM"
+						]
 					},
-					"minDurationMinutes": { "type": "integer", "minimum": 1 },
-					"maxDurationMinutes": { "type": "integer", "minimum": 1 }
+					"minDurationMinutes": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"maxDurationMinutes": {
+						"type": "integer",
+						"minimum": 1
+					}
 				},
 				"required": [
 					"id",
@@ -1417,79 +2231,141 @@
 			"UnitArea": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string" },
-					"description": { "type": "string", "nullable": true }
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					}
 				},
-				"required": ["id", "name", "description"]
+				"required": [
+					"id",
+					"name",
+					"description"
+				]
 			},
 			"UnitResponse": {
 				"type": "object",
 				"properties": {
-					"unit": { "$ref": "#/components/schemas/Unit" }
+					"unit": {
+						"$ref": "#/components/schemas/Unit"
+					}
 				},
-				"required": ["unit"]
+				"required": [
+					"unit"
+				]
 			},
 			"UnitListResponse": {
 				"type": "object",
 				"properties": {
 					"units": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/Unit" }
+						"items": {
+							"$ref": "#/components/schemas/Unit"
+						}
 					}
 				},
-				"required": ["units"]
+				"required": [
+					"units"
+				]
 			},
 			"AdminUnit": {
 				"allOf": [
-					{ "$ref": "#/components/schemas/Unit" },
+					{
+						"$ref": "#/components/schemas/Unit"
+					},
 					{
 						"type": "object",
 						"properties": {
-							"descriptionDe": { "type": "string", "nullable": true },
-							"descriptionEn": { "type": "string", "nullable": true }
+							"descriptionDe": {
+								"type": "string",
+								"nullable": true
+							},
+							"descriptionEn": {
+								"type": "string",
+								"nullable": true
+							}
 						},
-						"required": ["descriptionDe", "descriptionEn"]
+						"required": [
+							"descriptionDe",
+							"descriptionEn"
+						]
 					}
 				]
 			},
 			"AdminUnitResponse": {
 				"type": "object",
 				"properties": {
-					"unit": { "$ref": "#/components/schemas/AdminUnit" }
+					"unit": {
+						"$ref": "#/components/schemas/AdminUnit"
+					}
 				},
-				"required": ["unit"]
+				"required": [
+					"unit"
+				]
 			},
 			"AdminUnitListResponse": {
 				"type": "object",
 				"properties": {
 					"units": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/AdminUnit" }
+						"items": {
+							"$ref": "#/components/schemas/AdminUnit"
+						}
 					}
 				},
-				"required": ["units"]
+				"required": [
+					"units"
+				]
 			},
 			"AdminUnitContextUnitType": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
+					"id": {
+						"type": "string"
+					},
 					"name": {
 						"type": "string",
-						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						"enum": [
+							"HOT_DESK",
+							"BOOTH",
+							"TEAM_ROOM",
+							"MEETING_ROOM"
+						]
 					}
 				},
-				"required": ["id", "name"]
+				"required": [
+					"id",
+					"name"
+				]
 			},
 			"AdminUnitContextArea": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string" },
-					"description": { "type": "string", "nullable": true },
-					"isActive": { "type": "boolean" }
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"isActive": {
+						"type": "boolean"
+					}
 				},
-				"required": ["id", "name", "description", "isActive"]
+				"required": [
+					"id",
+					"name",
+					"description",
+					"isActive"
+				]
 			},
 			"AdminUnitContextResponse": {
 				"type": "object",
@@ -1502,38 +2378,74 @@
 					},
 					"areas": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/AdminUnitContextArea" }
+						"items": {
+							"$ref": "#/components/schemas/AdminUnitContextArea"
+						}
 					}
 				},
-				"required": ["unitTypes", "areas"]
+				"required": [
+					"unitTypes",
+					"areas"
+				]
 			},
 			"BookingOptionArea": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string" },
-					"activeUnitCount": { "type": "integer", "minimum": 0 }
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					},
+					"activeUnitCount": {
+						"type": "integer",
+						"minimum": 0
+					}
 				},
-				"required": ["id", "name", "activeUnitCount"]
+				"required": [
+					"id",
+					"name",
+					"activeUnitCount"
+				]
 			},
 			"BookingOptionUnit": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"name": { "type": "string" }
+					"id": {
+						"type": "string"
+					},
+					"name": {
+						"type": "string"
+					}
 				},
-				"required": ["id", "name"]
+				"required": [
+					"id",
+					"name"
+				]
 			},
 			"BookingOptionUnitType": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
+					"id": {
+						"type": "string"
+					},
 					"name": {
 						"type": "string",
-						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						"enum": [
+							"HOT_DESK",
+							"BOOTH",
+							"TEAM_ROOM",
+							"MEETING_ROOM"
+						]
 					},
-					"minDurationMinutes": { "type": "integer", "minimum": 1 },
-					"maxDurationMinutes": { "type": "integer", "minimum": 1 }
+					"minDurationMinutes": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"maxDurationMinutes": {
+						"type": "integer",
+						"minimum": 1
+					}
 				},
 				"required": [
 					"id",
@@ -1547,30 +2459,56 @@
 				"properties": {
 					"key": {
 						"type": "string",
-						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						"enum": [
+							"HOT_DESK",
+							"BOOTH",
+							"TEAM_ROOM",
+							"MEETING_ROOM"
+						]
 					},
-					"unitType": { "$ref": "#/components/schemas/BookingOptionUnitType" },
+					"unitType": {
+						"$ref": "#/components/schemas/BookingOptionUnitType"
+					},
 					"bookingMode": {
 						"type": "string",
-						"enum": ["AUTO_ASSIGN", "CHOOSE_UNIT"]
+						"enum": [
+							"AUTO_ASSIGN",
+							"CHOOSE_UNIT"
+						]
 					},
 					"areaSelection": {
 						"type": "string",
-						"enum": ["REQUIRED", "NOT_APPLICABLE"]
+						"enum": [
+							"REQUIRED",
+							"NOT_APPLICABLE"
+						]
 					},
 					"status": {
 						"type": "string",
-						"enum": ["AVAILABLE", "UNAVAILABLE"]
+						"enum": [
+							"AVAILABLE",
+							"UNAVAILABLE"
+						]
 					},
-					"totalActiveUnits": { "type": "integer", "minimum": 0 },
-					"maxCapacity": { "type": "integer", "minimum": 0 },
+					"totalActiveUnits": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"maxCapacity": {
+						"type": "integer",
+						"minimum": 0
+					},
 					"areas": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/BookingOptionArea" }
+						"items": {
+							"$ref": "#/components/schemas/BookingOptionArea"
+						}
 					},
 					"units": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/BookingOptionUnit" }
+						"items": {
+							"$ref": "#/components/schemas/BookingOptionUnit"
+						}
 					}
 				},
 				"required": [
@@ -1590,22 +2528,44 @@
 				"properties": {
 					"bookingOptions": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/BookingOption" }
+						"items": {
+							"$ref": "#/components/schemas/BookingOption"
+						}
 					}
 				},
-				"required": ["bookingOptions"]
+				"required": [
+					"bookingOptions"
+				]
 			},
 			"CreateUnitRequest": {
 				"type": "object",
 				"properties": {
-					"name": { "type": "string" },
-					"descriptionDe": { "type": "string" },
-					"descriptionEn": { "type": "string" },
-					"capacity": { "type": "integer", "minimum": 1 },
-					"isActive": { "type": "boolean" },
-					"displayOrder": { "type": "integer", "minimum": 0 },
-					"unitTypeId": { "type": "string" },
-					"areaId": { "type": "string" }
+					"name": {
+						"type": "string"
+					},
+					"descriptionDe": {
+						"type": "string"
+					},
+					"descriptionEn": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"displayOrder": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"unitTypeId": {
+						"type": "string"
+					},
+					"areaId": {
+						"type": "string"
+					}
 				},
 				"required": [
 					"name",
@@ -1618,14 +2578,33 @@
 			"UpdateUnitRequest": {
 				"type": "object",
 				"properties": {
-					"name": { "type": "string" },
-					"descriptionDe": { "type": "string" },
-					"descriptionEn": { "type": "string" },
-					"capacity": { "type": "integer", "minimum": 1 },
-					"isActive": { "type": "boolean" },
-					"displayOrder": { "type": "integer", "minimum": 0 },
-					"unitTypeId": { "type": "string" },
-					"areaId": { "type": "string", "nullable": true }
+					"name": {
+						"type": "string"
+					},
+					"descriptionDe": {
+						"type": "string"
+					},
+					"descriptionEn": {
+						"type": "string"
+					},
+					"capacity": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"isActive": {
+						"type": "boolean"
+					},
+					"displayOrder": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"unitTypeId": {
+						"type": "string"
+					},
+					"areaId": {
+						"type": "string",
+						"nullable": true
+					}
 				}
 			},
 			"CreateBookingRequest": {
@@ -1634,23 +2613,61 @@
 					{
 						"type": "object",
 						"properties": {
-							"unitId": { "type": "string" },
-							"date": { "type": "string", "format": "date" },
-							"startTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
-							"endTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" }
+							"unitId": {
+								"type": "string"
+							},
+							"date": {
+								"type": "string",
+								"format": "date"
+							},
+							"startTime": {
+								"type": "string",
+								"pattern": "^\\d{2}:\\d{2}$"
+							},
+							"endTime": {
+								"type": "string",
+								"pattern": "^\\d{2}:\\d{2}$"
+							}
 						},
-						"required": ["unitId", "date", "startTime", "endTime"]
+						"required": [
+							"unitId",
+							"date",
+							"startTime",
+							"endTime"
+						]
 					},
 					{
 						"type": "object",
 						"properties": {
-							"areaId": { "type": "string" },
-							"unitType": { "type": "string", "enum": ["HOT_DESK"] },
-							"date": { "type": "string", "format": "date" },
-							"startTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
-							"endTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" }
+							"areaId": {
+								"type": "string"
+							},
+							"unitType": {
+								"type": "string",
+								"enum": [
+									"HOT_DESK"
+								]
+							},
+							"date": {
+								"type": "string",
+								"format": "date"
+							},
+							"startTime": {
+								"type": "string",
+								"pattern": "^\\d{2}:\\d{2}$"
+							},
+							"endTime": {
+								"type": "string",
+								"pattern": "^\\d{2}:\\d{2}$"
+							}
 						},
-						"required": ["areaId", "unitType", "date", "startTime", "endTime"]
+						"required": [
+							"areaId",
+							"unitType",
+							"date",
+							"startTime",
+							"endTime"
+						]
 					}
 				]
 			},
@@ -1659,25 +2676,56 @@
 				"properties": {
 					"name": {
 						"type": "string",
-						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						"enum": [
+							"HOT_DESK",
+							"BOOTH",
+							"TEAM_ROOM",
+							"MEETING_ROOM"
+						]
 					},
-					"minDurationMinutes": { "type": "integer", "minimum": 1 },
-					"maxDurationMinutes": { "type": "integer", "minimum": 1 }
+					"minDurationMinutes": {
+						"type": "integer",
+						"minimum": 1
+					},
+					"maxDurationMinutes": {
+						"type": "integer",
+						"minimum": 1
+					}
 				},
-				"required": ["name", "minDurationMinutes", "maxDurationMinutes"]
+				"required": [
+					"name",
+					"minDurationMinutes",
+					"maxDurationMinutes"
+				]
 			},
 			"DirectBookingContext": {
 				"type": "object",
 				"properties": {
-					"mode": { "type": "string", "enum": ["DIRECT"] },
+					"mode": {
+						"type": "string",
+						"enum": [
+							"DIRECT"
+						]
+					},
 					"unit": {
 						"type": "object",
 						"properties": {
-							"id": { "type": "string" },
-							"name": { "type": "string" },
-							"description": { "type": "string" },
-							"capacity": { "type": "integer", "minimum": 1 },
-							"unitType": { "$ref": "#/components/schemas/BookingContextUnitType" }
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string"
+							},
+							"capacity": {
+								"type": "integer",
+								"minimum": 1
+							},
+							"unitType": {
+								"$ref": "#/components/schemas/BookingContextUnitType"
+							}
 						},
 						"required": [
 							"id",
@@ -1688,37 +2736,72 @@
 						]
 					}
 				},
-				"required": ["mode", "unit"]
+				"required": [
+					"mode",
+					"unit"
+				]
 			},
 			"AutoAssignBookingContext": {
 				"type": "object",
 				"properties": {
-					"mode": { "type": "string", "enum": ["AUTO_ASSIGN"] },
-					"unitType": { "$ref": "#/components/schemas/BookingContextUnitType" },
+					"mode": {
+						"type": "string",
+						"enum": [
+							"AUTO_ASSIGN"
+						]
+					},
+					"unitType": {
+						"$ref": "#/components/schemas/BookingContextUnitType"
+					},
 					"area": {
 						"type": "object",
 						"properties": {
-							"id": { "type": "string" },
-							"name": { "type": "string" },
-							"description": { "type": "string", "nullable": true },
-							"seatCount": { "type": "integer", "minimum": 1 }
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"description": {
+								"type": "string",
+								"nullable": true
+							},
+							"seatCount": {
+								"type": "integer",
+								"minimum": 1
+							}
 						},
-						"required": ["id", "name", "description", "seatCount"]
+						"required": [
+							"id",
+							"name",
+							"description",
+							"seatCount"
+						]
 					}
 				},
-				"required": ["mode", "unitType", "area"]
+				"required": [
+					"mode",
+					"unitType",
+					"area"
+				]
 			},
 			"BookingContextResponse": {
 				"type": "object",
 				"properties": {
 					"bookingContext": {
 						"oneOf": [
-							{ "$ref": "#/components/schemas/DirectBookingContext" },
-							{ "$ref": "#/components/schemas/AutoAssignBookingContext" }
+							{
+								"$ref": "#/components/schemas/DirectBookingContext"
+							},
+							{
+								"$ref": "#/components/schemas/AutoAssignBookingContext"
+							}
 						]
 					}
 				},
-				"required": ["bookingContext"]
+				"required": [
+					"bookingContext"
+				]
 			},
 			"AvailabilitySlot": {
 				"type": "object",
@@ -1733,9 +2816,16 @@
 						"pattern": "^\\d{2}:\\d{2}$",
 						"example": "08:30"
 					},
-					"availableUnitCount": { "type": "integer", "minimum": 1 }
+					"availableUnitCount": {
+						"type": "integer",
+						"minimum": 1
+					}
 				},
-				"required": ["start", "end", "availableUnitCount"]
+				"required": [
+					"start",
+					"end",
+					"availableUnitCount"
+				]
 			},
 			"BlockedInterval": {
 				"type": "object",
@@ -1751,13 +2841,24 @@
 						"example": "11:00"
 					}
 				},
-				"required": ["start", "end"]
+				"required": [
+					"start",
+					"end"
+				]
 			},
 			"BookingAvailability": {
 				"type": "object",
 				"properties": {
-					"date": { "type": "string", "format": "date" },
-					"timeGridMinutes": { "type": "integer", "enum": [15] },
+					"date": {
+						"type": "string",
+						"format": "date"
+					},
+					"timeGridMinutes": {
+						"type": "integer",
+						"enum": [
+							15
+						]
+					},
 					"openingHours": {
 						"type": "object",
 						"properties": {
@@ -1772,15 +2873,22 @@
 								"example": "22:00"
 							}
 						},
-						"required": ["start", "end"]
+						"required": [
+							"start",
+							"end"
+						]
 					},
 					"slots": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/AvailabilitySlot" }
+						"items": {
+							"$ref": "#/components/schemas/AvailabilitySlot"
+						}
 					},
 					"blockedIntervals": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/BlockedInterval" }
+						"items": {
+							"$ref": "#/components/schemas/BlockedInterval"
+						}
 					}
 				},
 				"required": [
@@ -1798,19 +2906,45 @@
 						"$ref": "#/components/schemas/BookingAvailability"
 					}
 				},
-				"required": ["availability"]
+				"required": [
+					"availability"
+				]
 			},
 			"Booking": {
 				"type": "object",
 				"properties": {
-					"id": { "type": "string" },
-					"userId": { "type": "string" },
-					"unitId": { "type": "string" },
-					"startTime": { "type": "string", "format": "date-time" },
-					"endTime": { "type": "string", "format": "date-time" },
-					"status": { "type": "string", "enum": ["ACTIVE", "CANCELLED"] },
-					"createdAt": { "type": "string", "format": "date-time" },
-					"updatedAt": { "type": "string", "format": "date-time" }
+					"id": {
+						"type": "string"
+					},
+					"userId": {
+						"type": "string"
+					},
+					"unitId": {
+						"type": "string"
+					},
+					"startTime": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"endTime": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"status": {
+						"type": "string",
+						"enum": [
+							"ACTIVE",
+							"CANCELLED"
+						]
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time"
+					}
 				},
 				"required": [
 					"id",
@@ -1826,9 +2960,13 @@
 			"BookingResponse": {
 				"type": "object",
 				"properties": {
-					"booking": { "$ref": "#/components/schemas/Booking" }
+					"booking": {
+						"$ref": "#/components/schemas/Booking"
+					}
 				},
-				"required": ["booking"]
+				"required": [
+					"booking"
+				]
 			},
 			"BookingShareContext": {
 				"type": "object",
@@ -1836,18 +2974,37 @@
 					"booking": {
 						"type": "object",
 						"properties": {
-							"id": { "type": "string" },
-							"startTime": { "type": "string", "format": "date-time" },
-							"endTime": { "type": "string", "format": "date-time" }
+							"id": {
+								"type": "string"
+							},
+							"startTime": {
+								"type": "string",
+								"format": "date-time"
+							},
+							"endTime": {
+								"type": "string",
+								"format": "date-time"
+							}
 						},
-						"required": ["id", "startTime", "endTime"]
+						"required": [
+							"id",
+							"startTime",
+							"endTime"
+						]
 					},
 					"unit": {
 						"type": "object",
 						"properties": {
-							"id": { "type": "string" },
-							"name": { "type": "string" },
-							"capacity": { "type": "integer", "minimum": 1 },
+							"id": {
+								"type": "string"
+							},
+							"name": {
+								"type": "string"
+							},
+							"capacity": {
+								"type": "integer",
+								"minimum": 1
+							},
 							"unitType": {
 								"type": "object",
 								"properties": {
@@ -1861,13 +3018,23 @@
 										]
 									}
 								},
-								"required": ["name"]
+								"required": [
+									"name"
+								]
 							}
 						},
-						"required": ["id", "name", "capacity", "unitType"]
+						"required": [
+							"id",
+							"name",
+							"capacity",
+							"unitType"
+						]
 					}
 				},
-				"required": ["booking", "unit"]
+				"required": [
+					"booking",
+					"unit"
+				]
 			},
 			"BookingShareContextResponse": {
 				"type": "object",
@@ -1876,19 +3043,27 @@
 						"$ref": "#/components/schemas/BookingShareContext"
 					}
 				},
-				"required": ["shareContext"]
+				"required": [
+					"shareContext"
+				]
 			},
 			"MyBooking": {
 				"allOf": [
-					{ "$ref": "#/components/schemas/Booking" },
+					{
+						"$ref": "#/components/schemas/Booking"
+					},
 					{
 						"type": "object",
 						"properties": {
 							"unit": {
 								"type": "object",
 								"properties": {
-									"id": { "type": "string" },
-									"name": { "type": "string" },
+									"id": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									},
 									"unitType": {
 										"type": "object",
 										"properties": {
@@ -1902,37 +3077,64 @@
 												]
 											}
 										},
-										"required": ["name"]
+										"required": [
+											"name"
+										]
 									}
 								},
-								"required": ["id", "name", "unitType"]
+								"required": [
+									"id",
+									"name",
+									"unitType"
+								]
 							}
 						},
-						"required": ["unit"]
+						"required": [
+							"unit"
+						]
 					}
 				]
 			},
 			"AdminBooking": {
 				"allOf": [
-					{ "$ref": "#/components/schemas/MyBooking" },
+					{
+						"$ref": "#/components/schemas/MyBooking"
+					},
 					{
 						"type": "object",
 						"properties": {
 							"user": {
 								"type": "object",
 								"properties": {
-									"id": { "type": "string" },
-									"name": { "type": "string" },
-									"email": { "type": "string", "format": "email" },
+									"id": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									},
+									"email": {
+										"type": "string",
+										"format": "email"
+									},
 									"role": {
 										"type": "string",
-										"enum": ["CUSTOMER", "ADMIN"]
+										"enum": [
+											"CUSTOMER",
+											"ADMIN"
+										]
 									}
 								},
-								"required": ["id", "name", "email", "role"]
+								"required": [
+									"id",
+									"name",
+									"email",
+									"role"
+								]
 							}
 						},
-						"required": ["user"]
+						"required": [
+							"user"
+						]
 					}
 				]
 			},
@@ -1941,77 +3143,159 @@
 				"properties": {
 					"bookings": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/MyBooking" }
+						"items": {
+							"$ref": "#/components/schemas/MyBooking"
+						}
 					}
 				},
-				"required": ["bookings"]
+				"required": [
+					"bookings"
+				]
 			},
 			"AdminBookingOperationsResponse": {
 				"type": "object",
 				"properties": {
 					"bookings": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/AdminBooking" }
+						"items": {
+							"$ref": "#/components/schemas/AdminBooking"
+						}
 					},
 					"dateRange": {
 						"type": "object",
 						"properties": {
-							"from": { "type": "string", "format": "date" },
-							"to": { "type": "string", "format": "date" }
+							"from": {
+								"type": "string",
+								"format": "date"
+							},
+							"to": {
+								"type": "string",
+								"format": "date"
+							}
 						},
-						"required": ["from", "to"]
+						"required": [
+							"from",
+							"to"
+						]
 					},
 					"summary": {
 						"type": "object",
 						"properties": {
-							"todayBookings": { "type": "integer", "minimum": 0 },
-							"upcomingInRange": { "type": "integer", "minimum": 0 },
-							"cancelledInRange": { "type": "integer", "minimum": 0 },
+							"todayBookings": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"upcomingInRange": {
+								"type": "integer",
+								"minimum": 0
+							},
+							"cancelledInRange": {
+								"type": "integer",
+								"minimum": 0
+							},
 							"topBookedUnit": {
 								"type": "object",
 								"properties": {
-									"id": { "type": "string" },
-									"name": { "type": "string" },
+									"id": {
+										"type": "string"
+									},
+									"name": {
+										"type": "string"
+									},
 									"unitType": {
 										"type": "string",
-										"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+										"enum": [
+											"HOT_DESK",
+											"BOOTH",
+											"TEAM_ROOM",
+											"MEETING_ROOM"
+										]
 									},
-									"bookingCount": { "type": "integer", "minimum": 1 }
+									"bookingCount": {
+										"type": "integer",
+										"minimum": 1
+									}
 								},
-								"required": ["id", "name", "unitType", "bookingCount"]
+								"required": [
+									"id",
+									"name",
+									"unitType",
+									"bookingCount"
+								]
 							}
 						},
-						"required": ["todayBookings", "upcomingInRange", "cancelledInRange"]
+						"required": [
+							"todayBookings",
+							"upcomingInRange",
+							"cancelledInRange"
+						]
 					}
 				},
-				"required": ["bookings", "dateRange", "summary"]
+				"required": [
+					"bookings",
+					"dateRange",
+					"summary"
+				]
 			},
 			"BookingDemandTrendPoint": {
 				"type": "object",
 				"properties": {
-					"date": { "type": "string", "format": "date" },
-					"bookingCount": { "type": "integer", "minimum": 0 }
+					"date": {
+						"type": "string",
+						"format": "date"
+					},
+					"bookingCount": {
+						"type": "integer",
+						"minimum": 0
+					}
 				},
-				"required": ["date", "bookingCount"]
+				"required": [
+					"date",
+					"bookingCount"
+				]
 			},
 			"BookingDemandUnitTypePoint": {
 				"type": "object",
 				"properties": {
 					"unitType": {
 						"type": "string",
-						"enum": ["HOT_DESK", "BOOTH", "TEAM_ROOM", "MEETING_ROOM"]
+						"enum": [
+							"HOT_DESK",
+							"BOOTH",
+							"TEAM_ROOM",
+							"MEETING_ROOM"
+						]
 					},
-					"bookingCount": { "type": "integer", "minimum": 0 }
+					"bookingCount": {
+						"type": "integer",
+						"minimum": 0
+					}
 				},
-				"required": ["unitType", "bookingCount"]
+				"required": [
+					"unitType",
+					"bookingCount"
+				]
 			},
 			"BookingCancellationStats": {
 				"type": "object",
 				"properties": {
-					"activeBookings": { "type": "integer", "minimum": 0 },
-					"cancelledBookings": { "type": "integer", "minimum": 0 },
-					"totalBookings": { "type": "integer", "minimum": 0 },
-					"cancellationRate": { "type": "number", "minimum": 0, "maximum": 1 }
+					"activeBookings": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"cancelledBookings": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"totalBookings": {
+						"type": "integer",
+						"minimum": 0
+					},
+					"cancellationRate": {
+						"type": "number",
+						"minimum": 0,
+						"maximum": 1
+					}
 				},
 				"required": [
 					"activeBookings",
@@ -2029,18 +3313,31 @@
 					"dateRange": {
 						"type": "object",
 						"properties": {
-							"from": { "type": "string", "format": "date" },
-							"to": { "type": "string", "format": "date" }
+							"from": {
+								"type": "string",
+								"format": "date"
+							},
+							"to": {
+								"type": "string",
+								"format": "date"
+							}
 						},
-						"required": ["from", "to"]
+						"required": [
+							"from",
+							"to"
+						]
 					},
 					"granularity": {
 						"type": "string",
-						"enum": ["day"]
+						"enum": [
+							"day"
+						]
 					},
 					"metric": {
 						"type": "string",
-						"enum": ["activeBookingsByStartDate"]
+						"enum": [
+							"activeBookingsByStartDate"
+						]
 					},
 					"demandByUnitType": {
 						"type": "array",
@@ -2050,7 +3347,9 @@
 					},
 					"trend": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/BookingDemandTrendPoint" }
+						"items": {
+							"$ref": "#/components/schemas/BookingDemandTrendPoint"
+						}
 					}
 				},
 				"required": [
@@ -2069,33 +3368,53 @@
 						"$ref": "#/components/schemas/BookingDemandAnalytics"
 					}
 				},
-				"required": ["bookingDemand"]
+				"required": [
+					"bookingDemand"
+				]
 			},
 			"DirectBookingCalendarDay": {
 				"type": "object",
 				"properties": {
-					"date": { "type": "string", "format": "date" },
+					"date": {
+						"type": "string",
+						"format": "date"
+					},
 					"state": {
 						"type": "string",
-						"enum": ["available", "partially-booked", "fully-booked"]
+						"enum": [
+							"available",
+							"partially-booked",
+							"fully-booked"
+						]
 					}
 				},
-				"required": ["date", "state"]
+				"required": [
+					"date",
+					"state"
+				]
 			},
 			"DirectBookingCalendarState": {
 				"type": "object",
 				"properties": {
-					"unitId": { "type": "string" },
+					"unitId": {
+						"type": "string"
+					},
 					"month": {
 						"type": "string",
 						"pattern": "^\\d{4}-\\d{2}$"
 					},
 					"days": {
 						"type": "array",
-						"items": { "$ref": "#/components/schemas/DirectBookingCalendarDay" }
+						"items": {
+							"$ref": "#/components/schemas/DirectBookingCalendarDay"
+						}
 					}
 				},
-				"required": ["unitId", "month", "days"]
+				"required": [
+					"unitId",
+					"month",
+					"days"
+				]
 			},
 			"DirectBookingCalendarStateResponse": {
 				"type": "object",
@@ -2104,7 +3423,9 @@
 						"$ref": "#/components/schemas/DirectBookingCalendarState"
 					}
 				},
-				"required": ["calendarState"]
+				"required": [
+					"calendarState"
+				]
 			},
 			"ApiError": {
 				"type": "object",
@@ -2112,13 +3433,19 @@
 					"error": {
 						"type": "object",
 						"properties": {
-							"message": { "type": "string" },
+							"message": {
+								"type": "string"
+							},
 							"details": {}
 						},
-						"required": ["message"]
+						"required": [
+							"message"
+						]
 					}
 				},
-				"required": ["error"]
+				"required": [
+					"error"
+				]
 			}
 		},
 		"responses": {
@@ -2126,7 +3453,9 @@
 				"description": "Ungültige Eingabe",
 				"content": {
 					"application/json": {
-						"schema": { "$ref": "#/components/schemas/ApiError" }
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
 					}
 				}
 			},
@@ -2134,7 +3463,9 @@
 				"description": "Nicht autorisiert",
 				"content": {
 					"application/json": {
-						"schema": { "$ref": "#/components/schemas/ApiError" }
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
 					}
 				}
 			},
@@ -2142,7 +3473,9 @@
 				"description": "Keine Berechtigung",
 				"content": {
 					"application/json": {
-						"schema": { "$ref": "#/components/schemas/ApiError" }
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
 					}
 				}
 			},
@@ -2150,7 +3483,9 @@
 				"description": "Nicht gefunden",
 				"content": {
 					"application/json": {
-						"schema": { "$ref": "#/components/schemas/ApiError" }
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
 					}
 				}
 			},
@@ -2158,7 +3493,19 @@
 				"description": "Konflikt",
 				"content": {
 					"application/json": {
-						"schema": { "$ref": "#/components/schemas/ApiError" }
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
+					}
+				}
+			},
+			"TooManyRequests": {
+				"description": "Zu viele Anfragen",
+				"content": {
+					"application/json": {
+						"schema": {
+							"$ref": "#/components/schemas/ApiError"
+						}
 					}
 				}
 			}

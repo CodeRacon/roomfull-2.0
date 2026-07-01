@@ -14,6 +14,7 @@
 		"prisma:generate": "prisma generate",
 		"prisma:migrate:dev": "prisma migrate dev",
 		"prisma:migrate:deploy": "prisma migrate deploy",
+		"demo:cleanup": "tsx prisma/cleanup-expired-demo-customers.ts",
 		"prisma:localize-units": "tsx prisma/localize-existing-units.ts",
 		"prisma:seed": "prisma db seed"
 	},

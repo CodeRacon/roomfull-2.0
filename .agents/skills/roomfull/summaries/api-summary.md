@@ -22,7 +22,14 @@ Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Back
 
 - `POST /auth/register`
 - `POST /auth/login`
+- `POST /auth/demo-login`
 - `GET /auth/me`
+
+`POST /auth/demo-login` erzeugt einen frischen Demo Customer als normalen `CUSTOMER` mit Demo-Markierung und erstellt aktuell eine zukünftige aktive Demo-Booking, eine vergangene aktive Demo-Booking, eine stornierte Demo-Booking, eine Customer Contact Request und drei Customer Teams mit je zwei Team Members.
+
+Abgelaufene Demo Customers werden über das manuelle Backend-Kommando `npm run demo:cleanup` bereinigt. Das ist kein API-Endpunkt. Der Cleanup löscht nur `isDemo=true` mit `demoExpiresAt < now` und entfernt vorher abhängige Bookings, Contact Requests, Team Members und Teams.
+
+Aktuell gibt es keine API-Endpunkte für Account-Identitäts- oder Sicherheitsänderungen. Künftige Endpunkte für Name, E-Mail, Passwort, Credential-Status, Account-Löschung oder Demo-zu-Regular-Umwandlung müssen Demo Customers (`isDemo=true`) backendseitig mit `403 Forbidden` ablehnen.
 
 ### Public Units
 

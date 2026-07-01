@@ -1,4 +1,5 @@
 type Env = {
+	NODE_ENV: "development" | "production" | "test";
 	PORT: number;
 	CORS_ORIGIN: string;
 	DATABASE_URL: string;
@@ -50,6 +51,10 @@ function parseString(
 }
 
 export const env: Env = {
+	NODE_ENV:
+		process.env.NODE_ENV === "production" || process.env.NODE_ENV === "test"
+			? process.env.NODE_ENV
+			: "development",
 	PORT: parsePort(process.env.PORT, 4000),
 	CORS_ORIGIN: parseUrl(
 		process.env.CORS_ORIGIN,

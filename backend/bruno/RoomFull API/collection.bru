@@ -9,8 +9,6 @@ vars:pre-request {
   userPassword: secret123
   adminEmail: admin@example.com
   adminPassword: 1q2w3e4r
-  customerToken: SET_BY_AUTH_LOGIN
-  adminToken: SET_BY_ADMIN_LOGIN
 
   unitTypeId: SET_FROM_UNIT_TYPES_TABLE
   areaId: OPTIONAL_SET_FROM_AREAS_TABLE
@@ -36,6 +34,6 @@ vars:pre-request {
 
 docs {
   Admin Run: Auth Login (Admin) -> Admin Create Unit -> Admin Update Unit -> Admin Deactivate Unit
-  Customer Run (Direct): Auth Login -> Auth Me -> Customer Create Booking -> Customer My Bookings -> Customer Cancel Booking
+  Customer Run (Direct): Auth Login -> Auth Me -> Customer Create Booking -> Customer My Bookings -> Customer Cancel Booking -> Auth Logout
   Customer Run (Auto): Auth Login -> Customer Create Booking (areaId+unitType) -> Customer My Bookings
 }

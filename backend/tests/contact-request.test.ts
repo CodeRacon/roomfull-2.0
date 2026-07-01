@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { ContactRequestType } from "@prisma/client";
 import type { Request, Response } from "express";
+import { AUTH_COOKIE_NAME } from "../src/lib/auth-cookie.js";
 import { signAccessToken } from "../src/lib/jwt.js";
 import { requireAuth, requireRole } from "../src/middleware/auth.middleware.js";
 import {
@@ -24,11 +25,16 @@ function getStatusCode(error: unknown): number | undefined {
 	return undefined;
 }
 
-function runAuthMiddleware(authorization?: string): unknown {
+function createAuthCookie(userId: string, role: "ADMIN" | "CUSTOMER"): string {
+	const token = signAccessToken({ userId, role });
+	return `${AUTH_COOKIE_NAME}=${encodeURIComponent(token)}`;
+}
+
+function runAuthMiddleware(cookie?: string): unknown {
 	let nextError: unknown;
 	const req = {
 		header: (name: string) =>
-			name.toLowerCase() === "authorization" ? authorization : undefined,
+			name.toLowerCase() === "cookie" ? cookie : undefined,
 	} as Request;
 
 	requireAuth(req, {} as Response, (error?: unknown) => {
@@ -129,15 +135,12 @@ describe("Customer Contact Request", () => {
 
 		const adminReq = {
 			header: (name: string) =>
-				name.toLowerCase() === "authorization"
-					? `Bearer ${signAccessToken({ userId: "admin-1", role: "ADMIN" })}`
+				name.toLowerCase() === "cookie"
+					? createAuthCookie("admin-1", "ADMIN")
 					: undefined,
 		} as Request;
 
-		assert.equal(
-			runAuthMiddleware(adminReq.header("authorization")),
-			undefined,
-		);
+		assert.equal(runAuthMiddleware(adminReq.header("cookie")), undefined);
 		requireAuth(adminReq, {} as Response, () => undefined);
 
 		assert.equal(getStatusCode(runCustomerRoleMiddleware(adminReq)), 403);
@@ -148,11 +151,8 @@ describe("Admin Contact Inbox", () => {
 	it("requires admin role at the route boundary", () => {
 		const customerReq = {
 			header: (name: string) =>
-				name.toLowerCase() === "authorization"
-					? `Bearer ${signAccessToken({
-							userId: "customer-1",
-							role: "CUSTOMER",
-						})}`
+				name.toLowerCase() === "cookie"
+					? createAuthCookie("customer-1", "CUSTOMER")
 					: undefined,
 		} as Request;
 

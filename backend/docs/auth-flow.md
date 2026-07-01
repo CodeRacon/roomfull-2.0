@@ -3,7 +3,7 @@
 - Login und Register duerfen einen `next`-Query-Parameter nutzen.
 - `next` muss ein interner relativer Pfad sein, z. B. `/bookings/new?unitId=...`.
 - Externe URLs, protocol-relative URLs wie `//example.com`, kaputte Werte und Auth-Loops werden auf `/` zurueckgefuehrt.
-- Nach erfolgreichem Login/Register speichert das Frontend den Access Token clientseitig und navigiert zu `next`.
+- Nach erfolgreichem Login/Register setzt das Backend ein `HttpOnly` Auth-Cookie und das Frontend navigiert zu `next`.
 - Der eigentliche BookingFlow bleibt zusaetzlich auth-required und darf sich nicht nur auf diesen Redirect verlassen.
 
 ---
@@ -24,7 +24,7 @@
 
 - Datei: [auth.controller.ts](../src/controllers/auth.controller.ts)
 - Funktion: `loginController`
-- Aufgabe: Body mit `parseLoginBody(...)` prüfen und `loginUser(...)` aufrufen
+- Aufgabe: Body mit `parseLoginBody(...)` prüfen, `loginUser(...)` aufrufen, Auth-Cookie setzen und Public User zurückgeben
 
 ### Service
 
@@ -41,9 +41,9 @@
 ### Response
 
 - Status: `200 OK`
+- Cookie: `roomfull_access_token` als `HttpOnly`, `SameSite=Lax`, in Production `Secure`
 - Body:
-  - `token: string`
-  - `user: { id, name, email, role, createdAt }`
+  - `user: { id, name, email, role, isDemo, demoExpiresAt, createdAt }`
 
 ### Mermaid (Happy Path)
 
@@ -64,7 +64,7 @@ sequenceDiagram
   DB-->>UR: user
   UR-->>S: user
   S-->>CT: authResponse(token,user)
-  CT-->>C: 200 OK
+  CT-->>C: 200 OK + Set-Cookie + user
 ```
 
 ### Error-Matrix
@@ -73,6 +73,62 @@ sequenceDiagram
 |---|---|
 | Body ungültig (`email/password`) | `400` |
 | User fehlt oder Passwort falsch | `401` |
+
+---
+
+## Demo Login Flow `POST /api/auth/demo-login`
+
+### Request
+
+- Client sendet `POST /api/auth/demo-login`
+- Kein Body erforderlich
+
+### Route
+
+- Datei: [auth.routes.ts](../src/routes/auth.routes.ts)
+- Mapping: `authRouter.post("/demo-login", demoLoginController)`
+
+### Controller
+
+- Datei: [auth.controller.ts](../src/controllers/auth.controller.ts)
+- Funktion: `demoLoginController`
+- Aufgabe: `createDemoCustomerSession(...)` aufrufen, Auth-Cookie setzen und Public User zurückgeben
+
+### Service
+
+- Datei: [auth.service.ts](../src/services/auth.service.ts)
+- Funktion: `createDemoCustomerSession`
+- Aufgabe: frischen Demo Customer mit `role=CUSTOMER`, `isDemo=true` und `demoExpiresAt` erzeugen, Demo Customer Data Template anstoßen, dann interne Session und Response bauen
+- Demo-Daten-Service: [demo-customer-data.service.ts](../src/services/demo-customer-data.service.ts)
+- Aktueller Template-Stand: eine zukünftige aktive Booking, eine vergangene aktive Booking, eine stornierte Booking, eine Customer Contact Request und drei Customer Teams mit je zwei Team Members; bei Booking-Konflikten werden weitere Werktage/Units versucht
+
+### Repository
+
+- Datei: [user.repository.ts](../src/db/user.repository.ts)
+- Funktion: `createUser(input)`
+- Aufgabe: Demo Customer in der DB schreiben
+
+### Response
+
+- Status: `201 Created`
+- Cookie: `roomfull_access_token` als `HttpOnly`, `SameSite=Lax`, in Production `Secure`
+- Body:
+  - `user: { id, name, email, role, isDemo, demoExpiresAt, createdAt }`
+
+### Scope
+
+- Der Endpoint erzeugt erste vorbefüllte Demo-Daten im Scope des neuen Demo Customers.
+- Der Endpoint führt keine neue Rolle ein. Demo Customers bleiben normale Customers mit Demo-Markierung.
+- Demo Customers dürfen normale Customer-Workflows nutzen, aber keine Account-Identitäts- oder Sicherheitsdaten ändern.
+- Künftige Account-Mutation-Endpunkte für Name, E-Mail, Passwort, Credential-Status, Account-Löschung oder Umwandlung in einen regulären Account müssen `isDemo=true` im Service-Layer vor Persistenz mit `403 Forbidden` ablehnen.
+
+### Cleanup
+
+- Abgelaufene Demo Customers werden nicht über einen öffentlichen API-Endpunkt bereinigt.
+- Manuelles Kommando: `npm run demo:cleanup` im `backend`-Verzeichnis.
+- Der Cleanup löscht ausschließlich User mit `isDemo=true` und `demoExpiresAt < now`.
+- Vor der User-Löschung entfernt der Cleanup abhängige Bookings, Contact Requests, Team Members und Teams im selben Transaktionsrahmen.
+- Die finale User-Löschung enthält erneut die Demo- und Expiry-Grenze, damit reguläre Customers nicht durch den Cleanup betroffen sind.
 
 ---
 
@@ -92,13 +148,13 @@ sequenceDiagram
 
 - Datei: [auth.controller.ts](../src/controllers/auth.controller.ts)
 - Funktion: `registerController`
-- Aufgabe: Body mit `parseRegisterBody(...)` prüfen und `registerUser(...)` aufrufen
+- Aufgabe: Body mit `parseRegisterBody(...)` prüfen, `registerUser(...)` aufrufen, Auth-Cookie setzen und Public User zurückgeben
 
 ### Service
 
 - Datei: [auth.service.ts](../src/services/auth.service.ts)
 - Funktion: `registerUser`
-- Aufgabe: E-Mail per `findUserByEmail(...)` prüfen, Passwort mit `bcrypt.hash(...)` hashen, User anlegen, dann Token und Response bauen
+- Aufgabe: E-Mail per `findUserByEmail(...)` prüfen, Passwort mit `bcrypt.hash(...)` hashen, User anlegen, dann interne Session und Response bauen
 
 ### Repository
 
@@ -109,9 +165,9 @@ sequenceDiagram
 ### Response
 
 - Status: `201 Created`
+- Cookie: `roomfull_access_token` als `HttpOnly`, `SameSite=Lax`, in Production `Secure`
 - Body:
-  - `token: string`
-  - `user: { id, name, email, role, createdAt }`
+  - `user: { id, name, email, role, isDemo, demoExpiresAt, createdAt }`
 
 ### Mermaid (Happy Path)
 
@@ -136,7 +192,7 @@ sequenceDiagram
   DB-->>UR: created user
   UR-->>S: user
   S-->>CT: authResponse(token,user)
-  CT-->>C: 201 Created
+  CT-->>C: 201 Created + Set-Cookie + user
 ```
 
 ### Error-Matrix
@@ -153,7 +209,7 @@ sequenceDiagram
 ### Request
 
 - Client sendet `GET /api/auth/me`
-- Header enthält `Authorization: Bearer <token>`
+- Request enthält das `roomfull_access_token` Cookie
 
 ### Route
 
@@ -164,7 +220,7 @@ sequenceDiagram
 
 - Datei: [auth.middleware.ts](../src/middleware/auth.middleware.ts)
 - Funktion: `requireAuth`
-- Aufgabe: Bearer-Token prüfen, JWT verifizieren, `req.auth` setzen
+- Aufgabe: Auth-Cookie prüfen, JWT verifizieren, `req.auth` setzen
 
 ### Controller
 
@@ -188,7 +244,7 @@ sequenceDiagram
 
 - Status: `200 OK`
 - Body:
-  - `user: { id, name, email, role, createdAt }`
+  - `user: { id, name, email, role, isDemo, demoExpiresAt, createdAt }`
 
 ### Mermaid (Happy Path)
 
@@ -202,7 +258,7 @@ sequenceDiagram
   participant UR as user.repository
   participant DB as PostgreSQL
 
-  C->>R: GET /api/auth/me + Bearer token
+  C->>R: GET /api/auth/me + Cookie
   R->>M: requireAuth
   M->>CT: meController(req.auth.userId)
   CT->>S: getCurrentUser(userId)
@@ -218,5 +274,30 @@ sequenceDiagram
 
 | Fehlerfall | HTTP |
 |---|---|
-| Token fehlt/ungültig | `401` |
+| Auth-Cookie fehlt/ungültig | `401` |
 | User nicht gefunden | `404` |
+
+---
+
+## Logout Flow `POST /api/auth/logout`
+
+### Request
+
+- Client sendet `POST /api/auth/logout`
+- Request darf das `roomfull_access_token` Cookie enthalten
+
+### Route
+
+- Datei: [auth.routes.ts](../src/routes/auth.routes.ts)
+- Mapping: `authRouter.post("/logout", logoutController)`
+
+### Controller
+
+- Datei: [auth.controller.ts](../src/controllers/auth.controller.ts)
+- Funktion: `logoutController`
+- Aufgabe: Auth-Cookie löschen
+
+### Response
+
+- Status: `204 No Content`
+- Cookie: `roomfull_access_token` wird gelöscht

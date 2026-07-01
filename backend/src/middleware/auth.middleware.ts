@@ -1,6 +1,7 @@
 import type { UserRole } from "@prisma/client";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/app-error.js";
+import { readAuthCookie } from "../lib/auth-cookie.js";
 import { verifyAccessToken } from "../lib/jwt.js";
 
 export function requireAuth(
@@ -8,14 +9,12 @@ export function requireAuth(
 	_res: Response,
 	next: NextFunction,
 ): void {
-	const authorizationHeader = req.header("authorization");
+	const token = readAuthCookie(req);
 
-	if (!authorizationHeader?.startsWith("Bearer ")) {
-		next(new AppError(401, "Authorization Header fehlt oder ist ungültig"));
+	if (!token) {
+		next(new AppError(401, "Auth Cookie fehlt oder ist ungültig"));
 		return;
 	}
-
-	const token = authorizationHeader.replace("Bearer ", "").trim();
 
 	try {
 		req.auth = verifyAccessToken(token);

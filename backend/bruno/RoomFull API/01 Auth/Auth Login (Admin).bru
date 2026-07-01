@@ -21,22 +21,6 @@ body:json {
   }
 }
 
-
-script:post-response {
-  let json = res.getBody();
-  if (typeof json === "string") {
-    try {
-      json = JSON.parse(json);
-    } catch (e) {
-      json = null;
-    }
-  }
-
-  if (json && json.token) {
-    bru.setVar("adminToken", json.token);
-  }
-}
-
 settings {
   encodeUrl: true
   timeout: 0
