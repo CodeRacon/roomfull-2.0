@@ -3,11 +3,7 @@
 import { clsx } from "clsx";
 import { useRouter } from "next/navigation";
 import { type ComponentPropsWithoutRef, useEffect, useState } from "react";
-import type {
-	BookingAvailability,
-	BookingContext,
-	CreateBookingInput,
-} from "@/entities/booking";
+import type { BookingAvailability, BookingContext } from "@/entities/booking";
 import {
 	createBooking,
 	formatBookingDateKey,
@@ -21,6 +17,15 @@ import { ApiRequestError } from "@/shared/api";
 import type { Dictionary, Locale } from "@/shared/i18n";
 import { appRoutes } from "@/shared/routing";
 import { Button, FeedbackBox } from "@/shared/ui";
+import {
+	buildBookingSummary,
+	createBookingInputFromSelection,
+	getBookingContextView,
+	isBookingSelectionComplete,
+	resetBookingSelectionDate,
+	resetBookingSelectionStartTime,
+	resolveCreateBookingSubmitError,
+} from "../model";
 import { BookingTimePicker } from "./BookingTimePicker";
 import {
 	type CalendarDayState,
@@ -105,16 +110,6 @@ function getCurrentBerlinMonth(): string {
 	return `${getBerlinTodayDate().slice(0, 7)}-01`;
 }
 
-function parseDate(date: string): Date {
-	const [year, month, day] = date.split("-").map(Number);
-	return new Date(Date.UTC(year, month - 1, day));
-}
-
-function parseTimeToMinutes(time: string): number {
-	const [hours, minutes] = time.split(":").map(Number);
-	return hours * 60 + minutes;
-}
-
 function formatTemplate(
 	template: string,
 	values: Record<string, string | number>,
@@ -144,36 +139,6 @@ function formatDuration(
 		hours,
 		minutes: remainingMinutes,
 	});
-}
-
-function formatBookingSummaryDate(
-	date: string,
-	copy: Dictionary["createBooking"]["summary"],
-): string {
-	const bookingSummaryDateFormatter = new Intl.DateTimeFormat(copy.dateLocale, {
-		timeZone: "UTC",
-		weekday: "long",
-		day: "2-digit",
-		month: "long",
-	});
-	const formattedDate = bookingSummaryDateFormatter.format(parseDate(date));
-
-	return formatTemplate(copy.date, { date: formattedDate });
-}
-
-function formatBookingSummaryDuration(
-	startTime: string,
-	endTime: string,
-	copy: Dictionary["createBooking"]["summary"]["duration"],
-): string {
-	const durationMinutes =
-		parseTimeToMinutes(endTime) - parseTimeToMinutes(startTime);
-
-	if (durationMinutes <= 0) {
-		return "";
-	}
-
-	return formatDuration(durationMinutes, copy);
 }
 
 function formatCapacityLabel(
@@ -305,119 +270,75 @@ export function CreateBookingForm({
 	}, [bookingContext, date, endSession, copy.errors.availabilityFallback]);
 
 	function handleDateSelect(selectedDate: string): void {
-		setDate(selectedDate);
-		setStartTime("");
-		setEndTime("");
+		const nextSelection = resetBookingSelectionDate(
+			{ date, startTime, endTime },
+			selectedDate,
+		);
+		setDate(nextSelection.date);
+		setStartTime(nextSelection.startTime);
+		setEndTime(nextSelection.endTime);
 		setSubmitError(null);
 	}
 
-	const title =
-		bookingContext.mode === "DIRECT"
-			? bookingContext.unit.name
-			: bookingContext.area.name;
-
-	const description =
-		bookingContext.mode === "DIRECT"
-			? bookingContext.unit.description
-			: (bookingContext.area.description ??
-				copy.context.fallbackAreaDescription);
-
-	const unitType =
-		bookingContext.mode === "DIRECT"
-			? bookingContext.unit.unitType
-			: bookingContext.unitType;
+	const bookingSelection = { date, startTime, endTime };
+	const bookingContextView = getBookingContextView({
+		bookingContext,
+		fallbackAreaDescription: copy.context.fallbackAreaDescription,
+	});
+	const { title, description, unitType } = bookingContextView;
 	const accentTheme = bookingAccentThemeByUnitType[unitType.name];
-	const capacityLabel =
-		bookingContext.mode === "DIRECT"
-			? formatCapacityLabel(
-					bookingContext.unit.capacity,
-					copy.context.capacityLabels.onePerson,
-					copy.context.capacityLabels.people,
-				)
-			: formatCapacityLabel(
-					bookingContext.area.seatCount,
-					copy.context.capacityLabels.oneDesk,
-					copy.context.capacityLabels.desks,
-				);
+	const capacityLabel = formatCapacityLabel(
+		bookingContextView.capacityCount,
+		bookingContextView.capacityKind === "person"
+			? copy.context.capacityLabels.onePerson
+			: copy.context.capacityLabels.oneDesk,
+		bookingContextView.capacityKind === "person"
+			? copy.context.capacityLabels.people
+			: copy.context.capacityLabels.desks,
+	);
 	const durationLabel = formatTemplate(copy.context.durationRange, {
 		min: formatDuration(unitType.minDurationMinutes, copy.summary.duration),
 		max: formatDuration(unitType.maxDurationMinutes, copy.summary.duration),
 	});
 	const selectionModeLabel =
-		bookingContext.mode === "DIRECT"
+		bookingContextView.selectionMode === "DIRECT"
 			? copy.context.directMode
 			: copy.context.autoAssignMode;
 
-	const isBookingSelectionComplete =
-		date !== "" && startTime !== "" && endTime !== "";
-	const bookingSummary = isBookingSelectionComplete
-		? {
-				date: formatBookingSummaryDate(date, copy.summary),
-				duration: formatBookingSummaryDuration(
-					startTime,
-					endTime,
-					copy.summary.duration,
-				),
-				target: title,
-				time: formatTemplate(copy.summary.timeRange, {
-					start: startTime,
-					end: endTime,
-				}),
-			}
-		: null;
+	const isSelectionComplete = isBookingSelectionComplete(bookingSelection);
+	const bookingSummary = buildBookingSummary({
+		selection: bookingSelection,
+		target: title,
+		copy: copy.summary,
+	});
 
 	const handleSubmit: FormSubmitHandler = async (event) => {
 		event.preventDefault();
 		setSubmitError(null);
 
-		if (date === "" || startTime === "" || endTime === "") {
+		const input = createBookingInputFromSelection(
+			bookingContext,
+			bookingSelection,
+		);
+
+		if (!input) {
 			setSubmitError(copy.errors.incompleteSelection);
 			return;
 		}
-
-		const input: CreateBookingInput =
-			bookingContext.mode === "DIRECT"
-				? {
-						unitId: bookingContext.unit.id,
-						date,
-						startTime,
-						endTime,
-					}
-				: {
-						areaId: bookingContext.area.id,
-						unitType: "HOT_DESK",
-						date,
-						startTime,
-						endTime,
-					};
 
 		try {
 			setIsSubmitting(true);
 			await createBooking(input);
 			router.replace(`${appRoutes.myBookings(locale)}?created=1`);
 		} catch (error) {
-			if (error instanceof ApiRequestError) {
-				if (error.status === 400) {
-					setSubmitError(copy.errors.badRequest);
-					return;
-				}
-				if (error.status === 401) {
-					endSession();
-					return;
-				}
-				if (error.status === 404) {
-					setSubmitError(copy.errors.notFound);
-					return;
-				}
-				if (error.status === 409) {
-					setSubmitError(copy.errors.conflict);
-					return;
-				}
-				setSubmitError(error.message);
+			const submitError = resolveCreateBookingSubmitError(error, copy.errors);
+
+			if (submitError.type === "unauthorized") {
+				endSession();
 				return;
 			}
 
-			setSubmitError(copy.errors.createFallback);
+			setSubmitError(submitError.message);
 		} finally {
 			setIsSubmitting(false);
 		}
@@ -522,7 +443,14 @@ export function CreateBookingForm({
 								endTime={endTime}
 								mode={bookingContext.mode === "DIRECT" ? "DIRECT" : "HOT_DESK"}
 								onEndTimeChange={setEndTime}
-								onStartTimeChange={setStartTime}
+								onStartTimeChange={(nextStartTime) => {
+									const nextSelection = resetBookingSelectionStartTime(
+										bookingSelection,
+										nextStartTime,
+									);
+									setStartTime(nextSelection.startTime);
+									setEndTime(nextSelection.endTime);
+								}}
 								startTime={startTime}
 							/>
 						)}
@@ -555,10 +483,10 @@ export function CreateBookingForm({
 				<div className="flex justify-end">
 					<Button
 						type="submit"
-						disabled={isSubmitting || !isBookingSelectionComplete}
+						disabled={isSubmitting || !isSelectionComplete}
 						className={clsx(
 							"min-h-14 w-full shrink-0 px-6 text-base sm:w-auto",
-							isBookingSelectionComplete && accentTheme.actionClassName,
+							isSelectionComplete && accentTheme.actionClassName,
 						)}
 					>
 						{isSubmitting ? copy.submit.pending : copy.submit.label}
