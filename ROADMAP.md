@@ -87,3 +87,22 @@ Verbindliche Flow-Doku: [Teams and Team Booking Share Flow](backend/docs/teams-f
 - Der Apple-Calendar-Prototyp vom 24.06.2026 hielt mit gemeinsamer UID genau ein Event, uebernahm aber weder Team Member noch persoenliche Nachricht und bot keine bewusste Versandaktion.
 - Der fruehere Booking-Invitation-Ansatz mit Organizer, Attendees und RSVP ist deshalb verworfen und kein Delivery-Gate mehr.
 - RoomFull verspricht keine Gaesteuebernahme, Antworten, Versand- oder Calendar-Client-Kompatibilitaet.
+
+## Portfolio Guest Login mit dynamischen Demo-Daten
+
+Die oeffentliche Portfolio-Instanz soll perspektivisch einen Guest-Login anbieten, der RoomFull ohne manuelle Registrierung sofort als vorbefuelltes Produkt erlebbar macht.
+
+- Der Guest-Account enthaelt bereits aktive, vergangene und stornierte Bookings, eine Kontaktanfrage sowie zwei bis drei Teams mit ausschliesslich fiktiven Demo-Kontakten.
+- Die Demo-Daten werden beim Start der Guest-Session relativ zum aktuellen Datum erzeugt oder aktualisiert: aktive Bookings liegen einige Tage in der Zukunft, vergangene und stornierte Bookings maximal zwei Wochen in der Vergangenheit, die Kontaktanfrage wenige Tage zurueck.
+- Teamdaten in der oeffentlichen Demo bleiben bewusst fiktiv. Die UI soll klar machen, dass keine echten Drittadressen eingetragen werden sollen.
+- Der Guest-Login ist ein Portfolio-Demo-Mechanismus, kein neues Rollenmodell und kein Ersatz fuer normale Customer-Accounts.
+- Vor Umsetzung muessen Scope, Reset-Verhalten, Datenisolation, Missbrauchsschutz und Auswirkungen auf Admin-Ansichten geklaert werden.
+
+## Deutsche Team-Copy nachschaerfen
+
+Die deutsche UI-Copy fuer Teams und Team Booking Share soll weniger interne Fachsprache verwenden, ohne nuetzliche technische Begriffe komplett zu vermeiden.
+
+- "Teams" bleibt in der UI zulaessig und muss nicht pauschal durch "Kontaktgruppen" ersetzt werden.
+- `.ics` ist fuer diesen Kontext zumutbar, sollte bei erster relevanter Nennung als `.ics (Kalenderdatei)` erklaert werden.
+- "Share", "Produktgrenze", "Buchungsfreigabe" und aehnlich interne Begriffe sollen in Customer-facing Copy vermieden werden.
+- Der Flow soll sprachlich als "Einladung per Mail vorbereiten" erklaert werden: RoomFull bereitet Empfaenger, Betreff, Nachricht und Kalenderdatei vor, versendet aber nicht selbst.

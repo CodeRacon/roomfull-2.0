@@ -30,6 +30,10 @@ _Avoid_: kanonischer Fachbegriff für neues Modell
 Eine Booking referenziert fachlich genau eine **BookableUnit** (nicht mehr `Space`).
 _Avoid_: `spaceId` als langfristige Fachsprache
 
+**Mobile Client**:
+RoomFull Mobile ist ein nativer Client desselben RoomFull-Produkts und nutzt dieselbe Domänensprache sowie dieselben Backend-Contracts; Unterschiede liegen in UX und technischem Client-Verhalten, nicht in Fachregeln.
+_Avoid_: eigenständiges Mobile-Produkt mit abweichenden Fachbegriffen oder Sonderlogik
+
 **Booking Request Modes**:
 Booking-Flow-Anfragen für Context, Availability und Erstellung wählen genau einen von zwei Modi: `DIRECT` (`unitId`) oder `AUTO_ASSIGN` (`areaId + unitType=HOT_DESK`).
 _Avoid_: separater Endpoint pro Buchungsmodus, abweichende Modusnamen oder Zielregeln zwischen Flow-Schritten
@@ -46,6 +50,18 @@ _Avoid_: browserlokale Booking-Gruppierung, unterschiedliche Anzeigezeitzonen zw
 Die öffentliche Startseite `/` erklärt RoomFull als Service und zeigt ansprechende Angebots-Teaser mit auth-aware CTAs in den Buchungseinstieg.
 _Avoid_: reine interne Unit-Liste oder fokussierter Buchungskatalog
 
+**Mobile Screen Targets**:
+RoomFull Mobile V1 behält dieselben fachlichen Zielpunkte wie die Web-App bei; mobile Abweichungen verdichten nur die Darstellung und Interaktion, nicht die fachlichen Ziele.
+_Avoid_: fachlich unterschiedliche Ziele in unscharfen Super-Screens vermischen oder mobile Sonderfluesse als neue Fachobjekte behandeln
+
+**Mobile Navigation Model**:
+RoomFull Mobile V1 organisiert seine Navigation explizit ueber React Navigation mit klar modellierten Stacks, Overlays und Auth-Grenzen statt ueber dateibasierte Router-Magie.
+_Avoid_: versteckte Navigationsstruktur oder implizite Dateisystem-Routen als primaeres Architekturmodell
+
+**Mobile Screen Layer**:
+RoomFull Mobile fuehrt `screens/` als schlanken Kompositionslayer fuer navigierbare Ansichten; fachliche Regeln, API-Logik und schwere Interaktionslogik bleiben in `features`, `entities`, `widgets` und `shared`.
+_Avoid_: `screens/` als God-Layer fuer Datenzugriff, Business-Logik oder zustandsreiche Feature-Implementierung
+
 **Localized Route**:
 Eine sharebare RoomFull-URL mit explizitem Sprachsegment `de` oder `en`, die dieselbe fachliche Seite in der gewählten Sprache adressiert.
 _Avoid_: Sprache nur als unsichtbarer Browser- oder Session-Zustand
@@ -57,6 +73,10 @@ _Avoid_: parallele lokalisierte und unlokalisierte Page-Baeume mit derselben Fun
 **Language Switch**:
 Eine UI-Aktion, die zwischen `de` und `en` wechselt, den aktuellen Pfad inklusive Query erhaelt und die gewaehlte Locale fuer spaetere Root-Besuche speichert.
 _Avoid_: Sprachwechsel als Navigation zur Startseite oder Verlust von fachlichem UI-Zustand
+
+**Mobile UI Localization**:
+RoomFull Mobile V1 behandelt `de` und `en` von Beginn an als Teil der App-Struktur, setzt die UI-Lokalisierung aber pragmatisch ueber ein schlankes lokales Dictionary statt ueber schwere i18n-Infrastruktur um.
+_Avoid_: monolinguale V1-Struktur mit spaeterem i18n-Nachziehen als Umbauprojekt oder lokalisierte Backend-Contracts
 
 **Localized Auth Redirect**:
 Ein Auth-Redirect, dessen `next`-Ziel ein sicherer interner App-Pfad mit explizitem Locale-Segment ist.
@@ -98,6 +118,62 @@ _Avoid_: Blockieren lokalisierter Routen fuer noch nicht uebersetzte Bereiche, M
 Die schlanke Buchungsübersicht `/booking-options`, auf der Customers eine BookingOption-Kategorie auswählen und in die passende Detailauswahl einsteigen. Aktive Area- beziehungsweise Unit-Namen werden als nicht-interaktive Vorschau aus der DB angezeigt.
 _Avoid_: Marketing-Seite, allgemeine Service-Erklärung, konkrete Unit-Auswahl bereits auf der Kategorie-Übersicht
 
+**Mobile Booking Options Density**:
+RoomFull Mobile zeigt die Booking-Options-Uebersicht als verdichtete Auswahlflaeche; jede Option transportiert Typcharakter, kurzen Nutzen und minimale Vorschau, waehrend ausfuehrliche Erklaerung erst auf der Detailseite erfolgt.
+_Avoid_: die mobile Uebersicht zu einer Folge nahezu vollstaendiger Detailkarten werden lassen
+
+**Mobile Booking Option Tap Surface**:
+In der mobilen Booking-Options-Uebersicht ist die gesamte Option-Card die primaere Tap-Flaeche; ein separater dominanter CTA-Button ist nicht notwendig.
+_Avoid_: kleine interne Button-Ziele als eigentliche Hauptinteraktion einer grossen Auswahlkarte
+
+**Mobile Booking Option Preview Scope**:
+Die mobile Booking-Options-Uebersicht zeigt pro Option nur minimale Vorschau auf konkrete Areas oder Units, hoechstens ein bis zwei Namen plus kompakten Ueberlaufhinweis.
+_Avoid_: laengere Listen konkreter Namen bereits auf der Uebersichtskarte
+
+**Mobile Booking Option Label Style**:
+Das charakteristische Kategorien-Label einer Booking Option bleibt mobil als RoomFull-Stilmerkmal erhalten, wird aber deutlich kompakter als in der Web-Mobilansicht ausgefuehrt.
+_Avoid_: die dominante hohe Seitenleiste der Web-Karte unveraendert auf Mobile uebernehmen oder das Stilmerkmal vollstaendig verlieren
+
+**Mobile Booking Option Count Hierarchy**:
+Count-Badges wie Platz- oder Raumanzahlen bleiben in der mobilen Booking-Options-Uebersicht sichtbar, sind aber klar sekundaere Metainformation gegenueber Titel, Farbcharakter und Auswahlrichtung.
+_Avoid_: die Kartenhierarchie ueber Zahlen statt ueber den Bedarfstyp zu definieren
+
+**Mobile Booking Options Intro Copy**:
+Die mobile Booking-Options-Seite behaelt eine starke orientierende Headline, kuerzt die einleitende Copy darunter aber bewusst auf einen knappen Erklaersatz.
+_Avoid_: mehrzeilige Intro-Texte, die die erste relevante Auswahl auf kleinen Screens zu weit nach unten schieben
+
+**Mobile Booking Options Entry Structure**:
+RoomFull Mobile V1 zeigt alle vier Booking Options weiterhin direkt auf der Uebersichtsseite und fuehrt keinen vorgeschalteten Bedarfsschalter oder Filter als zusaetzlichen Einstiegsschritt ein.
+_Avoid_: vor der eigentlichen Auswahl erst eine weitere Filter- oder Segmentierungsinteraktion zu erzwingen
+
+**Mobile Booking Option Detail Hero Density**:
+Die mobile Detailseite einer Booking Option behaelt einen klaren Kategorie-Hero zur Orientierung, verdichtet ihn aber deutlich staerker als die Web-Mobilansicht, damit die konkrete Raumauswahl frueher sichtbar wird.
+_Avoid_: die Detailseite mobil mit einem zu hohen Intro-Block zu beginnen, obwohl der User die Kategorie bereits aus der Uebersicht kennt
+
+**Mobile Unit Choice Card Density**:
+Die konkreten Raumkarten auf der mobilen Booking-Option-Detailseite werden als verdichtete Auswahlkarten mit Name, Kapazitaet und kurzer Nutzenzeile statt als lange Textkarten dargestellt.
+_Avoid_: mehrere fast vollstaendige Langbeschreibungen untereinander, bevor die eigentliche Raumwahl getroffen wird
+
+**Mobile Unit Choice Numbering**:
+Eine grosse laufende Nummerierung wie `01/02/03` ist auf mobilen Raumkarten hoechstens subtiler Zierakzent und kein dominantes Hierarchieelement.
+_Avoid_: dekorative Nummern groesser oder aufmerksamer als den eigentlichen Raumnamen inszenieren
+
+**Mobile Detail Back Navigation**:
+Die Back-Navigation auf mobilen Booking-Option-Detailseiten wird als schlanke Navigationshilfe und nicht als schwerer Action-Button gestaltet.
+_Avoid_: den Rueckweg visuell mit den eigentlichen Auswahl- oder Buchungsaktionen konkurrieren lassen
+
+**Mobile Unit Choice CTA Shape**:
+Die mobile Raumwahl auf der Detailseite behaelt pro konkreter Unit einen kompakten expliziten CTA bei, statt die gesamte informationsreichere Raumkarte als einzigen Ausloeser zu verwenden.
+_Avoid_: informationsreiche Auswahlkarten ohne klar markierten Commit-Punkt oder uebergrosse dominante Buttons
+
+**Mobile Unit Choice Separation**:
+Die Trennung zwischen mobilen Raumkarten erfolgt primaer ueber Rhythmus, Spacing und ruhige Card-Struktur statt ueber dominante harte Trennerlinien.
+_Avoid_: die Detailseite wie eine Folge stark voneinander abgetrennter Dokumentsektionen statt wie einen ruhigen Auswahlkatalog wirken zu lassen
+
+**Mobile Detail Meta Facts**:
+Dauerregeln und Verfuegbarkeitsanzahl bleiben auf mobilen Booking-Option-Detailseiten sichtbar, werden aber als kompakte Meta-Infos und nicht als schwerer Hero-Unterblock dargestellt.
+_Avoid_: fachlich hilfreiche Fakten ganz verstecken oder ihnen unverhaeltnismaessig viel vertikale Flaeche im mobilen Hero geben
+
 **Create Booking Page**:
 Gemeinsame Customer-Seite `/bookings/new`, die je nach Einstiegskontext einen der Booking Request Modes vorbereitet.
 _Avoid_: separate Buchungsseiten pro UnitType
@@ -137,6 +213,14 @@ _Avoid_: zusätzliche Pufferzeit ohne Fachgrund, Startzeiten in der Vergangenhei
 **Booking End Time Selection**:
 Nach gewählter Startzeit bietet die Create Booking Page nur Endzeiten an, die die Duration Policy erfüllen und nicht über die nächste blockierende Buchung hinausreichen.
 _Avoid_: Endzeiten, die einen belegten Zeitraum überspringen oder eine nicht zusammenhängende Verfügbarkeit suggerieren
+
+**Mobile Booking End Time Reveal**:
+RoomFull Mobile zeigt die Endzeitwahl erst nach gewaehlt­er Startzeit und nur mit fachlich erlaubten Folgeoptionen statt mit einem von Beginn an voll entfalteten zweiten Zeitraster.
+_Avoid_: zwei vollwertige Zeitgrids gleichzeitig offen halten oder ungueltige Endzeiten sichtbar zur Auswahl anbieten
+
+**Mobile Booking Sticky Summary**:
+Die sticky Summary im mobilen Booking Flow ist frueh sichtbar, bleibt anfangs aber kompakt und passiv; erst mit fortschreitender Auswahl wird sie informationsreicher und die Booking-CTA voll aktiv.
+_Avoid_: von Beginn an eine grosse dominante Bottom-Bar mit halbfertigem CTA oder gar keine persistente Fortschrittsorientierung
 
 **Booking Availability Contract**:
 Die Create Booking Page nutzt den einzigen zeitbezogenen, auth-required Availability-Contract für Direct Booking und Hot-Desk-Auto-Assign; lokale `HH:mm`-Slots und blockierende Intervalle werden getrennt vom Datum geliefert.
@@ -190,6 +274,14 @@ _Avoid_: God-Page mit Formular-, API- und Fehlerlogik
 Die fachliche Zeitwahl liegt als eigene UI-Komponente in `features/booking/create-booking`, weil sie Duration Policy, Booking Time Grid und Availability Slots kennt.
 _Avoid_: Booking-Zeitlogik in `shared` oder direkt in der App-Route
 
+**Mobile Booking Flow Density**:
+RoomFull Mobile V1 bildet den Booking Flow nicht als langen Alles-auf-einmal-Scrollscreen ab, sondern als verdichteten Ein-Screen-Flow mit schrittweiser Fokussierung auf Datum, Startzeit und Endzeit bei gleichzeitig kompakter Summary.
+_Avoid_: vollstaendig entfaltete Mobile-Form mit Kalender, allen Zeitrastern und Summary gleichzeitig in einer langen Scrollsaeule oder ein harter Multi-Screen-Wizard fuer jeden Einzelschritt
+
+**Mobile Booking Context Collapse**:
+Der obere Booking-Kontext ist beim Einstieg bewusst praesent und orientierend, klappt im weiteren Mobile-Flow aber zu einer kompakten Summary-Karte ein und kann bei Bedarf wieder erweitert werden.
+_Avoid_: den grossen Kontextblock waehrend der gesamten Datum-/Zeitwahl dauerhaft offen lassen oder ihn zu frueh vollstaendig verstecken
+
 **Create Booking Success Destination**:
 Nach erfolgreicher Buchung landet der Customer auf `/me/bookings?created=1` und sieht dort einen ruhigen Success-Hinweis.
 _Avoid_: separate Confirmation-Seite im MVP
@@ -201,6 +293,30 @@ _Avoid_: Booking-Fachlogik, Admin-Verwaltung, lose Header-Idee ohne festen Produ
 **Account Overview**:
 Die erste V1-Ausbaustufe der Account Settings als geschuetzte Nur-Lese-Ansicht `/me/account` fuer Name, E-Mail, Rolle und Registrierungsdatum jedes angemeldeten Users.
 _Avoid_: eigener Account-Endpoint, Nutzeraktion, Profilbearbeitung, Passwortaenderung oder neue Account-Sicherheitslogik im ersten Slice
+
+**Mobile Contact Scope**:
+RoomFull Mobile V1 behaelt den Contact-Bereich als bewussten auth-required Formular-Slice im Umfang, obwohl er nicht zum engsten Booking-Kern gehoert.
+_Avoid_: Contact stillschweigend aus V1 herausdruecken, obwohl er als Showcase fuer Formular-, Keyboard- und Submit-UX gewollt ist
+
+**Mobile Contact Layout Density**:
+RoomFull Mobile V1 fuehrt Contact als verdichteten Formular-Screen mit kurzer Intro und ohne zwei grosse aufeinanderfolgende Intro-/Form-Blöcke.
+_Avoid_: vor dem eigentlichen Formular mehrere hohe Erklaerungscontainer stapeln
+
+**Mobile Contact Type Selector**:
+Der `Contact Request Type` wird mobil als kompakte horizontale 3er-Auswahl fuer `Frage`, `Feedback` und `Kritik` dargestellt, nicht als hohe Folge gestapelter Radio-Zeilen.
+_Avoid_: ueberhoehten vertikalen Verbrauch fuer eine kleine exklusive Kategoriewahl
+
+**Mobile Contact Textarea Growth**:
+Die Nachrichten-Textarea startet mobil kompakt und darf bei Fokus oder laufender Eingabe sichtbar wachsen, statt von Beginn an einen grossen festen Hoehenblock einzunehmen.
+_Avoid_: eine bereits im Leerlauf uebergrosse Schreibflaeche, die den restlichen Formularfluss nach unten drueckt
+
+**Mobile Contact Submit Placement**:
+Der Submit-CTA im mobilen Contact-Formular bleibt ein normaler Formularabschluss und wird nicht als sticky Footer umgesetzt.
+_Avoid_: keyboard-kollidierende oder unnoetig dominante Sticky-Submit-Mechanik fuer einen einfachen Einzelschritt-Formularflow
+
+**Mobile Account Scope**:
+RoomFull Mobile V1 behandelt den Account-Bereich als ruhige geschuetzte Read-only-Uebersicht fuer Session-nahe Informationen und nicht als Ausbaupunkt fuer Profilpflege oder weitere Self-Service-Aktionen.
+_Avoid_: den Account-Screen in V1 zu einem zweiten Auth-/Profil-Feature auswachsen lassen
 
 **Frontend Session**:
 Der aktuelle Auth-Zustand der laufenden Frontend-App inklusive angemeldetem Session-User, Ladezustand und Logout-Moeglichkeit.
@@ -217,6 +333,10 @@ _Avoid_: UI-Bereiche manipulieren Auth Storage direkt
 **Authenticated API Request**:
 Ein Frontend-API-Aufruf, dessen Authorization Header zentral durch den technischen API-Client aus der Frontend Session abgeleitet wird.
 _Avoid_: Pages, Widgets oder fachliche API-Funktionen reichen `authToken` als Parameter weiter
+
+**Mobile API Integration**:
+RoomFull Mobile V1 nutzt dieselben bestehenden Backend-Endpunkte direkt wie die Web-App und fuehrt keinen separaten Mobile-BFF-Layer ein.
+_Avoid_: mobile-spezifische Fachaggregation oder doppelte Business-Logik in einem zusaetzlichen Zwischen-Backend fuer V1
 
 **Upcoming Booking**:
 Eine eigene aktive Booking, deren Ende noch nicht in der Vergangenheit liegt (`status=ACTIVE` und `endTime >= now`), inklusive gerade laufender Bookings.
@@ -250,6 +370,50 @@ _Avoid_: Liste als read-only Sonderansicht oder als anderer Rechtekontext
 Die Kalenderansicht in "Meine Buchungen" zeigt eigene Bookings als farbige UnitType-Marker am jeweiligen Kalendertag. Ein Tag zeigt zunaechst bis zu drei Marker direkt und fasst weitere Bookings als Ueberlauf zusammen. Tage mit Bookings sind auswaehlbar; darunter erscheinen alle Bookings des gewaehlten Tages in der kompakten Listenansicht. Auf Desktop duerfen Marker Text zeigen, auf Mobile bleiben sie textlose Farbbalken.
 _Avoid_: Kalender als neue Availability-Pruefung oder als anderer Booking-Contract
 
+**Mobile My Bookings Scope**:
+RoomFull Mobile V1 behandelt die Kalenderansicht in "Meine Buchungen" nicht als Muss; die mobile V1-Ausbaustufe darf auf genau eine primaere Darstellungsart fuer eigene Bookings reduziert werden, wenn dadurch der Scope klarer und stabiler bleibt.
+_Avoid_: mehrere Ansichten nur aus Vollstaendigkeitsdrang oder Portfolio-Druck in V1 erzwingen
+
+**Mobile My Bookings Primary View**:
+Wenn RoomFull Mobile V1 fuer "Meine Buchungen" nur eine Darstellungsart nutzt, ist die Kartenansicht der primaere Zielzustand.
+_Avoid_: aus rein technischer Einfachheit auf eine visuell deutlich schwaechere Default-Darstellung ausweichen
+
+**Mobile Calendar Export Scope**:
+RoomFull Mobile V1 enthaelt keinen `.ics`- oder Kalenderexport; dieser Workflow ist ein moeglicher spaeterer Ausbau, aber kein Teil des ersten mobilen Kernschnitts.
+_Avoid_: Dateihandling- und Share-Workflows in V1 priorisieren, bevor der mobile Buchungskern stabil ist
+
+**Mobile My Bookings V1 Shape**:
+RoomFull Mobile V1 reduziert "Meine Buchungen" bewusst auf eine reine Kartenansicht ohne View-Switcher und ohne Kalenderexport.
+_Avoid_: die Web-Mehransichtenlogik mitsamt `.ics`-Aktionen unveraendert in den mobilen V1-Scope uebernehmen
+
+**Mobile Booking Card Actions**:
+Mobile Booking-Cards zeigen in V1 hoechstens eine sichtbare Aktion pro aktiver anstehender Booking; fruehere oder stornierte Bookings tragen keine eigene Aktionsleiste.
+_Avoid_: mehrere nebeneinander oder untereinander gestapelte Aktionsbuttons pro Karte im mobilen Default
+
+**Mobile My Bookings Section Hierarchy**:
+Die Bereiche fuer anstehende und fruehere Buchungen bleiben mobil klar getrennt, werden aber mit leichterer Header-Hierarchie statt mit schweren Blockpanels inszeniert.
+_Avoid_: Section-Container, die optisch staerker dominieren als die eigentlichen Booking-Cards
+
+**Mobile My Bookings Intro Copy**:
+Die mobile Seite "Meine Buchungen" behaelt eine starke Headline, reduziert die Intro-Copy darunter aber auf einen sehr kurzen Orientierungssatz.
+_Avoid_: mehrzeilige Einfuehrungstexte vor einer nutzungsorientierten Bestandsseite
+
+**Mobile Booking Card Density**:
+Mobile Booking-Cards bleiben charakterstark, werden aber in ihrer vertikalen Struktur spuerbar verdichtet, damit mehrere Eintraege schneller ueberblickbar bleiben.
+_Avoid_: grosszuegige Kartenhoehen mit zu vielen getrennten Zonen und Luft zwischen den Kerninformationen
+
+**Mobile Booking Card Meta Form**:
+UnitType und Status bleiben auf mobilen Booking-Cards sichtbar, werden aber als kompakte Meta-Information statt als flaechige dominante Chips dargestellt.
+_Avoid_: sekundaere Metadaten groesser oder auffaelliger als Ort und Zeit der Booking zu gestalten
+
+**Mobile My Bookings Default Collapse**:
+Auf Mobile startet "Anstehende Buchungen" standardmaessig offen, waehrend "Fruehere Buchungen & Stornierungen" standardmaessig eingeklappt bleibt.
+_Avoid_: historische Inhalte gleich stark oder frueher als den anstehenden Kernbereich zu praesentieren
+
+**Mobile My Bookings Count Placement**:
+Die Anzahl der Bookings pro Section wird mobil direkt im jeweiligen Section-Header gefuehrt und nicht als eigener Count-Block darunter dargestellt.
+_Avoid_: zaehlende Zwischencontainer, die Hoehe verbrauchen ohne neue fachliche Information zu liefern
+
 **My Bookings Action Parity**:
 Karten-, Listen- und Kalenderansicht bieten fuer eine eigene Booking dieselben verfuegbaren Customer-Aktionen; Unterschiede liegen nur in Navigation und visueller Dichte.
 _Avoid_: Aktionen nur in einer Ansicht auffindbar machen
@@ -257,6 +421,55 @@ _Avoid_: Aktionen nur in einer Ansicht auffindbar machen
 **Cancel Booking Confirmation Workflow**:
 In "Meine Buchungen" ist hoechstens eine Storno-Bestaetigung gleichzeitig geoeffnet. Das Cancel-Booking-Feature besitzt dafuer mit `CancelBookingWorkflow` eine gemeinsame Workflow-Instanz, die von der My Bookings View genau einmal um alle dargestellten Bookings gesetzt wird; Karten-, Listen- und Kalenderdarstellung greifen auf denselben Zustand zu. Das Workflow-Interface erhaelt Copy sowie Erfolgs- und Fehlercallbacks einmalig. Das Feature besitzt Oeffnen, Keyword-Pruefung, Abbruch, Submit-Zustand, Fehlerzuordnung und Session-Ende bei `401`; die Page kennt nur die Ergebnisse und aktualisiert die Booking oder zeigt Feedback. Das Feature stellt mit `CancelBookingCardAction` eine explizite Kartenvariante und mit `CancelBookingCompactAction` eine explizite kompakte Variante der Storno-Aktion bereit; beide benoetigen von ihrem Caller nur die `bookingId`, und die Kalenderdarstellung verwendet ebenfalls die kompakte Variante. Beide Varianten teilen denselben Workflow, duerfen ihn aber unterschiedlich darstellen. Ein Wechsel des View Mode setzt die Workflow-Instanz zurueck, schliesst damit die offene Bestaetigung und verwirft die Keyword-Eingabe. Nach erfolgreichem Storno schliesst das Feature die Bestaetigung und setzt die Eingabe zurueck. Bei `403`, `404`, `409` oder einem technischen Fehler bleiben Bestaetigung und Keyword fuer einen moeglichen Retry erhalten; bei `401` endet die Frontend Session.
 _Avoid_: mehrere Workflow-Instanzen pro Darstellung, parallele Storno-Bestaetigungen, Workflow-State in der Page, ein einzelnes Darstellungsmodul mit kombinierbaren Varianten-Booleans, versteckten Confirmation-State nach einem View-Mode-Wechsel, verlorenen Retry-State nach behebbaren Fehlern, duplizierten Workflow-State in den Darstellungen oder unterschiedliche Storno-Regeln je View Mode
+
+**Mobile Cancel Confirmation**:
+RoomFull Mobile behaelt fuer Storno im Cancel-Booking-Sheet ein explizites Bestatigungswort `STORNO` bei; die mobile UX bleibt dabei bewusst kurz, fokussiert und fehlertolerant.
+_Avoid_: irreversiblen Storno nur ueber einen einzelnen Danger-Tap bestaetigen oder die mobile Sicherheitsstufe unter das Web-Niveau absenken
+
+## Flagged ambiguities
+
+- "RoomFull Mobile" klang zunächst wie eine mögliche Produktvariante; aufgelöst als **Mobile Client** desselben RoomFull-Kontexts mit kleinerem Capability-Slice, aber ohne eigene Fachlogik.
+- "Screen" und "fachlicher Zielpunkt" drohten zu verschwimmen; aufgeloest als **Mobile Screen Targets**: gleiche fachliche Ziele wie im Web, aber mobile-spezifisch verdichtete Darstellung.
+- "eigene Mobile-API" klang moeglich; aufgeloest als **Mobile API Integration**: direkter Zugriff auf dieselben Backend-Endpunkte, kein separater BFF in V1.
+- "DE/EN spaeter" stand im Raum; aufgeloest als **Mobile UI Localization**: i18n von Anfang an strukturell mitdenken, aber schlank umsetzen.
+- "Expo Router vs. React Navigation" war offen; aufgeloest als **Mobile Navigation Model**: React Navigation als primaeres Navigationssystem.
+- "`screens/` oder reine FSD-Layer" war offen; aufgeloest als **Mobile Screen Layer**: eigener, aber bewusst duenner Kompositionslayer.
+- "My Bookings" drohte in V1 zu breit zu werden; aufgeloest als **Mobile My Bookings Scope**: keine Kalenderansicht als Muss, moeglichst nur eine primaere Darstellungsart.
+- "Liste oder Karten" war offen; aufgeloest als **Mobile My Bookings Primary View**: Kartenansicht als einzige primaere Darstellung in V1.
+- "`.ics` vielleicht direkt mitnehmen" stand im Raum; aufgeloest als **Mobile Calendar Export Scope**: kein Kalenderexport in V1.
+- "Wie stark brechen wir My Bookings fuer V1 herunter?" war offen; aufgeloest als **Mobile My Bookings V1 Shape**: nur Kartenansicht, kein Switcher, kein `.ics`.
+- "Wie viele Actions traegt eine Mobile-Booking-Card?" war offen; aufgeloest als **Mobile Booking Card Actions**: hoechstens eine Aktion auf aktiven anstehenden Cards, sonst keine Aktionsleiste.
+- "Wie schwer duerfen die Section-Header wirken?" war offen; aufgeloest als **Mobile My Bookings Section Hierarchy**: klar getrennt, aber leichter als im Web.
+- "Wie lang darf die Intro-Copy auf My Bookings sein?" war offen; aufgeloest als **Mobile My Bookings Intro Copy**: starke Headline, aber nur sehr kurzer Orientierungssatz.
+- "Wie kompakt duerfen die Booking-Cards werden?" war offen; aufgeloest als **Mobile Booking Card Density**: spuerbar kompakter bei erhaltener Klarheit.
+- "Wie schwer wirken UnitType- und Status-Chips mobil?" war offen; aufgeloest als **Mobile Booking Card Meta Form**: sichtbar, aber kompakt statt chip-schwer.
+- "Soll der historische Bereich mobil offen starten?" war offen; aufgeloest als **Mobile My Bookings Default Collapse**: anstehend offen, historisch standardmaessig eingeklappt.
+- "Wo stehen die Section-Counts mobil?" war offen; aufgeloest als **Mobile My Bookings Count Placement**: direkt im Header statt als eigener Count-Block.
+- "Braucht Contact zwei grosse Bloecke vor dem Formular?" war offen; aufgeloest als **Mobile Contact Layout Density**: verdichteter Formular-Screen mit kurzer Intro.
+- "Wie erscheint `Frage / Feedback / Kritik` mobil?" war offen; aufgeloest als **Mobile Contact Type Selector**: kompakte horizontale 3er-Auswahl.
+- "Wie gross startet die Textarea mobil?" war offen; aufgeloest als **Mobile Contact Textarea Growth**: kompakt startend und bei Fokus/Eingabe wachsend.
+- "Braucht Contact einen sticky Submit?" war offen; aufgeloest als **Mobile Contact Submit Placement**: normaler Formularabschluss, nicht sticky.
+- "Custom Calendar ja, aber wie dicht?" war offen; aufgeloest als **Mobile Booking Flow Density**: verdichteter Ein-Screen-Flow statt langer Vollscroll-Form.
+- "Wie lange bleibt der Kontextblock gross?" war offen; aufgeloest als **Mobile Booking Context Collapse**: zuerst praesent, danach kompakt einklappbar.
+- "Start- und Endzeit gleichwertig offen?" war offen; aufgeloest als **Mobile Booking End Time Reveal**: Endzeit erst nach Startzeit und nur reduziert sichtbar.
+- "Wie stark sticky und wann aktiv?" war offen; aufgeloest als **Mobile Booking Sticky Summary**: frueh sichtbar, aber progressiv aktivierend.
+- "Wie hart bestaetigen wir Storno mobil?" war offen; aufgeloest als **Mobile Cancel Confirmation**: Bestatigungswort `STORNO` bleibt erhalten.
+- "Contact drin oder raus?" war offen; aufgeloest als **Mobile Contact Scope**: Contact bleibt als bewusster V1-Slice enthalten.
+- "Wie voll darf Account in V1 sein?" war offen; aufgeloest als **Mobile Account Scope**: ruhige Read-only-Uebersicht ohne Profilbearbeitung.
+- "Wie viel Inhalt traegt die Booking-Options-Uebersicht mobil?" war offen; aufgeloest als **Mobile Booking Options Density**: verdichtete Auswahluebersicht statt Langkarten.
+- "Button oder ganze Karte?" war offen; aufgeloest als **Mobile Booking Option Tap Surface**: die gesamte Karte ist die primaere Tap-Flaeche.
+- "Wie viele konkrete Namen zeigen wir auf der Uebersicht?" war offen; aufgeloest als **Mobile Booking Option Preview Scope**: nur minimale Vorschau mit kleinem Ueberlaufhinweis.
+- "Bleibt das vertikale Label so dominant?" war offen; aufgeloest als **Mobile Booking Option Label Style**: bleibt erhalten, aber in kompakter mobiler Form.
+- "Wie dominant sind Count-Badges mobil?" war offen; aufgeloest als **Mobile Booking Option Count Hierarchy**: sichtbar, aber klar sekundaer.
+- "Wie lang darf die Intro-Copy mobil sein?" war offen; aufgeloest als **Mobile Booking Options Intro Copy**: starke Headline, aber knapper Erklaersatz.
+- "Alle vier Optionen direkt oder erst filtern?" war offen; aufgeloest als **Mobile Booking Options Entry Structure**: alle vier Optionen direkt sichtbar, kein vorgeschalteter Filter.
+- "Wie gross bleibt der Hero auf der Detailseite?" war offen; aufgeloest als **Mobile Booking Option Detail Hero Density**: klarer Hero, aber deutlich kompakter als im Web.
+- "Wie textreich sind die konkreten Raumkarten mobil?" war offen; aufgeloest als **Mobile Unit Choice Card Density**: verdichtete Auswahlkarten statt langer Textkarten.
+- "Bleibt die grosse Nummerierung `01/02/03` mobil?" war offen; aufgeloest als **Mobile Unit Choice Numbering**: wenn ueberhaupt, dann nur subtil.
+- "Wie schwer wirkt der Back-Link mobil?" war offen; aufgeloest als **Mobile Detail Back Navigation**: schlank und klar navigativ statt buttonhaft.
+- "Ganze Raumkarte oder expliziter CTA?" war offen; aufgeloest als **Mobile Unit Choice CTA Shape**: kompakter expliziter CTA bleibt erhalten.
+- "Wie stark trennen wir die Raumkarten visuell?" war offen; aufgeloest als **Mobile Unit Choice Separation**: ruhigere Trennung ueber Spacing und Card-Struktur.
+- "Wie gross bleibt der Meta-Block mit Dauer/Verfuegbarkeit?" war offen; aufgeloest als **Mobile Detail Meta Facts**: sichtbar, aber kompakt.
 
 **Booking Context Delivery Order**:
 Der Backend-Endpoint fuer Booking Context wird vor der Create Booking Page umgesetzt.
@@ -467,8 +680,37 @@ _Avoid_: `403` als Ownership-Leak, unterschiedliche Fehler fuer fehlende und fre
 _Avoid_: versteckte Datenverwendung, wiederholte Pflicht-Checkbox pro Team Member, rechtliche Einwilligung durch UI behaupten
 
 **Team Demo Data Boundary**:
-Die oeffentliche Portfolio-Instanz erlaubt fuer Teams nur fiktive Demo-Kontakte; echte Einladungstests bleiben lokal auf eigene kontrollierte Adressen begrenzt.
-_Avoid_: reale Kontaktdaten Dritter in Production, Production als echter Coworking-Service
+Die oeffentliche Portfolio-Instanz erlaubt fuer Teams nur fiktive Demo-Kontakte und muss diese Grenze in der UI verstaendlich machen, weil Teamkontakte sonst zum Eingeben echter Drittadressen einladen. Echte Einladungstests bleiben lokal auf eigene kontrollierte Adressen begrenzt.
+_Avoid_: reale Kontaktdaten Dritter in Production, Production als echter Coworking-Service, Demo-UI ohne sichtbaren Datenhinweis
+
+**Demo Customer**:
+Ein normaler Customer-Zugang fuer die oeffentliche Portfolio-Demo, dessen Daten vorbefuellt und zuruecksetzbar sind, ohne ein neues Rollenmodell einzufuehren.
+_Avoid_: Guest als eigene Rolle, Demo-Zugang als Admin, Demo-Daten in regulaere Customer-Konten mischen
+
+**Demo Customer Session**:
+Eine isolierte, frische Kopie eines Demo Customers fuer genau einen Portfolio-Besucher, die beim Guest-Login erzeugt und spaeter zeitverzoegert bereinigt wird.
+_Avoid_: gemeinsam genutzter Demo-Account fuer alle Besucher, gegenseitig sichtbare Demo-Aenderungen, Reset nur ueber sauberen Logout
+
+**Demo Customer Marker**:
+Ein Demo Customer ist explizit als Demo markiert und besitzt eine Ablaufzeit, bleibt aber fachlich ein Customer.
+_Avoid_: Demo-Erkennung ueber E-Mail-Konventionen, neue Demo-Rolle, versteckte Seed-Namensmuster als Berechtigungsquelle
+
+**Demo Customer Data Template**:
+Die frischen Daten einer Demo Customer Session entstehen beim Guest-Login aus einem backendseitigen Template mit relativen Datums-Offsets.
+_Avoid_: alternde statische Seed-Bookings, DB-Template-Verwaltung im ersten Slice, Frontend-generierte Demo-Fachlogik
+
+**Guest Login Entry**:
+Der Guest-Login ist ein oeffentlicher Demo-Einstieg in eine frische Demo Customer Session und erscheint nur an Portfolio- und Auth-Einstiegen.
+_Avoid_: Guest-Login als Profilaktion, sichtbare Demo-Rolle im Account, Admin-Einstieg fuer oeffentliche Besucher
+
+**Demo Customer Permission Boundary**:
+Ein Demo Customer darf normale Customer-Funktionen ausprobieren, aber keine Account-Sicherheitsdaten oder dauerhafte regulaere Customer-Identitaet veraendern.
+Kuenftige Account-Mutationen fuer Name, E-Mail, Passwort, Credential-Status, Account-Loeschung oder Umwandlung in einen regulaeren Account muessen `isDemo=true` backendseitig vor Persistenz mit `403 Forbidden` ablehnen.
+_Avoid_: Passwort- oder E-Mail-Aenderung im Demo-Zugang, Demo-Session in regulaeren Account umwandeln, Admin-Rechte fuer Demo-Besucher
+
+**Admin Demo Data Boundary**:
+Admin-Demo-Daten sind kuratierte Seed- oder spaetere Simulationsdaten und werden nicht aus oeffentlichen Demo Customer Sessions gespeist.
+_Avoid_: Admin-Demo als zufaellige Besucheraktivitaet, Portfolio-Besucher-Daten in Admin-Vorfuehrdaten mischen, Traffic-Simulation als Teil des Guest-Login-Slices
 
 **Team Member**:
 Ein genau einem Team zugeordneter Kontakt aus Name und E-Mail-Adresse, der weder einen RoomFull-Account benoetigt noch mit bestehenden Users abgeglichen wird.
@@ -838,7 +1080,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Enthaelt die Teamliste bereits alle Members?" war offen; aufgelöst: nein, der **Team Summary Contract** liefert nur ID, Name und Member-Anzahl; Members kommen aus dem Team-Detail.
 - "Welche HTTP-Fehler bildet die My Teams API ab?" war offen; aufgelöst: gemaess **My Teams API Errors** mit `404` auch fuer fremde Ressourcen und `409` fuer Duplikate sowie Mengenlimits.
 - "Wie wird der Customer ueber fremde Kontaktdaten und sichtbare Teilnehmende informiert?" war offen; aufgelöst: durch dauerhafte und kontextuelle **Team Contact Transparency** ohne wiederholte Pflicht-Checkbox.
-- "Duerfen reale Teamkontakte in der Portfolio-Production gespeichert werden?" war offen; aufgelöst: nein, die **Team Demo Data Boundary** erlaubt dort nur fiktive Kontakte und beschraenkt echte Einladungstests auf lokale kontrollierte Adressen.
+- "Duerfen reale Teamkontakte in der Portfolio-Production gespeichert werden?" war offen; aufgelöst: nein, die **Team Demo Data Boundary** erlaubt dort nur fiktive Kontakte, verlangt einen sichtbaren Demo-Datenhinweis und beschraenkt echte Einladungstests auf lokale kontrollierte Adressen.
 - "Hot Desk" wurde semantisch als Bereich interpretiert; aufgelöst: In RoomFull V1 bedeutet es ein einzelner buchbarer Platz.
 - "Buchungen verwalten" bei Admin war unscharf; aufgelöst: In V1 darf Admin auch Buchungen erstellen (operativer HelpDesk-Fall).
 - "Braucht Admin einen eigenen Einstieg zum Buchungsflow-Pruefen?" war offen; aufgelöst: nein, Admin nutzt den normalen Customer-Flow ueber `/booking-options`.

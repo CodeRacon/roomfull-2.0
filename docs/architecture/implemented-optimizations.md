@@ -1,6 +1,6 @@
 # Implementierte Architektur-Optimierungen
 
-Stand: 2026-06-22
+Stand: 2026-07-01
 
 ## Zweck
 
@@ -268,6 +268,51 @@ konzentriert Regeln und Tests an einer Stelle.
 - Admin-Verwaltung fuer UnitTypes oder Areas,
 - neuen Unit-Lebenszyklen neben aktiv/deaktiviert oder
 - einem zweiten produktiven Persistenz-Adapter.
+
+## 7. Create Booking Flow Model
+
+### Vorherige Reibung
+
+Die Create Booking Form buendelte sichtbare UI, Submit-Payload-Erzeugung,
+Selection-Transitions, Summary-Daten und Submit-Fehlerzuordnung in einem grossen
+Client Module. Tests fuer diese Flow-Entscheidungen haetten dadurch viel
+Formular-UI rendern muessen.
+
+### Implementierter Stand
+
+Das Create Booking Flow Model kapselt reine Frontend-Workflow-Ableitungen:
+
+- Context-View-Daten fuer `DIRECT` und `AUTO_ASSIGN`
+- Vollstaendigkeit der Booking-Auswahl
+- Reset-Regeln bei Datum- und Startzeitwechsel
+- Submit-Payload-Erzeugung aus Booking Context und Auswahl
+- display-only Summary-Daten
+- Zuordnung bekannter Submit-Fehler auf Workflow-Outcomes
+
+Die echte fachliche Booking Time Policy, Availability-Berechnung und finale
+Konfliktpruefung bleiben weiterhin im Backend. Das Frontend verarbeitet nur
+bereits berechnete Contracts und definiert keine eigenen Zeit- oder
+Availability-Regeln.
+
+### Gewonnene Tiefe
+
+Die Interface bietet Tests und UI eine kleine, stabile Oberflaeche fuer den
+Create-Booking-Workflow. Die Implementation konzentriert Flow-Wissen, das sonst
+im Formular verstreut waere. Der Deletion Test ist fuer diese UI-Flow-Regeln
+erfuellt: Ohne das Model wuerden Payload-, Reset-, Summary- und Fehlerlogik
+wieder in der Form auftauchen.
+
+### Zentrale Dateien und Tests
+
+- `src/features/booking/create-booking/model/create-booking-flow.ts`
+- `src/features/booking/create-booking/model/create-booking-flow.test.ts`
+- `src/features/booking/create-booking/ui/CreateBookingForm.tsx`
+
+### Neubewertung erst bei
+
+- einem weiteren Booking Request Mode,
+- einer fachlich anderen Create-Booking-UI mit wiederverwendbarem Flow oder
+- echtem Bedarf, die UI-Darstellung selbst weiter in kleinere Module zu teilen.
 
 ## Review-Leitplanken gegen Ueber-Verbesserung
 

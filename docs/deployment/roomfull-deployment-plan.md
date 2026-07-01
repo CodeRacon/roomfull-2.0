@@ -124,6 +124,14 @@ Add backend rate limits before opening registration publicly. Cover at least:
 
 The first implementation may use process-local limits because the backend runs as one Render instance. Limits and proxy handling must be tested behind Render before go-live.
 
+Current MVP implementation:
+
+- registration, login, and demo login share an auth limit of 20 requests per 15 minutes per client IP
+- customer contact requests are limited to 10 requests per 15 minutes per client IP
+- booking creation and cancellation share a booking mutation limit of 30 requests per 15 minutes per client IP
+- Express trusts one proxy hop in Production so Render forwarded client IPs can be used for rate-limit keys
+- limits are intentionally process-local and reset on backend restart
+
 ### Demo notice
 
 Add visible, localized copy near registration or another unavoidable entry point:
