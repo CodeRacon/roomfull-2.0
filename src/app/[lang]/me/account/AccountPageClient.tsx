@@ -254,7 +254,7 @@ export function AccountPageClient({ copy, locale }: AccountPageClientProps) {
 										{nextBooking.unit.name}
 									</span>
 									<span
-										className={`mt-5 inline-flex border-2 border-primary px-4 py-2 text-base font-black text-primary transition-colors group-hover:border-on-primary group-hover:text-on-primary ${getBookingAccentClassName(
+										className={`mt-5 inline-flex border-2 border-primary px-4 py-2 text-base font-black text-primary transition-colors group-hover:text-on-primary ${getBookingAccentClassName(
 											nextBooking.unit.unitType.name,
 										)}`}
 									>

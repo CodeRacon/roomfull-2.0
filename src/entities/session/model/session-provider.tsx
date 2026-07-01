@@ -7,13 +7,8 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { ApiRequestError, setApiAuthTokenResolver } from "@/shared/api";
-import { getCurrentSessionUser } from "../api";
-import {
-	clearAuthToken,
-	getAuthToken,
-	saveAuthToken,
-} from "./auth-token-storage";
+import { ApiRequestError } from "@/shared/api";
+import { endCurrentSession, getCurrentSessionUser } from "../api";
 import { SessionContext } from "./session-context";
 import type {
 	SessionContextValue,
@@ -24,20 +19,17 @@ import type {
 
 type SessionProviderProps = { children: ReactNode };
 
-setApiAuthTokenResolver(getAuthToken);
-
 export function SessionProvider({ children }: SessionProviderProps) {
 	const [status, setStatus] = useState<SessionStatus>("loading");
 	const [user, setUser] = useState<SessionUser | null>(null);
 
 	const startSession = useCallback((input: StartSessionInput): void => {
-		saveAuthToken(input.token);
 		setUser(input.user);
 		setStatus("authenticated");
 	}, []);
 
 	const endSession = useCallback((): void => {
-		clearAuthToken();
+		void endCurrentSession().catch(() => undefined);
 		setUser(null);
 		setStatus("anonymous");
 	}, []);
@@ -54,17 +46,10 @@ export function SessionProvider({ children }: SessionProviderProps) {
 
 	useEffect(() => {
 		async function initializeSession(): Promise<void> {
-			const token = getAuthToken();
-
-			if (!token) {
-				setStatus("anonymous");
-				setUser(null);
-				return;
-			}
 			setStatus("loading");
 
 			try {
-				const currentUser = await getCurrentSessionUser(token);
+				const currentUser = await getCurrentSessionUser();
 				setUser(currentUser);
 				setStatus("authenticated");
 			} catch (error) {

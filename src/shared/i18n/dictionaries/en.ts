@@ -8,12 +8,12 @@ export const en = {
 	navigation: {
 		homeAriaLabel: "Go to homepage",
 		bookingOptions: "Find a space",
-		myBookings: "My bookings",
-		teams: "My teams",
+		myBookings: "My Bookings",
+		teams: "My Teams",
 		admin: "Admin",
 		adminDashboard: "Admin dashboard",
 		profile: "Profile",
-		account: "My account",
+		account: "My Account",
 		contact: "Contact",
 		signIn: "Sign in",
 		signUp: "Create account",
@@ -100,7 +100,7 @@ export const en = {
 				selection:
 					"For a Hot Desk, you choose an area and RoomFull automatically assigns an available desk there. For Booths, Team Rooms, and Meeting Rooms, you select the room yourself.",
 				account:
-					"You need a user account to make a confirmed booking. You can then find your reservation later under “My bookings.”",
+					"You need a user account to make a confirmed booking. You can then find your reservation later under “My Bookings.”",
 			},
 			duration: {
 				question: "How long can I book for?",
@@ -119,7 +119,7 @@ export const en = {
 			cancellation: {
 				question: "Can I cancel my booking?",
 				answer:
-					"Yes. You can find your future bookings under “My bookings” and cancel one there if your plans change.",
+					"Yes. You can find your future bookings under “My Bookings” and cancel one there if your plans change.",
 			},
 			overtime: {
 				question:
@@ -148,7 +148,7 @@ export const en = {
 		},
 		ctas: {
 			bookingOptions: "Find your space",
-			myBookings: "My bookings",
+			myBookings: "My Bookings",
 			login: "Sign in",
 		},
 		bookingOptionsAriaLabel: "Booking options",
@@ -424,7 +424,7 @@ export const en = {
 	},
 	myBookings: {
 		page: {
-			title: "My bookings",
+			title: "My Bookings",
 			intro:
 				"Upcoming, past, or cancelled: find all your bookings at a glance.",
 			preparing: "Preparing your bookings...",
@@ -498,19 +498,19 @@ export const en = {
 		page: {
 			title: "Share booking with team",
 			intro:
-				"Choose a team, adjust recipients if needed, then copy the BCC list, subject, message, or the calendar file.",
+				"Choose a team, adjust the recipient list, and prepare the message and .ics (calendar file) for your invitation.",
 			back: "Back to my bookings",
 		},
 		loading: {
-			page: "Loading share data...",
+			page: "Preparing invitation...",
 			team: "Loading team contacts...",
 		},
 		errors: {
 			notFound:
 				"This booking does not exist or does not belong to your account.",
-			conflict: "This booking is no longer eligible for a team share.",
+			conflict: "This booking can no longer be shared.",
 			teamLoad: "The contacts for this team could not be loaded.",
-			fallback: "The share page could not be loaded.",
+			fallback: "The invitation could not be prepared.",
 		},
 		summary: {
 			eyebrow: "Booking context",
@@ -519,16 +519,15 @@ export const en = {
 			time: "Time: {time}",
 		},
 		notice: {
-			title: "Privacy and product boundary",
+			title: "Note on sending invitations by email",
 			description:
-				"RoomFull does not send anything itself. Paste copied addresses into BCC in your mail tool and attach the calendar file manually.",
+				"RoomFull only prepares the email invitation. Send it yourself through your email app and attach the calendar file if needed.",
 		},
 		selection: {
 			title: "Choose team and recipients",
 			description:
-				"Empty teams stay visible but cannot be used for shares yet. Your personal message stays when you switch teams.",
-			noTeams:
-				"You have not created a team yet. Create a private contact group first.",
+				"Teams without contacts cannot be selected here yet. Your personal message stays when you switch teams.",
+			noTeams: "You have not created a team yet. Create a team first.",
 			openTeams: "Open my teams",
 			manageEmptyTeam: "Manage empty team",
 			select: "Choose team",
@@ -538,17 +537,17 @@ export const en = {
 			membersMany: "{count} contacts",
 			membersTitle: "Recipients from {teamName}",
 			membersDescription:
-				"After choosing a team, all contacts are preselected. You can deselect them for this share.",
+				"All contacts in the team are selected at first. Remove individual people if they should not receive this invitation.",
 			messageLabel: "Personal message",
 			messagePlaceholder: "Optional: a short personal note for your team.",
 			messageHint: "{remaining} characters remaining.",
 			capacityWarning:
-				"Warning: {selected} selected contacts for capacity {capacity}. This does not block the share.",
+				"Note: You selected {selected} contacts, while the room is designed for {capacity} people. You can still continue.",
 		},
 		package: {
-			title: "Share package",
+			title: "Prepare email invitation",
 			description:
-				"Copy each part separately or download the calendar file. Without selected recipients, all actions stay disabled.",
+				"Copy recipients, subject, and message separately or download the .ics (calendar file). Select at least one contact first.",
 			copyBcc: "Copy BCC addresses",
 			copySubject: "Copy subject",
 			copyMessage: "Copy message",
@@ -579,7 +578,7 @@ export const en = {
 	},
 	account: {
 		page: {
-			title: "My account",
+			title: "My Account",
 		},
 		profile: {
 			signedInAs: "Signed in as",
@@ -600,7 +599,7 @@ export const en = {
 		teams: {
 			title: "Private team contacts",
 			description:
-				"Create contact groups for recurring booking shares and manage them in one place.",
+				"Create teams so you can share bookings faster with the same people later.",
 			action: "Open my teams",
 		},
 		nextBooking: {
@@ -651,9 +650,9 @@ export const en = {
 	},
 	myTeams: {
 		page: {
-			title: "My teams",
+			title: "My Teams",
 			intro:
-				"Manage private contact groups for recurring booking shares. RoomFull only stores your contacts' names and email addresses.",
+				"Manage teams for people you share bookings with more often. RoomFull only stores their names and email addresses for this.",
 			preparing: "Preparing teams...",
 		},
 		client: {
@@ -661,15 +660,15 @@ export const en = {
 			loadError: "Your teams could not be loaded.",
 		},
 		intro: {
-			eyebrow: "Private contact groups",
+			eyebrow: "Private teams",
 			title: "Who do you want to invite faster next time?",
 			description:
 				"A team in RoomFull is only a personal contact list for you. It is not a shared organization and does not trigger automatic emails.",
 		},
 		notice: {
-			title: "Responsible contact data use",
+			title: "Public demo note",
 			description:
-				"Only use fictitious demo contacts in the portfolio instance. For local tests, only use addresses you control yourself.",
+				"Please only use fictitious contacts here. This public demo project is not intended for real email addresses of other people.",
 		},
 		form: {
 			title: "Create a new team",
@@ -691,10 +690,9 @@ export const en = {
 		},
 		list: {
 			title: "Your teams",
-			description:
-				"Teams are sorted alphabetically in the active language. Empty teams can be filled with contacts later.",
+			description: "You can fill empty teams with contacts later.",
 			empty:
-				"You have not created a team yet. Start with a small contact group for recurring invitations.",
+				"You have not created a team yet. Start with a team for recurring invitations.",
 			memberOne: "1 contact",
 			membersMany: "{count} contacts",
 			openTeam: "Manage",
@@ -703,7 +701,7 @@ export const en = {
 			page: {
 				title: "Manage team",
 				intro:
-					"Maintain your team's name and contacts. RoomFull only stores the data you need for later booking shares.",
+					"Maintain your team's name and contacts. RoomFull only stores the data you need to share bookings faster later.",
 				back: "Back to my teams",
 			},
 			client: {
@@ -717,9 +715,9 @@ export const en = {
 				memberCount: "{count} contacts in this team",
 			},
 			notice: {
-				title: "Responsible contact data use",
+				title: "Public demo note",
 				description:
-					"Only use fictitious demo contacts in the portfolio instance. For local tests, only use addresses you control yourself.",
+					"Please only use fictitious contacts here. This public demo project is not intended for real email addresses of other people.",
 			},
 			settings: {
 				title: "Team settings",
@@ -758,10 +756,10 @@ export const en = {
 			members: {
 				title: "Contacts",
 				description:
-					"Add contacts for recurring booking shares. Contacts are sorted alphabetically by name and then by email.",
+					"Add contacts so you can share bookings faster with this team later.",
 				required: "Please fill out both name and email.",
 				empty:
-					"This team is still empty. Add your first contact so you can use it later for team shares.",
+					"This team is still empty. Add your first contact so you can share bookings faster later.",
 				create: {
 					nameLabel: "Name",
 					namePlaceholder: "For example Anna Example",
@@ -1023,6 +1021,13 @@ export const en = {
 			submitPending: "Signing in...",
 			registerLink: "No account yet? Create one",
 			errorFallback: "Sign-in failed. Please try again.",
+		},
+		demoLogin: {
+			title: "Try the demo",
+			intro: "Start as a Demo Customer with prepared bookings and teams.",
+			submit: "Start as Demo Customer",
+			submitPending: "Preparing demo...",
+			errorFallback: "Demo access could not be started. Please try again.",
 		},
 		signUp: {
 			title: "Create account",

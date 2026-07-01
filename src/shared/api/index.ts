@@ -12,5 +12,4 @@ export {
 	apiPutAuthenticated,
 	buildApiUrl,
 	getApiBaseUrl,
-	setApiAuthTokenResolver,
 } from "./api-client";

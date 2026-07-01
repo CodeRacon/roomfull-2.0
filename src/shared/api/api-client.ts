@@ -27,26 +27,6 @@ export class ApiRequestError extends Error {
 	}
 }
 
-type AuthTokenResolver = () => string | null;
-
-let authTokenResolver: AuthTokenResolver | null = null;
-
-export function setApiAuthTokenResolver(resolver: AuthTokenResolver): void {
-	authTokenResolver = resolver;
-}
-
-function getAuthHeaders(): HeadersInit {
-	const token = authTokenResolver?.() ?? null;
-
-	if (!token) {
-		throw new ApiRequestError("Bitte melde dich erneut an.", 401);
-	}
-
-	return {
-		Authorization: `Bearer ${token}`,
-	};
-}
-
 async function readApiErrorMessage(
 	response: Response,
 	fallback: string,
@@ -63,7 +43,10 @@ export async function apiGet<TResponse>(
 	path: string,
 	init?: RequestInit,
 ): Promise<TResponse> {
-	const response = await fetch(buildApiUrl(path), init);
+	const response = await fetch(buildApiUrl(path), {
+		credentials: "include",
+		...init,
+	});
 
 	if (!response.ok) {
 		const message = await readApiErrorMessage(
@@ -74,6 +57,10 @@ export async function apiGet<TResponse>(
 		throw new ApiRequestError(message, response.status);
 	}
 
+	if (response.status === 204) {
+		return undefined as TResponse;
+	}
+
 	const data = (await response.json()) as TResponse;
 	return data;
 }
@@ -82,13 +69,7 @@ export async function apiGetAuthenticated<TResponse>(
 	path: string,
 	init?: RequestInit,
 ): Promise<TResponse> {
-	return apiGet<TResponse>(path, {
-		...init,
-		headers: {
-			...getAuthHeaders(),
-			...init?.headers,
-		},
-	});
+	return apiGet<TResponse>(path, init);
 }
 
 export async function apiPost<TResponse>(
@@ -97,6 +78,7 @@ export async function apiPost<TResponse>(
 	init?: RequestInit,
 ): Promise<TResponse> {
 	const response = await fetch(buildApiUrl(path), {
+		credentials: "include",
 		...init,
 		method: "POST",
 		headers: {
@@ -124,13 +106,7 @@ export async function apiPostAuthenticated<TResponse>(
 	body: unknown,
 	init?: RequestInit,
 ): Promise<TResponse> {
-	return apiPost<TResponse>(path, body, {
-		...init,
-		headers: {
-			...getAuthHeaders(),
-			...init?.headers,
-		},
-	});
+	return apiPost<TResponse>(path, body, init);
 }
 
 export async function apiPut<TResponse>(
@@ -139,6 +115,7 @@ export async function apiPut<TResponse>(
 	init?: RequestInit,
 ): Promise<TResponse> {
 	const response = await fetch(buildApiUrl(path), {
+		credentials: "include",
 		...init,
 		method: "PUT",
 		headers: {
@@ -166,13 +143,7 @@ export async function apiPutAuthenticated<TResponse>(
 	body: unknown,
 	init?: RequestInit,
 ): Promise<TResponse> {
-	return apiPut<TResponse>(path, body, {
-		...init,
-		headers: {
-			...getAuthHeaders(),
-			...init?.headers,
-		},
-	});
+	return apiPut<TResponse>(path, body, init);
 }
 
 export async function apiPatch<TResponse>(
@@ -181,6 +152,7 @@ export async function apiPatch<TResponse>(
 	init?: RequestInit,
 ): Promise<TResponse> {
 	const response = await fetch(buildApiUrl(path), {
+		credentials: "include",
 		...init,
 		method: "PATCH",
 		headers: {
@@ -208,13 +180,7 @@ export async function apiPatchAuthenticated<TResponse>(
 	body: unknown,
 	init?: RequestInit,
 ): Promise<TResponse> {
-	return apiPatch<TResponse>(path, body, {
-		...init,
-		headers: {
-			...getAuthHeaders(),
-			...init?.headers,
-		},
-	});
+	return apiPatch<TResponse>(path, body, init);
 }
 
 export async function apiDelete<TResponse>(
@@ -222,6 +188,7 @@ export async function apiDelete<TResponse>(
 	init?: RequestInit,
 ): Promise<TResponse> {
 	const response = await fetch(buildApiUrl(path), {
+		credentials: "include",
 		...init,
 		method: "DELETE",
 	});
@@ -247,11 +214,5 @@ export async function apiDeleteAuthenticated<TResponse>(
 	path: string,
 	init?: RequestInit,
 ): Promise<TResponse> {
-	return apiDelete<TResponse>(path, {
-		...init,
-		headers: {
-			...getAuthHeaders(),
-			...init?.headers,
-		},
-	});
+	return apiDelete<TResponse>(path, init);
 }

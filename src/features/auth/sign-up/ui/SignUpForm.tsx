@@ -132,7 +132,7 @@ export function SignUpForm({ copy, locale, nextPath }: SignUpFormProps) {
 					<Anchor
 						variant="secondary"
 						href={loginHref}
-						className="justify-center border-2 border-primary! bg-background! text-primary"
+						className="justify-center border-2 border-primary! bg-background! text-primary hover:bg-primary!"
 					>
 						{copy.loginLink}
 					</Anchor>

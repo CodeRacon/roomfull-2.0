@@ -117,7 +117,7 @@ export function SignInForm({ copy, locale, nextPath }: SignInFormProps) {
 					<Anchor
 						variant="secondary"
 						href={registerHref}
-						className="justify-center border-2 border-primary! bg-background! text-primary"
+						className="justify-center border-2 border-primary! bg-background! text-primary hover:bg-primary!"
 					>
 						{copy.registerLink}
 					</Anchor>

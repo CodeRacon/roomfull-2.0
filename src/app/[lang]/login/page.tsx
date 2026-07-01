@@ -1,3 +1,4 @@
+import { DemoLoginButton } from "@/features/auth/demo-login";
 import { SignInForm } from "@/features/auth/sign-in";
 import { getDictionary, isLocale } from "@/shared/i18n";
 import { appRoutes, getSafeLocalizedNextPath } from "@/shared/routing";
@@ -33,12 +34,13 @@ export default async function LoginPage({
 
 	return (
 		<main className="min-h-screen bg-background px-6 py-10 text-text">
-			<div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-5xl items-center">
+			<div className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-5xl flex-col items-center justify-center gap-5">
 				<SignInForm
 					copy={dictionary.auth.signIn}
 					locale={locale}
 					nextPath={nextPath}
 				/>
+				<DemoLoginButton copy={dictionary.auth.demoLogin} locale={locale} />
 			</div>
 		</main>
 	);

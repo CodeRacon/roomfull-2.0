@@ -5,10 +5,11 @@ export type PublicUser = {
 	name: string;
 	email: string;
 	role: UserRole;
+	isDemo: boolean;
+	demoExpiresAt: string | null;
 	createdAt: string;
 };
 
 export type AuthResponse = {
-	token: string;
 	user: PublicUser;
 };

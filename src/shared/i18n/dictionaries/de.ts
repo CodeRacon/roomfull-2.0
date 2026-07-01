@@ -498,19 +498,19 @@ export const de = {
 		page: {
 			title: "Buchung mit Team teilen",
 			intro:
-				"Wähle ein Team, passe bei Bedarf die Empfänger an und kopiere danach BCC, Betreff, Nachricht oder die Kalenderdatei.",
+				"Wähle ein Team aus, passe die Liste der Empfänger:innen an und bereite Nachricht und .ics (Kalenderdatei) für deine Einladung vor.",
 			back: "Zurück zu meinen Buchungen",
 		},
 		loading: {
-			page: "Share-Daten werden geladen...",
+			page: "Einladung wird vorbereitet...",
 			team: "Team-Kontakte werden geladen...",
 		},
 		errors: {
 			notFound:
 				"Diese Buchung gibt es nicht oder sie gehört nicht zu deinem Konto.",
-			conflict: "Diese Buchung ist nicht mehr für einen Team Share geeignet.",
+			conflict: "Diese Buchung kann nicht mehr geteilt werden.",
 			teamLoad: "Die Kontakte dieses Teams konnten nicht geladen werden.",
-			fallback: "Die Share-Seite konnte nicht geladen werden.",
+			fallback: "Die Einladung konnte nicht vorbereitet werden.",
 		},
 		summary: {
 			eyebrow: "Buchungskontext",
@@ -519,16 +519,15 @@ export const de = {
 			time: "Zeitraum: {time}",
 		},
 		notice: {
-			title: "Datenschutz und Produktgrenze",
+			title: "Hinweis zum Einladungs-Versand per Mail",
 			description:
-				"RoomFull versendet nichts selbst. Füge die kopierten Adressen in deinem Mail-Tool in BCC ein und hänge die Kalenderdatei manuell an.",
+				"RoomFull bereitet die Einladung per Mail nur vor. Sende sie anschließend selbst über dein E-Mail-Programm und hänge die Kalenderdatei bei Bedarf an.",
 		},
 		selection: {
 			title: "Team und Empfänger wählen",
 			description:
-				"Leere Teams bleiben sichtbar, sind aber noch nicht für Shares nutzbar. Bei einem Teamwechsel bleibt deine persönliche Nachricht erhalten.",
-			noTeams:
-				"Du hast noch kein Team angelegt. Lege zuerst eine private Kontaktgruppe an.",
+				"Teams ohne Kontakte kannst du hier noch nicht auswählen. Deine persönliche Nachricht bleibt erhalten, wenn du das Team wechselst.",
+			noTeams: "Du hast noch kein Team angelegt. Lege zuerst ein Team an.",
 			openTeams: "Meine Teams öffnen",
 			manageEmptyTeam: "Leeres Team verwalten",
 			select: "Team wählen",
@@ -538,18 +537,18 @@ export const de = {
 			membersMany: "{count} Kontakte",
 			membersTitle: "Empfänger aus {teamName}",
 			membersDescription:
-				"Nach der Teamwahl sind alle Kontakte vorausgewählt. Du kannst sie für diesen Share abwählen.",
+				"Zunächst sind alle Kontakte eines Teams ausgewählt. Entferne einzelne Personen, wenn sie diese Einladung nicht erhalten sollen.",
 			messageLabel: "Persönliche Nachricht",
 			messagePlaceholder:
 				"Optional: ein kurzer persönlicher Hinweis für dein Team.",
 			messageHint: "Noch {remaining} Zeichen verfügbar.",
 			capacityWarning:
-				"Warnung: {selected} ausgewählte Kontakte bei Kapazität {capacity}. Das blockiert den Share nicht.",
+				"Hinweis: Du hast {selected} Kontakte ausgewählt, wobei der Raum für {capacity} Personen ausgelegt ist. Du kannst trotzdem fortfahren.",
 		},
 		package: {
-			title: "Share-Paket",
+			title: "Einladung per Mail vorbereiten",
 			description:
-				"Kopiere die Bestandteile einzeln oder lade die Kalenderdatei herunter. Ohne ausgewählte Empfänger bleiben die Aktionen gesperrt.",
+				"Kopiere Empfänger, Betreff und Nachricht einzeln oder lade die .ics (Kalenderdatei) herunter. Wähle vorher mindestens einen Kontakt aus.",
 			copyBcc: "BCC-Adressen kopieren",
 			copySubject: "Betreff kopieren",
 			copyMessage: "Nachricht kopieren",
@@ -602,7 +601,7 @@ export const de = {
 		teams: {
 			title: "Private Team-Kontakte",
 			description:
-				"Lege Kontaktgruppen für wiederkehrende Buchungsfreigaben an und verwalte sie an einer Stelle.",
+				"Lege Teams an, damit du Buchungen später schneller mit denselben Personen teilen kannst.",
 			action: "Meine Teams öffnen",
 		},
 		nextBooking: {
@@ -657,7 +656,7 @@ export const de = {
 		page: {
 			title: "Meine Teams",
 			intro:
-				"Verwalte private Kontaktgruppen für wiederkehrende Buchungsfreigaben. RoomFull speichert nur Namen und E-Mail-Adressen deiner Kontakte.",
+				"Verwalte Teams für Personen, mit denen du Buchungen häufiger teilst. RoomFull speichert dafür nur Namen und E-Mail-Adressen.",
 			preparing: "Teams werden vorbereitet...",
 		},
 		client: {
@@ -665,15 +664,15 @@ export const de = {
 			loadError: "Deine Teams konnten nicht geladen werden.",
 		},
 		intro: {
-			eyebrow: "Private Kontaktgruppen",
+			eyebrow: "Private Teams",
 			title: "Wen möchtest du schnell wieder einladen können?",
 			description:
 				"Ein Team ist in RoomFull nur eine persönliche Kontaktliste für dich. Es ist keine gemeinsame Organisation und erzeugt keine automatischen E-Mails.",
 		},
 		notice: {
-			title: "Verantwortung für Kontaktdaten",
+			title: "Hinweis zur öffentlichen Demo",
 			description:
-				"Nutze in der Portfolio-Instanz nur fiktive Demo-Kontakte. Für lokale Tests verwende ausschließlich kontrollierte eigene Adressen.",
+				"Bitte nutze hier nur fiktive Kontakte. Dieses öffentliche Demo-Projekt ist nicht für echte E-Mail-Adressen Dritter gedacht.",
 		},
 		form: {
 			title: "Neues Team anlegen",
@@ -695,10 +694,9 @@ export const de = {
 		},
 		list: {
 			title: "Deine Teams",
-			description:
-				"Teams werden alphabetisch nach aktueller Sprache sortiert. Leere Teams kannst du später mit Kontakten füllen.",
+			description: "Leere Teams kannst du später mit Kontakten füllen.",
 			empty:
-				"Du hast noch kein Team angelegt. Starte mit einer kleinen Kontaktgruppe für wiederkehrende Einladungen.",
+				"Du hast noch kein Team angelegt. Starte mit einem Team für wiederkehrende Einladungen.",
 			memberOne: "1 Kontakt",
 			membersMany: "{count} Kontakte",
 			openTeam: "Verwalten",
@@ -707,7 +705,7 @@ export const de = {
 			page: {
 				title: "Team verwalten",
 				intro:
-					"Pflege Name und Kontakte deines Teams. RoomFull speichert nur die Daten, die du für spätere Buchungsfreigaben brauchst.",
+					"Pflege Name und Kontakte deines Teams. RoomFull speichert nur die Daten, die du brauchst, um Buchungen später schneller zu teilen.",
 				back: "Zurück zu meinen Teams",
 			},
 			client: {
@@ -721,9 +719,9 @@ export const de = {
 				memberCount: "{count} Kontakte in diesem Team",
 			},
 			notice: {
-				title: "Verantwortung für Kontaktdaten",
+				title: "Hinweis zur öffentlichen Demo",
 				description:
-					"Nutze in der Portfolio-Instanz nur fiktive Demo-Kontakte. Für lokale Tests verwende ausschließlich kontrollierte eigene Adressen.",
+					"Bitte nutze hier nur fiktive Kontakte. Dieses öffentliche Demo-Projekt ist nicht für echte E-Mail-Adressen Dritter gedacht.",
 			},
 			settings: {
 				title: "Team-Einstellungen",
@@ -763,10 +761,10 @@ export const de = {
 			members: {
 				title: "Kontakte",
 				description:
-					"Füge Kontakte für wiederkehrende Buchungsfreigaben hinzu. Kontakte werden alphabetisch nach Name und dann nach E-Mail sortiert.",
+					"Füge Kontakte hinzu, damit du Buchungen später schneller mit diesem Team teilen kannst.",
 				required: "Bitte fülle Name und E-Mail aus.",
 				empty:
-					"Dieses Team ist noch leer. Füge deinen ersten Kontakt hinzu, damit du es später für Team Shares nutzen kannst.",
+					"Dieses Team ist noch leer. Füge deinen ersten Kontakt hinzu, damit du Buchungen später schneller teilen kannst.",
 				create: {
 					nameLabel: "Name",
 					namePlaceholder: "Zum Beispiel Anna Muster",
@@ -1030,6 +1028,14 @@ export const de = {
 			submitPending: "Einloggen...",
 			registerLink: "Noch kein Konto? Registrieren",
 			errorFallback: "Login ist fehlgeschlagen. Bitte versuche es erneut.",
+		},
+		demoLogin: {
+			title: "Demo ausprobieren",
+			intro: "Starte als Demo Customer mit vorbereiteten Buchungen und Teams.",
+			submit: "Als Demo Customer starten",
+			submitPending: "Demo wird vorbereitet...",
+			errorFallback:
+				"Der Demo-Zugang konnte nicht gestartet werden. Bitte versuche es erneut.",
 		},
 		signUp: {
 			title: "Registrieren",

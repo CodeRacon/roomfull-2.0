@@ -1,9 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { apiDeleteAuthenticated, setApiAuthTokenResolver } from ".";
+import { apiDeleteAuthenticated } from ".";
 
 describe("authenticated API client", () => {
 	afterEach(() => {
-		setApiAuthTokenResolver(() => null);
 		vi.unstubAllGlobals();
 	});
 
@@ -12,7 +11,6 @@ describe("authenticated API client", () => {
 			.fn()
 			.mockResolvedValue(new Response(null, { status: 204 }));
 		vi.stubGlobal("fetch", fetchMock);
-		setApiAuthTokenResolver(() => "token-1");
 
 		const result = await apiDeleteAuthenticated<void>("/me/teams/team-1");
 
@@ -20,10 +18,8 @@ describe("authenticated API client", () => {
 		expect(fetchMock).toHaveBeenCalledWith(
 			"http://localhost:4000/api/me/teams/team-1",
 			expect.objectContaining({
+				credentials: "include",
 				method: "DELETE",
-				headers: expect.objectContaining({
-					Authorization: "Bearer token-1",
-				}),
 			}),
 		);
 	});

@@ -7,11 +7,12 @@ export type SessionUser = {
 	name: string;
 	email: string;
 	role: SessionUserRole;
+	isDemo: boolean;
+	demoExpiresAt: string | null;
 	createdAt: string;
 };
 
 export type StartSessionInput = {
-	token: string;
 	user: SessionUser;
 };
 
