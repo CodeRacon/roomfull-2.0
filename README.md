@@ -1,304 +1,143 @@
 # RoomFull 2.0
 
-RoomFull 2.0 ist ein kleines MVP zur Buchung von Coworking-Units.
+RoomFull 2.0 is a full-stack booking application for coworking spaces.
+
+The project demonstrates how a real-world booking flow can be implemented with clear domain rules, role-based access, availability checks, conflict prevention and an admin interface for operational management.
+
+It is built as a portfolio project with production deployment, API documentation and a structured frontend/backend architecture.
 
 ## Live Demo
 
-- Anwendung: https://roomfull.michael-buschmann.dev
-- API-Dokumentation: https://api.roomfull.michael-buschmann.dev/docs
-- Healthcheck: https://api.roomfull.michael-buschmann.dev/health
+* Application: https://roomfull.michael-buschmann.dev
+* API Documentation: https://api.roomfull.michael-buschmann.dev/docs
+* API Healthcheck: https://api.roomfull.michael-buschmann.dev/health
 
-RoomFull ist ein nicht-kommerzielles Portfolio- und Lernprojekt. Die Produktionsumgebung enthält Demo-Daten; Besucher sollten keine echten persönlichen Daten oder wiederverwendeten Passwörter eingeben.
+The public demo environment contains demo data only. Please do not enter real personal data or reused passwords.
 
-Ziel ist nicht maximaler Feature-Umfang, sondern eine saubere Umsetzung von:
+## What RoomFull Does
 
-- Rollen und Rechten
-- Verfügbarkeiten
-- Buchungen
-- Konfliktprüfung
-- klarer Fullstack-Struktur
+RoomFull allows users to browse coworking options, check availability and create bookings for different types of bookable units.
 
-## V1-Stand
+Admins can manage the available unit inventory and oversee the booking operation.
 
-Der V1-MVP-Stand ist fachlich erreicht.
+The core idea is simple:
 
-Enthalten sind:
+> Find a suitable space, check whether it is available, book it — without double bookings, invalid time ranges or unauthorized actions.
 
-- Customer Self-Service für BookingOptions, Verfügbarkeit, Buchung und eigenes Storno
-- Admin Dashboard mit Buchungsbetrieb und Unit-Inventar
-- Admin-Verwaltung von BookableUnits inklusive Anlegen, Bearbeiten, Deaktivieren und Reaktivieren
-- Backend-seitige Fachregeln für Buchbarkeit, Dauer, Öffnungszeiten, Konflikte und Rollenrechte
+## Product Scope
 
-Bewusst nicht Teil von V1:
+RoomFull supports four coworking unit types:
 
-- Admin-Bearbeitung von UnitTypes oder deren Dauerregeln
-- Admin-Fremd-Storno
-- separater Admin-Einstieg für "Buchungsflow prüfen"
-- automatisierte breite E2E-/Integrationstest-Abdeckung; V1 wird manuell und visuell geprüft
+* Hot Desk
+* Booth
+* Team Room
+* Meeting Room
 
-## MVP-Funktionen
+The application includes two main user contexts:
 
-### Customer
+### Customer Area
 
-- registrieren
-- einloggen
-- BookingOptions als Einstieg in den Buchungsflow sehen
-- aktive Units für konkrete Auswahl und Details sehen
-- Verfügbarkeit prüfen
-- Buchung anlegen
-- eigene Buchungen sehen
-- eigene zukünftige Buchungen stornieren
+Customers can:
 
-### Admin
+* create an account
+* sign in
+* browse available booking options
+* view active units
+* check availability
+* create bookings
+* view their own bookings
+* cancel their own future bookings
 
-- eigenes Admin-Dashboard nutzen
-- Units anlegen
-- Units bearbeiten
-- Units deaktivieren
-- Units reaktivieren
-- alle Buchungen im Buchungsbetrieb sehen
-- ebenfalls operative Buchungen über den normalen Customer-Flow anlegen
+### Admin Area
 
-Wenn Admins Buchbarkeit prüfen oder testweise buchen wollen, nutzen sie bewusst den normalen Customer-Flow über `/booking-options`. Es gibt in V1 keinen separaten Admin-Einstieg für "Buchungsflow prüfen".
+Admins can:
 
-Nicht Teil des Admin-MVP:
+* access an admin dashboard
+* create bookable units
+* edit existing units
+* deactivate units
+* reactivate units
+* review booking operations
+* create operational bookings through the regular customer booking flow
 
-- UnitTypes oder deren Dauerregeln im Admin-UI bearbeiten
-- fremde Buchungen stornieren
+## Domain Rules
 
-## Nicht Teil von Version 1
+The backend is responsible for enforcing the booking rules.
 
-- Payments
-- E-Mail-Benachrichtigungen
-- Kalender-Sync
-- Echtzeit-Updates
-- Wartelisten
-- komplexe Preislogik
-- mehrere Standorte
-- AI-Funktionen
+A booking connects:
 
-Geplante Themen stehen ausschliesslich in der [Roadmap](ROADMAP.md).
+* a user
+* a bookable unit
+* a start time
+* an end time
 
-## Fachlicher Kern
+Important rules include:
 
-Eine Buchung verbindet:
+* only active units can be booked
+* bookings must be in the future
+* the start time must be before the end time
+* bookings must be within opening hours
+* overlapping active bookings for the same unit are rejected
+* customers can only cancel their own bookings
+* admin-only actions are protected by role-based access control
 
-- `user`
-- `unit`
-- `start_time`
-- `end_time`
+Global opening hours are currently:
 
-Wichtige Regeln:
+* Monday to Friday
+* 08:00 to 22:00
 
-- nur aktive Units sind buchbar
-- nur zukünftige Zeiträume sind buchbar
-- `start_time < end_time`
-- Buchungen müssen innerhalb der globalen Öffnungszeiten liegen (Mo-Fr 08:00-22:00)
-- keine Überschneidung aktiver Buchungen auf derselben Unit
-- Customers dürfen nur eigene Buchungen stornieren
+## Technical Highlights
 
-## Raumtypen
+RoomFull focuses on a clean and maintainable full-stack implementation.
 
-- Hot Desk
-- Booth
-- Team Room
-- Meeting Room
+Key technical aspects:
 
-## Öffnungszeiten-Entscheidung
-
-- Source of Truth sind globale Öffnungszeiten für das gesamte Angebot
-- Für Version 1: Montag bis Freitag, 08:00 bis 22:00
-- Öffnungszeiten werden nicht pro Area oder UnitType gepflegt
-- Buchungs- und Verfügbarkeitslogik nutzt diese globalen Öffnungszeiten
+* role-based authentication and authorization
+* backend-side validation of business rules
+* availability checks with booking conflict detection
+* unit inventory management
+* customer self-service booking flow
+* admin dashboard for operational workflows
+* PostgreSQL database with Prisma migrations
+* OpenAPI documentation with Swagger UI
+* production deployment with separate frontend and backend services
 
 ## Tech Stack
 
-- Runtime: Node.js 24 LTS, im Projekt über `.nvmrc` gepinnt
-- Frontend: Next.js 16.2.9 + TypeScript + Tailwind CSS
-- UI-Helfer: `clsx` für bedingte Klassen und Varianten
-- Backend: Express + TypeScript
-- Datenbank: PostgreSQL
+### Frontend
 
-## Lokale Voraussetzungen
+* Next.js
+* TypeScript
+* Tailwind CSS
+* Feature-oriented project structure
+* `clsx` for conditional class composition
 
-- Node.js 24 LTS
-- npm
-- PostgreSQL 17
+### Backend
 
-Wenn `nvm` installiert ist, nutzt das Projekt die Version aus `.nvmrc`:
+* Node.js
+* Express
+* TypeScript
+* Prisma
+* PostgreSQL
+* OpenAPI / Swagger
 
-```bash
-nvm use
-```
+### Tooling
 
-Prüfen:
+* npm
+* Node.js via `.nvmrc`
+* Prisma Migrate
+* Prisma Studio
+* ESLint / project linting
 
-```bash
-node -v
-npm -v
-```
+## Architecture
 
-Erwartet wird Node `24.17.0` oder eine kompatible Node-24-LTS-Version.
+RoomFull separates product-facing UI concerns from backend domain logic.
 
-## Lokales Setup Frontend
+The frontend follows a pragmatic feature-oriented structure. UI, features, entities and shared code are separated to keep the application navigable as it grows.
 
-Dependencies im Projekt-Root installieren:
+The backend acts as the source of truth for business rules. Critical checks such as booking validity, conflicts, opening hours and permissions are enforced server-side instead of relying on frontend state.
 
-```bash
-npm install
-```
-
-Frontend starten:
-
-```bash
-npm run dev
-```
-
-Der Next.js-Dev-Server läuft danach standardmäßig unter:
-
-- `http://localhost:3000`
-
-Next.js nutzt in diesem Projekt im Dev-Mode Turbopack. Der persistente
-Turbopack-Dateisystemcache für den Dev-Server ist in `next.config.ts` bewusst
-deaktiviert, da er lokal reproduzierbar zu stark wachsender CPU- und
-Speicherauslastung führte. Turbopacks In-Memory-Cache bleibt dabei aktiv.
-
-Wenn Navigation oder Kompilierung im lokalen Dev-Server auffällig langsam
-wird, zuerst prüfen:
-
-```bash
-node -v
-npm run lint
-```
-
-Bei Cache-Problemen kann der generierte Next-Cache neu aufgebaut werden:
-
-```bash
-rm -rf .next
-npm run dev
-```
-
-## Lokales Setup Backend + PostgreSQL
-
-### 1) PostgreSQL installieren und starten (macOS + Homebrew)
-
-```bash
-brew install postgresql@17
-brew services start postgresql@17
-```
-
-Prüfen, ob Postgres läuft:
-
-```bash
-pg_isready
-```
-
-### 2) Datenbank `roomfull` anlegen
-
-```bash
-createdb roomfull
-psql -l | rg roomfull
-```
-
-Falls `createdb` meldet, dass die DB schon existiert, ist das in Ordnung.
-
-### 3) Backend-Umgebung einrichten
-
-```bash
-cd backend
-npm install
-cp .env.example .env
-```
-
-Wichtig: In `backend/.env` muss `DATABASE_URL` zu deinem lokalen DB-User passen.
-Auf einer Homebrew-PostgreSQL-Installation ist das häufig dein macOS-Username.
-
-Beispiel:
-
-```env
-DATABASE_URL=postgresql://meikl@localhost:5432/roomfull?schema=public
-```
-
-Allgemein:
-
-```env
-DATABASE_URL=postgresql://DEIN_LOKALER_DB_USER@localhost:5432/roomfull?schema=public
-```
-
-### 4) Bestehende Prisma-Migrationen anwenden
-
-```bash
-cd backend
-npm run prisma:migrate:deploy
-```
-
-### Prisma-Migrationen: `dev` vs `deploy`
-
-Für lokale Feature-Entwicklung und Schema-Änderungen ist der Unterschied wichtig:
-
-- `npm run prisma:migrate:dev`
-  - erstellt aus `prisma/schema.prisma` eine **neue Migration**
-  - legt sie in `prisma/migrations/...` ab
-  - wendet sie lokal direkt an
-  - Verwendung: **wenn du am Datenmodell arbeitest**
-
-- `npm run prisma:migrate:deploy`
-  - erstellt **keine** neue Migration
-  - spielt nur bereits vorhandene Migrationen aus `prisma/migrations/...` ein
-  - Verwendung: **Setup/CI/Staging/Production**
-
-### Prisma Studio (DB-Inhalte visuell prüfen)
-
-Prisma Studio zeigt dir Tabelleninhalte in einer UI und ist ideal für schnelle Checks nach Migration/Seed.
-
-```bash
-cd backend
-npx prisma studio
-```
-
-Beispiel-Check nach dem UnitType-Seed:
-- Tabelle `UnitType` öffnen
-- prüfen, dass genau diese Einträge vorhanden sind:
-  - `Hot Desk`
-  - `Booth`
-  - `Team Room`
-  - `Meeting Room`
-
-### 5) Backend starten
-
-Standard Dev-Mode:
-
-```bash
-npm run dev
-```
-
-Dev-Mode mit Auto-Restart bei `src/*.ts` und `prisma/schema.prisma`:
-
-```bash
-npm run dev:hot
-```
-
-## API-Dokumentation mit OpenAPI und Swagger
-
-Die API ist über OpenAPI dokumentiert und per Swagger UI direkt testbar.
-
-- OpenAPI-Spezifikation: `backend/openapi.json`
-- Swagger UI im laufenden Backend: `http://localhost:4000/docs`
-
-Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
-
-
-### Lokale Nutzung
-
-1. Backend starten:
-   ```bash
-   cd backend
-   npm run dev
-   ```
-2. Swagger öffnen:
-   - `http://localhost:4000/docs`
-
-## Projektstruktur
+Simplified structure:
 
 ```txt
 /
@@ -308,13 +147,6 @@ Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
     architecture/
     deployment/
 
-  backend/docs/
-    auth-flow.md
-    booking-flow.md
-    contact-request-flow.md
-    teams-flow.md
-    units-flow.md
-
   backend/
     prisma/
     src/
@@ -323,6 +155,7 @@ Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
       services/
       db/
       middleware/
+    docs/
 
   src/
     app/
@@ -332,37 +165,176 @@ Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
     shared/
 ```
 
-## Architektur
+## Local Development
 
-- Backend ist die fachliche Wahrheit
-- Frontend nutzt pragmatisches Feature-Sliced Design
-- Business-Logik gehört nicht nur ins UI
-- Entities und Features werden sauber getrennt
+### Requirements
 
-## Wichtige Bereiche
+* Node.js 24 LTS
+* npm
+* PostgreSQL 17
 
-Entities:
+Use the Node version defined in `.nvmrc`:
 
-- `user`
-- `unit`
-- `booking`
+```bash
+nvm use
+```
 
-Features:
+Check your local versions:
 
-- `auth/sign-in`
-- `auth/sign-up`
-- `booking/create-booking`
-- `booking/cancel-booking`
-- `booking/export-booking-calendar`
-- `admin/manage-unit`
+```bash
+node -v
+npm -v
+```
 
-## Dokumentation
+## Frontend Setup
 
-- `docs/adr/` → Architekturentscheidungen
-- `docs/architecture/implemented-optimizations.md` → umgesetzte Architektur-Optimierungen
-- `docs/deployment/roomfull-deployment-plan.md` → Deployment-Plan und Production-Smoke-Checks
-- `backend/docs/auth-flow.md` → Auth-Flow
-- `backend/docs/booking-flow.md` → Booking-Flow
-- `backend/docs/contact-request-flow.md` → Contact-Request-Flow
-- `backend/docs/teams-flow.md` → Teams-Flow
-- `backend/docs/units-flow.md` → Units-Flow
+Install dependencies in the project root:
+
+```bash
+npm install
+```
+
+Start the frontend development server:
+
+```bash
+npm run dev
+```
+
+The application runs locally at:
+
+```txt
+http://localhost:3000
+```
+
+## Backend Setup
+
+### 1. Install and start PostgreSQL
+
+On macOS with Homebrew:
+
+```bash
+brew install postgresql@17
+brew services start postgresql@17
+```
+
+Check whether PostgreSQL is running:
+
+```bash
+pg_isready
+```
+
+### 2. Create the local database
+
+```bash
+createdb roomfull
+```
+
+### 3. Configure backend environment
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+```
+
+Adjust `backend/.env` so that `DATABASE_URL` matches your local PostgreSQL user.
+
+Example:
+
+```env
+DATABASE_URL=postgresql://meikl@localhost:5432/roomfull?schema=public
+```
+
+General format:
+
+```env
+DATABASE_URL=postgresql://YOUR_LOCAL_DB_USER@localhost:5432/roomfull?schema=public
+```
+
+### 4. Apply existing migrations
+
+```bash
+cd backend
+npm run prisma:migrate:deploy
+```
+
+For schema development, use:
+
+```bash
+npm run prisma:migrate:dev
+```
+
+### 5. Start the backend
+
+```bash
+npm run dev
+```
+
+Or start the backend with auto-restart during development:
+
+```bash
+npm run dev:hot
+```
+
+By default, the backend runs locally at:
+
+```txt
+http://localhost:4000
+```
+
+## Prisma Studio
+
+To inspect local database content visually:
+
+```bash
+cd backend
+npx prisma studio
+```
+
+Useful checks after setup:
+
+* `UnitType` contains the expected room types
+* demo units are available
+* bookings are created with valid user and unit relations
+
+## API Documentation
+
+The backend exposes an OpenAPI specification and Swagger UI.
+
+Local Swagger UI:
+
+```txt
+http://localhost:4000/docs
+```
+
+Production Swagger UI:
+
+```txt
+https://api.roomfull.michael-buschmann.dev/docs
+```
+
+When API endpoints change, implementation and OpenAPI documentation should be updated together.
+
+## Documentation
+
+Additional project documentation is kept in the repository:
+
+```txt
+docs/adr/
+docs/architecture/
+docs/deployment/
+
+backend/docs/auth-flow.md
+backend/docs/booking-flow.md
+backend/docs/contact-request-flow.md
+backend/docs/teams-flow.md
+backend/docs/units-flow.md
+```
+
+These documents describe architectural decisions, deployment notes and selected backend flows in more detail.
+
+## Status
+
+RoomFull 2.0 is a portfolio project focused on demonstrating production-oriented full-stack development.
+
+The project is intentionally scoped around a coherent booking domain rather than broad feature accumulation. The main goal is to show clean implementation of product flows, domain rules, backend validation, role handling and maintainable project structure.
