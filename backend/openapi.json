@@ -7,7 +7,8 @@
 	},
 	"servers": [
 		{
-			"url": "http://localhost:4000/api"
+			"url": "/api",
+			"description": "Same origin as the Swagger UI host"
 		}
 	],
 	"tags": [

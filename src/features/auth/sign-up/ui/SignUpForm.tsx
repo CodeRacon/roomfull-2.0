@@ -73,6 +73,16 @@ export function SignUpForm({ copy, locale, nextPath }: SignUpFormProps) {
 					</p>
 				</div>
 
+				<div className="border-b-2 border-primary! px-5 py-4">
+					<FeedbackBox variant="warning" title={copy.demoNotice.title}>
+						<ul className="mt-2 list-disc space-y-1 pl-5">
+							{copy.demoNotice.items.map((item) => (
+								<li key={item}>{item}</li>
+							))}
+						</ul>
+					</FeedbackBox>
+				</div>
+
 				{errorMessage && (
 					<div className="border-b-2 border-primary! px-5 py-4">
 						<FeedbackBox variant="error">{errorMessage}</FeedbackBox>

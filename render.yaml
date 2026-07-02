@@ -1,0 +1,32 @@
+services:
+  - type: web
+    runtime: node
+    name: roomfull-api
+    rootDir: backend
+    branch: main
+    region: frankfurt
+    plan: starter
+    buildCommand: npm ci && npm run prisma:generate && npm run build
+    preDeployCommand: npm run prisma:migrate:deploy
+    startCommand: npm start
+    autoDeployTrigger: checksPass
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 24.17.0
+      - key: CORS_ORIGIN
+        value: https://roomfull.michael-buschmann.dev
+      - key: JWT_EXPIRES_IN
+        value: 1h
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

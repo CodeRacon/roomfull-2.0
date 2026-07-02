@@ -1040,6 +1040,15 @@ export const de = {
 		signUp: {
 			title: "Registrieren",
 			intro: "Erstelle ein Konto, um deine Buchung fortzusetzen.",
+			demoNotice: {
+				title: "Portfolio-Demo",
+				items: [
+					"RoomFull ist ein Portfolio-Projekt und kein echter Coworking-Service.",
+					"Bitte gib keine echten personenbezogenen Daten ein.",
+					"Verwende kein echtes oder wiederverwendetes Passwort.",
+					"Demo-Daten können jederzeit ohne Vorankündigung gelöscht werden.",
+				],
+			},
 			nameLabel: "Name",
 			emailLabel: "E-Mail",
 			passwordLabel: "Passwort",

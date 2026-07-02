@@ -11,6 +11,13 @@ export type CreateUserInput = {
 	demoExpiresAt?: Date | null;
 };
 
+export type UpsertAdminUserInput = {
+	name: string;
+	email: string;
+	passwordHash: string;
+	role: UserRole;
+};
+
 export async function findUserByEmail(email: string): Promise<User | null> {
 	return prisma.user.findUnique({ where: { email } });
 }
@@ -28,6 +35,27 @@ export async function createUser(input: CreateUserInput): Promise<User> {
 			role: input.role ?? UserRole.CUSTOMER,
 			isDemo: input.isDemo ?? false,
 			demoExpiresAt: input.demoExpiresAt ?? null,
+		},
+	});
+}
+
+export async function upsertAdminUser(
+	input: UpsertAdminUserInput,
+): Promise<User> {
+	return prisma.user.upsert({
+		where: { email: input.email },
+		update: {
+			name: input.name,
+			passwordHash: input.passwordHash,
+			role: input.role,
+			isDemo: false,
+			demoExpiresAt: null,
+		},
+		create: {
+			name: input.name,
+			email: input.email,
+			passwordHash: input.passwordHash,
+			role: input.role,
 		},
 	});
 }

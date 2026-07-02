@@ -1,7 +1,7 @@
 # RoomFull Deployment Plan
 
-Status: agreed target architecture; implementation pending  
-Last verified: 2026-06-23
+Status: Phase 1-3 local implementation prepared; branch protection and provider provisioning pending
+Last verified: 2026-07-02
 
 ## Goal and scope
 
@@ -141,6 +141,8 @@ Add visible, localized copy near registration or another unavoidable entry point
 - Do not reuse a real password.
 - Demo data may be deleted without notice.
 
+Current implementation: the localized warning is shown in the registration form before the visitor enters account data.
+
 ## Production Admin bootstrap
 
 Target command:
@@ -159,7 +161,22 @@ Target behavior:
 - prints no password or password hash
 - remains separate from the general demo-data seed
 
-The existing hardcoded Admin seed credentials are a go-live blocker.
+Current implementation:
+
+- the general Prisma seed no longer creates or updates an Admin account
+- `npm run admin:bootstrap` runs `prisma/bootstrap-admin.ts`
+- the command requires `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`
+- `ADMIN_PASSWORD` must be at least 12 characters
+- the command hashes the password and upserts only the Admin user identified by `ADMIN_EMAIL`
+- command output includes the Admin email only, never the password or password hash
+
+Local setup command shape:
+
+```bash
+ADMIN_NAME=<local value> ADMIN_EMAIL=<local value> ADMIN_PASSWORD=<local value> npm run admin:bootstrap
+```
+
+Production setup uses the same command with values supplied through the provider secret store.
 
 ## Environment variables and secrets
 
@@ -229,6 +246,15 @@ npm run build
 
 CI must not need Production secrets or connect to the Production database.
 
+Current implementation:
+
+- `.nvmrc` and `.node-version` pin Node.js `24.17.0`
+- `.github/workflows/ci.yml` runs separate Frontend and Backend jobs on pull requests and pushes to `main`
+- the Frontend job runs `npm ci`, lint, tests, and build from the repository root
+- the Backend job runs `npm ci`, Prisma client generation, lint, tests, and build from `backend/`
+- CI uses no Production secrets and does not connect to the Production database
+- GitHub branch protection still needs to be enabled after the workflow is pushed
+
 ### Render target configuration
 
 Infrastructure is versioned in a root `render.yaml`. Target values:
@@ -245,6 +271,18 @@ startCommand: npm start
 ```
 
 Exact Blueprint syntax must be validated against current Render documentation during implementation. Secret values are marked as externally supplied and never committed.
+
+Current implementation:
+
+- root `render.yaml` defines the `roomfull-api` web service with `runtime: node`, `rootDir: backend`, `region: frankfurt`, and `plan: starter`
+- build, pre-deploy migration, start command, health check path, and `checksPass` auto-deploy behavior are versioned
+- `DATABASE_URL`, `JWT_SECRET`, and one-time Admin bootstrap values use `sync: false`
+- `NODE_VERSION` is set to `24.17.0` for Render, matching local and CI configuration
+- Blueprint field names were checked against the current Render Blueprint reference before committing the file
+
+### OpenAPI Production server strategy
+
+`backend/openapi.json` uses a same-origin server URL (`/api`) so Swagger UI works from both local development and the Production API host without generating environment-specific OpenAPI files.
 
 ### Vercel target configuration
 
