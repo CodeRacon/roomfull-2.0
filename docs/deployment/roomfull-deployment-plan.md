@@ -267,7 +267,7 @@ runtime: node
 rootDir: backend
 region: frankfurt
 plan: starter
-buildCommand: npm ci && npm run prisma:generate && npm run build
+buildCommand: npm ci --include=dev && npm run prisma:generate && npm run build
 preDeployCommand: npm run prisma:migrate:deploy
 startCommand: npm start
 ```
@@ -278,6 +278,7 @@ Current implementation:
 
 - root `render.yaml` defines the `roomfull-api` web service with `runtime: node`, `rootDir: backend`, `region: frankfurt`, and `plan: starter`
 - build, pre-deploy migration, start command, health check path, and `checksPass` auto-deploy behavior are versioned
+- Render installs dev dependencies during build because TypeScript, type declarations, and the Prisma CLI are needed before the runtime starts
 - `DATABASE_URL`, `JWT_SECRET`, and one-time Admin bootstrap values use `sync: false`
 - `NODE_VERSION` is set to `24.17.0` for Render, matching local and CI configuration
 - Blueprint field names were checked against the current Render Blueprint reference before committing the file
