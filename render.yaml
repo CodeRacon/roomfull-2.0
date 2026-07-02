@@ -6,7 +6,7 @@ services:
     branch: main
     region: frankfurt
     plan: starter
-    buildCommand: npm ci && npm run prisma:generate && npm run build
+    buildCommand: npm ci --include=dev && npm run prisma:generate && npm run build
     preDeployCommand: npm run prisma:migrate:deploy
     startCommand: npm start
     autoDeployTrigger: checksPass
