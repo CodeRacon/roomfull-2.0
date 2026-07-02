@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { BookingStatus, UnitTypeName } from "@prisma/client";
+import { buildBookingDemandRecordsWhere } from "../src/db/analytics.repository.js";
 import {
 	buildBookingCancellationStats,
 	buildBookingDemandByUnitType,
@@ -8,6 +9,27 @@ import {
 } from "../src/services/admin-analytics.service.js";
 
 describe("Admin Booking Demand Analytics", () => {
+	it("excludes Demo Customer bookings at the repository boundary", () => {
+		const fromStart = new Date("2027-01-18T00:00:00.000Z");
+		const toEnd = new Date("2027-01-21T00:00:00.000Z");
+
+		assert.deepEqual(
+			buildBookingDemandRecordsWhere({
+				fromStart,
+				toEnd,
+			}),
+			{
+				startTime: {
+					gte: fromStart,
+					lt: toEnd,
+				},
+				user: {
+					isDemo: false,
+				},
+			},
+		);
+	});
+
 	it("groups active booking starts by Berlin calendar day and includes empty days", () => {
 		const trend = buildBookingDemandTrend({
 			from: "2027-01-18",

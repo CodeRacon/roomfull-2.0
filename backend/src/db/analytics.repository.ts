@@ -1,4 +1,4 @@
-import type { BookingStatus, UnitTypeName } from "@prisma/client";
+import type { BookingStatus, Prisma, UnitTypeName } from "@prisma/client";
 import { prisma } from "./prisma.js";
 
 type ListBookingDemandRecordsInput = {
@@ -16,16 +16,25 @@ export type BookingDemandRecord = {
 	};
 };
 
+export function buildBookingDemandRecordsWhere(
+	input: ListBookingDemandRecordsInput,
+): Prisma.BookingWhereInput {
+	return {
+		startTime: {
+			gte: input.fromStart,
+			lt: input.toEnd,
+		},
+		user: {
+			isDemo: false,
+		},
+	};
+}
+
 export async function listBookingDemandRecordsInRange(
 	input: ListBookingDemandRecordsInput,
 ): Promise<BookingDemandRecord[]> {
 	return prisma.booking.findMany({
-		where: {
-			startTime: {
-				gte: input.fromStart,
-				lt: input.toEnd,
-			},
-		},
+		where: buildBookingDemandRecordsWhere(input),
 		select: {
 			startTime: true,
 			status: true,
