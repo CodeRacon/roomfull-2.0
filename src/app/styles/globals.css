@@ -58,6 +58,10 @@ body {
 	padding: 0;
 }
 
+html {
+	scroll-padding-top: var(--app-header-height);
+}
+
 @media (prefers-reduced-motion: no-preference) {
 	html {
 		scroll-behavior: smooth;
