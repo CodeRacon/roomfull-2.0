@@ -2,7 +2,7 @@ import type { Dictionary } from "./de";
 
 export const en = {
 	metadata: {
-		title: "RoomFull 2.0",
+		title: "RoomFull",
 		description: "Book coworking spaces with clarity.",
 	},
 	navigation: {
@@ -22,7 +22,7 @@ export const en = {
 		mainMenu: "Menu",
 		legalAndHelp: "Legal and help",
 		faq: "FAQ",
-		privacy: "Privacy",
+		privacy: "Privacy & imprint",
 	},
 	languageSwitcher: {
 		label: "Language",
@@ -48,7 +48,7 @@ export const en = {
 	},
 	faqPage: {
 		metadata: {
-			title: "FAQ | RoomFull 2.0",
+			title: "FAQ | RoomFull",
 			description:
 				"Answers about choosing, equipping, and booking coworking desks and rooms.",
 		},
@@ -137,7 +137,7 @@ export const en = {
 	},
 	home: {
 		metadata: {
-			title: "Book coworking spaces | RoomFull 2.0",
+			title: "Book coworking spaces | RoomFull",
 			description:
 				"Find the right coworking setup for focus, calls, or teamwork and start booking in a few steps.",
 		},
@@ -188,7 +188,7 @@ export const en = {
 	},
 	bookingOptionsPage: {
 		metadata: {
-			title: "Find a coworking space | RoomFull 2.0",
+			title: "Find a coworking space | RoomFull",
 			description: "Find the right hot desk, booth, or room for your workday.",
 		},
 		title: "What do you need for your day?",
@@ -245,7 +245,7 @@ export const en = {
 	},
 	bookingOptionDetailPage: {
 		metadata: {
-			titleTemplate: "Book {title} | RoomFull 2.0",
+			titleTemplate: "Book {title} | RoomFull",
 			descriptionTemplate:
 				"Explore available areas or rooms for {title} and start your booking.",
 		},

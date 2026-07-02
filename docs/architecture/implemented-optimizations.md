@@ -16,12 +16,10 @@ Fachregeln oder HTTP-Contracts.
 
 - [`CONTEXT.md`](../../CONTEXT.md) definiert die aktuelle Fachsprache und
   aufgeloeste Produktentscheidungen.
-- [Project Decisions](../../.agents/skills/roomfull/project-decisions.md) haelt
-  aktuelle Architektur- und Produktentscheidungen fest.
+- ADRs unter [`docs/adr`](../adr) halten langfristige Architektur- und
+  Produktentscheidungen fest.
 - Die Flow-Dokumente unter [`backend/docs`](../../backend/docs) beschreiben das
   aktuelle Verhalten.
-- ADRs unter [`docs/adr`](../adr) dokumentieren langfristige Entscheidungen und
-  ihre Trade-offs.
 - Diese Datei beantwortet: Welche Architektur-Reibung wurde bereits behoben,
   welche Tiefe wurde gewonnen und wann lohnt sich eine Neubewertung?
 

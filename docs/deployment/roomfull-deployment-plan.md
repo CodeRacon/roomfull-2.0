@@ -1,6 +1,6 @@
 # RoomFull Deployment Plan
 
-Status: Phase 1-3 local implementation prepared; branch protection and provider provisioning pending
+Status: Production deployment live; Phase 5 complete; Phase 6 smoke test partially complete
 Last verified: 2026-07-02
 
 ## Goal and scope
@@ -84,6 +84,30 @@ Related decision: [ADR 0002 — Managed split deployment](../adr/0002-managed-sp
 | Swagger UI | `https://api.roomfull.michael-buschmann.dev/docs` |
 
 Swagger stays public as part of the portfolio. It must not contain credentials, tokens, or personal demo data.
+
+## Production verification summary
+
+Verified on 2026-07-02:
+
+- Frontend final domain is reachable over HTTPS and redirects `/` to `/de`.
+- German and English routes return `200`.
+- API final domain is reachable over HTTPS.
+- `/health` returns `200` and `{ "ok": true }`.
+- `/docs/` renders Swagger UI.
+- Public booking options return seeded demo data.
+- Demo Login succeeds through the final frontend/API domain setup.
+- Demo Login response no longer exposes an auth token in the JSON body.
+- Auth cookie is `HttpOnly`, `Secure`, `SameSite=Lax`, and path-scoped to `/`.
+- Session restore through `/auth/me` succeeds with the cookie.
+- Logout clears the session; `/auth/me` returns `401` afterwards.
+- Browser-facing code has no remaining `localStorage`, `sessionStorage`, `Authorization`, or `Bearer` usage for auth.
+
+Not yet fully verified in this document:
+
+- private Production Admin flows
+- provider log inspection for secret leakage
+- Render and Neon region screenshots/settings
+- deliberate CI/deployment failure behavior
 
 ## Production data policy
 
@@ -359,34 +383,34 @@ Run the smoke-test checklist below, inspect provider logs, then add live fronten
 
 ### Infrastructure
 
-- [ ] Frontend domain returns HTTPS without certificate warnings
-- [ ] API domain returns HTTPS without certificate warnings
-- [ ] `/health` returns `200` and `{ "ok": true }`
-- [ ] `/docs` renders Swagger UI
-- [ ] HTTP redirects to HTTPS
+- [x] Frontend domain returns HTTPS without certificate warnings
+- [x] API domain returns HTTPS without certificate warnings
+- [x] `/health` returns `200` and `{ "ok": true }`
+- [x] `/docs` renders Swagger UI
+- [x] HTTP redirects to HTTPS
 - [ ] Render and Neon show Frankfurt region
 
 ### Public and Customer flows
 
-- [ ] German and English localized routes work
-- [ ] Public booking options and unit details load
+- [x] German and English localized routes work
+- [x] Public booking options and unit details load
 - [ ] Registration shows demo-data warning
 - [ ] Registration succeeds without exposing JWT in response storage
-- [ ] Login creates secure HttpOnly cookie
-- [ ] Page reload restores session
+- [x] Demo Login creates secure HttpOnly cookie
+- [x] Session restore works through `/auth/me`
 - [ ] Availability request works
 - [ ] Booking creation succeeds
 - [ ] Own booking cancellation succeeds
 - [ ] Contact request succeeds
-- [ ] Logout clears session
+- [x] Logout clears session
 
 ### Security and failure behavior
 
-- [ ] Browser `localStorage` contains no auth token
-- [ ] Cookie flags are correct in Production
-- [ ] Request from an unapproved Origin is rejected
+- [x] Browser-facing auth code contains no `localStorage` token handling
+- [x] Cookie flags are correct in Production
+- [x] Request from an unapproved Origin receives no matching CORS allow-origin
 - [ ] Auth and mutation rate limits return controlled `429` responses
-- [ ] Missing/invalid auth returns expected `401`
+- [x] Missing/invalid auth returns expected `401`
 - [ ] Customer access to Admin endpoints returns expected `403`
 - [ ] Logs contain no passwords, JWTs, database URLs, or cookie contents
 

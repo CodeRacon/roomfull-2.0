@@ -6,12 +6,14 @@ docs/*
 !docs/adr/**/*.md
 !docs/deployment/
 !docs/deployment/**/*.md
+docs/deployment/phase4-provider-chatgpt-context.md
 !backend/docs/
 !backend/docs/**/*.md
 
 .vscode/
 
 SKILL.md
+AGENTS.md
 .agents/
 
 node_modules
