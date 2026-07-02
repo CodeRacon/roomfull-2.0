@@ -2,6 +2,14 @@
 
 RoomFull 2.0 ist ein kleines MVP zur Buchung von Coworking-Units.
 
+## Live Demo
+
+- Anwendung: https://roomfull.michael-buschmann.dev
+- API-Dokumentation: https://api.roomfull.michael-buschmann.dev/docs
+- Healthcheck: https://api.roomfull.michael-buschmann.dev/health
+
+RoomFull ist ein nicht-kommerzielles Portfolio- und Lernprojekt. Die Produktionsumgebung enthält Demo-Daten; Besucher sollten keine echten persönlichen Daten oder wiederverwendeten Passwörter eingeben.
+
 Ziel ist nicht maximaler Feature-Umfang, sondern eine saubere Umsetzung von:
 
 - Rollen und Rechten
@@ -295,19 +303,17 @@ Bei Endpoint-Änderungen immer Code und OpenAPI gemeinsam aktualisieren.
 ```txt
 /
   README.md
+  docs/
+    adr/
+    architecture/
+    deployment/
 
-  .agents/skills/roomfull/
-    summaries/
-      project-summary.md
-      domain-summary.md
-      fsd-summary.md
-      api-summary.md
-    domain-rules.md
-    api-overview.md
-    fsd-architecture.md
-    frontend-conventions.md
-    backend-conventions.md
-    project-decisions.md
+  backend/docs/
+    auth-flow.md
+    booking-flow.md
+    contact-request-flow.md
+    teams-flow.md
+    units-flow.md
 
   backend/
     prisma/
@@ -352,13 +358,11 @@ Features:
 
 ## Dokumentation
 
-- `.agents/skills/roomfull/summaries/project-summary.md` → Projektüberblick
-- `.agents/skills/roomfull/summaries/domain-summary.md` → Domain-Kurzüberblick
-- `.agents/skills/roomfull/summaries/fsd-summary.md` → Frontend-Architektur-Kurzüberblick
-- `.agents/skills/roomfull/summaries/api-summary.md` → API-Kurzüberblick
-- `.agents/skills/roomfull/domain-rules.md` → Fachregeln
-- `.agents/skills/roomfull/api-overview.md` → API-Überblick
-- `.agents/skills/roomfull/fsd-architecture.md` → Frontend-Architektur
-- `.agents/skills/roomfull/frontend-conventions.md` → Frontend-Regeln
-- `.agents/skills/roomfull/backend-conventions.md` → Backend-Regeln
-- `.agents/skills/roomfull/project-decisions.md` → bewusste Entscheidungen
+- `docs/adr/` → Architekturentscheidungen
+- `docs/architecture/implemented-optimizations.md` → umgesetzte Architektur-Optimierungen
+- `docs/deployment/roomfull-deployment-plan.md` → Deployment-Plan und Production-Smoke-Checks
+- `backend/docs/auth-flow.md` → Auth-Flow
+- `backend/docs/booking-flow.md` → Booking-Flow
+- `backend/docs/contact-request-flow.md` → Contact-Request-Flow
+- `backend/docs/teams-flow.md` → Teams-Flow
+- `backend/docs/units-flow.md` → Units-Flow
