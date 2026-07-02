@@ -67,4 +67,44 @@ describe("Public BookingOptions", () => {
 			{ id: "booth-hive", name: "Hive Five" },
 		]);
 	});
+
+	it("exposes all direct-booking unit types with their units", async () => {
+		const unitTypes = [
+			createUnitType("HOT_DESK", []),
+			createUnitType("BOOTH", [
+				{ id: "booth-cozy", name: "Cozy Cocoon", capacity: 3 },
+				{ id: "booth-book", name: "Book Nook", capacity: 3 },
+				{ id: "booth-call", name: "Call-in Cabin", capacity: 4 },
+				{ id: "booth-hive", name: "Hive Five", capacity: 5 },
+			]),
+			createUnitType("TEAM_ROOM", [
+				{ id: "team-huddle", name: "Huddle Hub", capacity: 6 },
+				{ id: "team-collab", name: "Collab Cabana", capacity: 8 },
+				{ id: "team-sandbox", name: "Sandbox", capacity: 10 },
+			]),
+			createUnitType("MEETING_ROOM", [
+				{ id: "meeting-neat", name: "Meet’n Neat", capacity: 6 },
+				{ id: "meeting-table", name: "Table Talk", capacity: 12 },
+				{ id: "meeting-show", name: "Show & Flow", capacity: 12 },
+			]),
+		];
+		const getPublicBookingOptions = createGetPublicBookingOptions({
+			listUnitTypesForBookingOptions: async () => unitTypes,
+		});
+
+		const bookingOptions = await getPublicBookingOptions();
+
+		assert.deepEqual(
+			Object.fromEntries(
+				bookingOptions
+					.filter((option) => option.bookingMode === "CHOOSE_UNIT")
+					.map((option) => [option.key, option.units.map((unit) => unit.name)]),
+			),
+			{
+				BOOTH: ["Cozy Cocoon", "Book Nook", "Call-in Cabin", "Hive Five"],
+				TEAM_ROOM: ["Huddle Hub", "Collab Cabana", "Sandbox"],
+				MEETING_ROOM: ["Meet’n Neat", "Table Talk", "Show & Flow"],
+			},
+		);
+	});
 });

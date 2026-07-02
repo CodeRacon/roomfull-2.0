@@ -119,6 +119,20 @@ async function main(): Promise<void> {
 	const demoUnits = [
 		...hotDeskUnits,
 		{
+			id: "seed-booth-a1",
+			name: "Cozy Cocoon",
+			description:
+				"Dein geschützter Raum für längere Fokusphasen und Deep Work. Ruhig, bequem und ideal, wenn du tiefer eintauchen und für eine Weile wirklich bei einer Sache bleiben willst.",
+			descriptionDe:
+				"Dein geschützter Raum für längere Fokusphasen und Deep Work. Ruhig, bequem und ideal, wenn du tiefer eintauchen und für eine Weile wirklich bei einer Sache bleiben willst.",
+			descriptionEn:
+				"Your private space for longer focus sessions and deep work. Quiet, comfortable, and ideal when you want to dive deeper and stay with one task for a while.",
+			capacity: 3,
+			displayOrder: 1,
+			unitTypeId: boothType.id,
+			areaId: null,
+		},
+		{
 			id: "seed-booth-b1",
 			name: "Book Nook",
 			description:
@@ -129,6 +143,34 @@ async function main(): Promise<void> {
 				"Your quiet retreat for uninterrupted, focused work. Calm, compact, and ideal when you want to get away from the bustle for a while.",
 			capacity: 3,
 			displayOrder: 2,
+			unitTypeId: boothType.id,
+			areaId: null,
+		},
+		{
+			id: "seed-booth-c1",
+			name: "Call-in Cabin",
+			description:
+				"Deine kleine Cabin für Calls, Videomeetings und vertrauliche Gespräche. Kompakt, abgeschirmt und genau richtig, wenn du ungestört sprechen willst.",
+			descriptionDe:
+				"Deine kleine Cabin für Calls, Videomeetings und vertrauliche Gespräche. Kompakt, abgeschirmt und genau richtig, wenn du ungestört sprechen willst.",
+			descriptionEn:
+				"Your small cabin for calls, video meetings, and confidential conversations. Compact, secluded, and just right when you want to speak without interruptions.",
+			capacity: 4,
+			displayOrder: 3,
+			unitTypeId: boothType.id,
+			areaId: null,
+		},
+		{
+			id: "seed-booth-d1",
+			name: "Hive Five",
+			description:
+				"Eure kleine Team-Booth für kurze Sessions zu fünft. Kompakt, lebendig und genau richtig, wenn ihr Ideen sammeln, Entscheidungen treffen oder schnell auf einen gemeinsamen Stand kommen wollt.",
+			descriptionDe:
+				"Eure kleine Team-Booth für kurze Sessions zu fünft. Kompakt, lebendig und genau richtig, wenn ihr Ideen sammeln, Entscheidungen treffen oder schnell auf einen gemeinsamen Stand kommen wollt.",
+			descriptionEn:
+				"Your small team booth for short sessions with up to five people. Compact, lively, and just right for collecting ideas, making decisions, or quickly getting everyone on the same page.",
+			capacity: 5,
+			displayOrder: 4,
 			unitTypeId: boothType.id,
 			areaId: null,
 		},
@@ -147,6 +189,48 @@ async function main(): Promise<void> {
 			areaId: null,
 		},
 		{
+			id: "seed-team-room-c2",
+			name: "Collab Cabana",
+			description:
+				"Eure ideale Umgebung für Workshops, Brainstormings und kreative Teamarbeit. Offen, locker, entspannt und gemacht für Ideen, die gemeinsam wachsen sollen.",
+			descriptionDe:
+				"Eure ideale Umgebung für Workshops, Brainstormings und kreative Teamarbeit. Offen, locker, entspannt und gemacht für Ideen, die gemeinsam wachsen sollen.",
+			descriptionEn:
+				"Your ideal setting for workshops, brainstorming, and creative teamwork. Open, casual, relaxed, and made for ideas that should grow together.",
+			capacity: 8,
+			displayOrder: 2,
+			unitTypeId: teamRoomType.id,
+			areaId: null,
+		},
+		{
+			id: "seed-team-room-c3",
+			name: "Sandbox",
+			description:
+				"Euer flexibler Raum für Try-Outs, Brain-Storming und Prototyping. Ideal, wenn ihr Gedanken sichtbar machen, testen und gemeinsam weiterentwickeln wollt.",
+			descriptionDe:
+				"Euer flexibler Raum für Try-Outs, Brain-Storming und Prototyping. Ideal, wenn ihr Gedanken sichtbar machen, testen und gemeinsam weiterentwickeln wollt.",
+			descriptionEn:
+				"Your flexible room for try-outs, brainstorming, and prototyping. Ideal when you want to make ideas visible, test them, and develop them together.",
+			capacity: 10,
+			displayOrder: 3,
+			unitTypeId: teamRoomType.id,
+			areaId: null,
+		},
+		{
+			id: "seed-meeting-room-d0",
+			name: "Meet’n Neat",
+			description:
+				"Euer Raum für Gespräche, bei denen der erste Eindruck zählt. Einladend, ruhig und aufgeräumt — ideal für Kundentermine, Beratung und kompakte Abstimmungen.",
+			descriptionDe:
+				"Euer Raum für Gespräche, bei denen der erste Eindruck zählt. Einladend, ruhig und aufgeräumt — ideal für Kundentermine, Beratung und kompakte Abstimmungen.",
+			descriptionEn:
+				"Your room for conversations where first impressions matter. Welcoming, calm, and tidy—ideal for client meetings, consultations, and focused alignment.",
+			capacity: 6,
+			displayOrder: 1,
+			unitTypeId: meetingRoomType.id,
+			areaId: null,
+		},
+		{
 			id: "seed-meeting-room-d1",
 			name: "Table Talk",
 			description:
@@ -157,6 +241,20 @@ async function main(): Promise<void> {
 				"Your forum for active exchange, decision-making, and shared clarity. Calm, spacious, and ideal when multiple perspectives belong at one table.",
 			capacity: 12,
 			displayOrder: 2,
+			unitTypeId: meetingRoomType.id,
+			areaId: null,
+		},
+		{
+			id: "seed-meeting-room-d2",
+			name: "Show & Flow",
+			description:
+				"Euer Raum für Key-Notes, Pitches und Workshops - ausgestattet mit allem was es braucht, damit eure Ideen überzeugen und um euer Publikum mitzunehmen.",
+			descriptionDe:
+				"Euer Raum für Key-Notes, Pitches und Workshops - ausgestattet mit allem was es braucht, damit eure Ideen überzeugen und um euer Publikum mitzunehmen.",
+			descriptionEn:
+				"Your room for keynotes, pitches, and workshops—equipped with everything you need to make your ideas compelling and bring your audience along.",
+			capacity: 12,
+			displayOrder: 3,
 			unitTypeId: meetingRoomType.id,
 			areaId: null,
 		},
