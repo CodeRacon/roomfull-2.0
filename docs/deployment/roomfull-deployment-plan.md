@@ -202,6 +202,8 @@ JWT_EXPIRES_IN=1h
 
 Render provides `PORT`; RoomFull must read it and listen publicly on the platform interface. `DATABASE_URL` uses a direct Neon connection initially. A pooled connection and Neon Prisma adapter remain deferred until workload or scaling requires them.
 
+In Production, the backend fails fast when `CORS_ORIGIN`, `DATABASE_URL`, or `JWT_SECRET` is missing. Local development keeps the documented defaults.
+
 ### One-time Admin bootstrap
 
 ```env
