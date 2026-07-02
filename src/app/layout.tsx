@@ -4,8 +4,8 @@ import "./styles/globals.css";
 import { AppProviders } from "./providers";
 
 export const metadata: Metadata = {
-	title: "RoomFull 2.0",
-	description: "Room booking MVP",
+	title: "RoomFull",
+	description: "Room booking demo",
 	icons: {
 		icon: "/logo/roomfull-favicon.svg",
 	},
