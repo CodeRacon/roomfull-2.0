@@ -1,6 +1,6 @@
 export const de = {
 	metadata: {
-		title: "RoomFull 2.0",
+		title: "RoomFull",
 		description: "Coworking-Flächen einfach buchen.",
 	},
 	navigation: {
@@ -20,7 +20,7 @@ export const de = {
 		mainMenu: "Menü",
 		legalAndHelp: "Rechtliches und Hilfe",
 		faq: "FAQ",
-		privacy: "Datenschutz",
+		privacy: "Datenschutz & Impressum",
 	},
 	languageSwitcher: {
 		label: "Sprache",
@@ -46,7 +46,7 @@ export const de = {
 	},
 	faqPage: {
 		metadata: {
-			title: "FAQ | RoomFull 2.0",
+			title: "FAQ | RoomFull",
 			description:
 				"Antworten zur Wahl, Ausstattung und Buchung von Coworking-Plätzen und Räumen.",
 		},
@@ -136,7 +136,7 @@ export const de = {
 	},
 	home: {
 		metadata: {
-			title: "Coworking Spaces buchen | RoomFull 2.0",
+			title: "Coworking Spaces buchen | RoomFull",
 			description:
 				"Finde den passenden Coworking-Platz für Fokus, Gespräche oder Teamarbeit und starte direkt in die Buchung.",
 		},
@@ -187,7 +187,7 @@ export const de = {
 	},
 	bookingOptionsPage: {
 		metadata: {
-			title: "Coworking-Platz oder Raum finden | RoomFull 2.0",
+			title: "Coworking-Platz oder Raum finden | RoomFull",
 			description:
 				"Finde den passenden Hot Desk, eine Booth oder einen Raum für deinen Arbeitstag.",
 		},
@@ -245,7 +245,7 @@ export const de = {
 	},
 	bookingOptionDetailPage: {
 		metadata: {
-			titleTemplate: "{title} buchen | RoomFull 2.0",
+			titleTemplate: "{title} buchen | RoomFull",
 			descriptionTemplate:
 				"Entdecke verfügbare Bereiche oder Räume für {title} und starte deine Buchung.",
 		},
