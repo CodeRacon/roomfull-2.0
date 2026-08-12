@@ -326,12 +326,12 @@ export async function cancelBookingForUser(
 		throw new AppError(404, "Buchung wurde nicht gefunden");
 	}
 
-	if (booking.status !== BookingStatus.ACTIVE) {
-		throw new AppError(409, "Buchung ist bereits storniert");
-	}
-
 	if (booking.userId !== userId) {
 		throw new AppError(403, "Buchung gehört nicht zum Benutzer");
+	}
+
+	if (booking.status !== BookingStatus.ACTIVE) {
+		throw new AppError(409, "Buchung ist bereits storniert");
 	}
 
 	if (booking.startTime <= coworkingCalendar.now()) {
