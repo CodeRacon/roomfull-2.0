@@ -1,14 +1,14 @@
+# Version durable project decisions and contracts; keep local working docs ignored.
 docs/*
-!docs/architecture/
-!docs/architecture/implemented-optimizations.md
 !docs/adr/
-!docs/adr/*.md
 !docs/adr/**/*.md
+!docs/architecture/
+!docs/architecture/**/*.md
 !docs/deployment/
 !docs/deployment/**/*.md
+!docs/prd/
+!docs/prd/**/*.md
 docs/deployment/phase4-provider-chatgpt-context.md
-!backend/docs/
-!backend/docs/**/*.md
 
 .vscode/
 
