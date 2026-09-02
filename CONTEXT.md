@@ -34,6 +34,102 @@ _Avoid_: `spaceId` als langfristige Fachsprache
 RoomFull Mobile ist ein nativer Client desselben RoomFull-Produkts und nutzt dieselbe Domänensprache sowie dieselben Backend-Contracts; Unterschiede liegen in UX und technischem Client-Verhalten, nicht in Fachregeln.
 _Avoid_: eigenständiges Mobile-Produkt mit abweichenden Fachbegriffen oder Sonderlogik
 
+**Mobile Customer Feature Parity**:
+RoomFull Mobile uebertraegt innerhalb des ausdruecklich vereinbarten Customer-Self-Service-Scope den vorhandenen Funktionsumfang der WebApp; mobile Unterschiede betreffen Darstellung und native Interaktion, waehrend Admin und explizit vertagte Bereiche ausserhalb von V1 bleiben.
+_Avoid_: mobile-only Produktfeatures, automatische Vollparitaet mit Admin oder stilles Streichen vorhandener Customer-Funktionen innerhalb des vereinbarten Scope
+
+**Mobile Teams V1 Scope**:
+RoomFull Mobile V1 umfasst My Teams mit Team- und Team-Member-Verwaltung sowie den optionalen Team Booking Share fuer eligible eigene Bookings; beides bildet einen zusammengehoerigen Customer-Self-Service-Bereich und folgt nach dem mobilen Booking-Kern.
+_Avoid_: isolierte Kontaktverwaltung ohne Share-Nutzen, Kopplung an das Erstellen einer Booking oder Verschiebung allein aufgrund eines veralteten Web-Fertigstellungsstands
+
+**Mobile Team Booking Share Flow**:
+Der mobile Team Booking Share ist ein zweistufiger fluechtiger Flow im selben Share-Kontext: `Empfaenger vorbereiten` umfasst Team, Member und persoenliche Nachricht; `Einladung uebergeben` bietet das bereite vierteilige Share Package. Schritt 2 erlaubt die Rueckkehr zur Korrektur, ohne Auswahl oder Nachricht an der Booking zu speichern.
+_Avoid_: ein einziger wachsender Langscreen, Share Package vor mindestens einem Empfaenger oder persistierter Share-Entwurf
+
+**Mobile Team Share Booking Summary**:
+Beide Schritte des mobilen Team Booking Share zeigen denselben kompakten read-only Booking-Kontext mit Raumname sowie Datum und Uhrzeit direkt; UnitType und Kapazitaet bleiben sekundaer sichtbar oder aufklappbar.
+_Avoid_: grosse dauerhafte Kontext-Card, versteckte Booking-Identitaet oder Darstellung als editierbarer Booking-Schritt
+
+**Mobile Team Share Handoff Notice**:
+Der mobile Share zeigt den kompakten Hinweis zur Systemgrenze erst in `Einladung uebergeben` direkt vor den vier Aktionen: RoomFull versendet nicht, Empfaenger gehoeren in BCC und die `.ics` wird bei Bedarf manuell angehaengt.
+_Avoid_: grosses Hinweis-Panel vor der Empfaengervorbereitung, Versandversprechen oder versteckter BCC-/Anhang-Hinweis nach den Aktionen
+
+**Mobile Team Share Team Selection**:
+`Team auswaehlen` oeffnet mobil ein alphabetisches Sheet mit Teamname und Member-Anzahl; nicht leere Teams sind vollflaechig waehbar, leere Teams sichtbar deaktiviert mit Einstieg zu `Kontakte hinzufuegen`, und kein Team wird automatisch vorausgewaehlt.
+_Avoid_: alle bis zu 20 Teams dauerhaft inline, leere Teams verstecken oder ein einziges verwendbares Team ohne bewusste Auswahl laden
+
+**Mobile Team Share Recipient Selection**:
+Schritt 1 zeigt kompakt die ausgewaehlte Anzahl; `Empfaenger bearbeiten` oeffnet einen vollflaechigen fluechtigen Unterzustand mit alphabetischer performanter Memberliste, Checkboxen, Anzahl sowie `Alle auswaehlen`, `Alle abwaehlen`, `Abbrechen` und `Uebernehmen`. Initial sind alle Members des bewusst gewaehlten Teams ausgewaehlt.
+_Avoid_: bis zu 50 Checkboxen dauerhaft im Share-Screen, Member-Modal ohne eigene Scrollflaeche oder Persistenz der Auswahl am Team
+
+**Mobile Team Share Personal Message**:
+Die optionale persoenliche Nachricht startet mobil mit etwa drei Zeilen, waechst bis zu einer begrenzten Hoehe und scrollt danach intern; der 500-Zeichen-Zaehler wird erst nahe dem Limit betont und der Text bleibt bei Team- und Schrittwechsel nur innerhalb des laufenden Share-Flows erhalten.
+_Avoid_: dauerhaft grosses Textfeld, verstecktes Limit oder Beibehalten als persistierte Booking- oder Team-Eigenschaft missverstehen
+
+**Mobile Team Share Capacity Warning Placement**:
+Uebersteigt die ausgewaehlte Member-Anzahl die BookableUnit-Kapazitaet, zeigt Mobile die nicht blockierende Warnung unter der Empfaengerzusammenfassung in Schritt 1 und in der vollflaechigen Auswahl; `Weiter` bleibt ab einem Member erlaubt und der Customer wird nicht automatisch mitgezaehlt.
+_Avoid_: Warnung nur nach der Auswahl, blockierter Share oder implizite Annahme ueber die Teilnahme des Customers
+
+**Mobile Team Share Package Actions**:
+`Einladung uebergeben` zeigt BCC-Adressen, Betreff, Einladungstext und Team-Share-Kalenderdatei als vier ruhige getrennte Aktionszeilen mit lokalem Feedback; Textaktionen kopieren einzeln, die Kalenderdatei oeffnet die native Freigabe.
+_Avoid_: vier dominante Grossbuttons, gemeinsamer Senden-Button, globales unzuordenbares Feedback oder behaupteter Versandstatus
+
+**Mobile Team Share Resume**:
+Wird RoomFull waehrend der externen Uebergabe nur in den Hintergrund gelegt, bleibt der laufende Share-Zustand im Speicher und kehrt zu Schritt 2 zurueck; nach Beendigung des App-Prozesses darf er verloren sein, da kein persistierter Share-Draft existiert.
+_Avoid_: Zustandsverlust bei jedem App-Wechsel, persistente Speicherung von Team, Empfaengern oder Nachricht oder behauptete Wiederherstellung nach Prozessende
+
+**Mobile Team Share Completion**:
+Die neutrale Aktion `Fertig` beendet den fluechtigen Team Share und fuehrt zu My Bookings, ohne Versand oder erfolgreichen Share zu behaupten und ohne die Booking zu veraendern; Zurueck aus Schritt 2 fuehrt dagegen zu Schritt 1 zur Korrektur.
+_Avoid_: Erfolgsstatus, Share-Historie, automatische Booking-Aenderung oder Verwechslung von Korrektur-Zurueck und Flow-Abschluss
+
+**Mobile Team Share Empty-State Return**:
+Oeffnet ein Share ohne verwendbares Team `My Teams`, bleibt der Share im Navigation Stack; bei manueller Rueckkehr werden Team-Summaries aktualisiert, aber weder Team noch Empfaenger automatisch ausgewaehlt.
+_Avoid_: Team-CRUD im Share, versteckter automatischer Ruecksprung, veraltete Teamliste oder Umgehung der bewussten Teamwahl
+
+**Mobile My Teams Overview**:
+Die mobile My-Teams-Uebersicht ist list-first: Auf starke Headline und kurzen Intro-Satz folgt ein kompakter Fach-Callout zu privater Kontaktliste, keiner geteilten Organisation und keinen automatischen E-Mails; nach getrenntem Demo-Datenhinweis folgen Create-Aktion und alphabetische Teamliste.
+_Avoid_: dauerhaftes Create-Formular vor der Liste, verschachtelte Member-Erstellung oder Teamliste erst unter mehreren grossen Intro-Panels
+
+**Mobile Team Card**:
+Eine Team-Card in der mobilen My-Teams-Uebersicht zeigt Teamname, Member-Anzahl und Chevron und ist als gesamte Flaeche genau ein Navigationstouchziel zum Team Detail.
+_Avoid_: separater innerer Button, sichtbares `Verwalten` als Konkurrenz zum gleichnamigen Settings-Einstieg oder nur das Chevron tappbar machen
+
+**Mobile Team Creation Continuation**:
+Nach erfolgreichem Anlegen eines Teams oeffnet Mobile direkt dessen leeres Team Detail, damit der Customer als naechsten fachlichen Schritt Members hinzufuegen kann; Zurueck fuehrt zur aktualisierten My-Teams-Uebersicht.
+_Avoid_: nach erfolgreicher Erstellung im Sheet oder in der Liste verbleiben und einen zusaetzlichen Oeffnen-Schritt verlangen
+
+**Mobile Team Detail Hierarchy**:
+Das mobile Team Detail ist member-first: Nach kompakter Teamidentitaet und Member-Anzahl folgen Kontakt-hinzufuegen-Aktion und alphabetische Memberliste; Umbenennen und Loeschen bleiben als sekundaere Team-Verwaltung im Screen-Kopf erreichbar.
+_Avoid_: dauerhaft geoeffnetes Settings- und Create-Member-Formular vor der Memberliste oder Team-CRUD zugunsten der Verdichtung entfernen
+
+**Mobile Team Demo Notice Placement**:
+Die My-Teams-Uebersicht zeigt den vollstaendigen kompakten Hinweis der Team Demo Data Boundary einmal; im Team Detail entfaellt das grosse Wiederholungs-Panel und Add-/Edit-Member-Sheets erinnern direkt am Formular kurz daran, nur fiktive Kontaktdaten zu verwenden.
+_Avoid_: Warnung nur weit entfernt vom Eingabepunkt, grosses wiederholtes Detail-Panel oder Weglassen der Datenwarnung in Member-Formularen
+
+**Mobile Team Management Sheet**:
+Die beschriftete Aktion `Team verwalten` im Kopf des Team Details oeffnet ein Sheet mit Umbenennen als primaerem Inhalt und einer raeumlich getrennten destruktiven Aktion `Team loeschen` am unteren Ende.
+_Avoid_: nur ein unbeschriftetes Mehr-Menue, Loeschen direkt neben Speichern oder dauerhaft sichtbares Settings-Formular im Screen-Inhalt
+
+**Mobile Team Deletion Confirmation**:
+Vor einer mobilen Team Deletion nennt die Bestaetigung Teamname und Member-Anzahl und verlangt die exakte Eingabe des Teamnamens; erst dann wird das endgueltige Loeschen von Team und Members freigegeben.
+_Avoid_: einfacher Einzel-Tap, generischer Alert ohne betroffene Daten oder Loeschfreigabe trotz abweichendem Teamnamen
+
+**Mobile Add Team Member Sheet**:
+Die Aktion `Kontakt hinzufuegen` im Team Detail oeffnet ein fokussiertes Sheet fuer genau einen Team Member mit Name und E-Mail; Validierung und API-Feedback bleiben im Sheet und die Memberliste wird nach Erfolg aktualisiert.
+_Avoid_: dauerhaftes Add-Formular vor der Memberliste, mehrere Members in einem Formular oder Member-Erstellung ausserhalb eines gespeicherten Teams
+
+**Mobile Add Team Member Continuation**:
+Nach erfolgreichem Hinzufuegen zeigt das Sheet einen kurzen Erfolgszustand mit `Weiteren Kontakt hinzufuegen` fuer geleerte Felder und `Fertig` zum Schliessen auf die bereits aktualisierte alphabetische Memberliste.
+_Avoid_: erzwungenes Schliessen nach jedem Member, still geleertes Formular ohne Erfolgsorientierung oder Batch-Formular fuer mehrere Kontakte
+
+**Mobile Team Member Management**:
+Eine mobile Member-Card ist mit Name, E-Mail und Chevron genau ein Touch-Ziel und oeffnet das beschriftete Sheet `Kontakt verwalten`; dort stehen Bearbeiten sowie raeumlich getrennt `Kontakt entfernen` zur Verfuegung.
+_Avoid_: zwei sichtbare Edit-/Remove-Buttons pro Listen-Card, separate Member-Detailseite oder Loeschen direkt neben Speichern
+
+**Mobile Team Member Removal Confirmation**:
+Das Entfernen eines einzelnen Team Members verlangt einen nativen Bestaetigungsdialog mit Name und E-Mail sowie getrennten Aktionen `Abbrechen` und destruktiv `Kontakt entfernen`, aber keine Texteingabe.
+_Avoid_: sofortiges Entfernen aus der Card, generische Bestaetigung ohne betroffenen Kontakt oder Team-Loeschfriktion fuer einen einzelnen Member
+
 **Booking Request Modes**:
 Booking-Flow-Anfragen für Context, Availability und Erstellung wählen genau einen von zwei Modi: `DIRECT` (`unitId`) oder `AUTO_ASSIGN` (`areaId + unitType=HOT_DESK`).
 _Avoid_: separater Endpoint pro Buchungsmodus, abweichende Modusnamen oder Zielregeln zwischen Flow-Schritten
@@ -54,9 +150,101 @@ _Avoid_: reine interne Unit-Liste oder fokussierter Buchungskatalog
 RoomFull Mobile V1 behält dieselben fachlichen Zielpunkte wie die Web-App bei; mobile Abweichungen verdichten nur die Darstellung und Interaktion, nicht die fachlichen Ziele.
 _Avoid_: fachlich unterschiedliche Ziele in unscharfen Super-Screens vermischen oder mobile Sonderfluesse als neue Fachobjekte behandeln
 
+**Mobile Home Hero Density**:
+Der mobile Home-Hero bewahrt die markante RoomFull-Headline und Orientierung, haelt den primaeren Booking-CTA aber auch auf kleinen iPhones ohne Scrollen erreichbar; die vier UnitType-Teaser duerfen erst unterhalb des ersten Viewports beginnen.
+_Avoid_: konkrete BookableUnits auf Home erwarten oder Sichtbarkeit eines UnitType-Teasers im ersten Viewport erzwingen
+
+**Mobile Home CTA Pair**:
+Der mobile Home-Hero zeigt den gefuellten primaeren Booking-CTA zusammen mit genau einer auth-aware Outline-Aktion; beide stehen nur bei ausreichend Platz nebeneinander und werden sonst ohne Textumbruch gestapelt.
+_Avoid_: dritter Hero-CTA, gequetschte Labels oder umbrechender Button-Text fuer eine erzwungene Ein-Zeilen-Anordnung
+
+**Mobile Home UnitType Teaser Action**:
+Jeder farbige UnitType-Teaser auf Mobile Home ist als gesamte Flaeche genau eine Auswahlaktion; ein sichtbares Aktionslabel dient nur als Orientierung innerhalb derselben Tap-Flaeche.
+_Avoid_: verschachtelter Button, mehrere konkurrierende Touch-Ziele oder nur das kleine Aktionslabel tappbar machen
+
+**Mobile Home UnitType Teaser Meta**:
+Ein mobiler Home-Teaser zeigt genau Verfuegbarkeit, Mindestdauer und Kapazitaet in dieser Reihenfolge als kompakten Meta-Block; konkrete Area-, Varianten- oder BookableUnit-Details folgen erst spaeter im Auswahlfluss.
+_Avoid_: Weglassen entscheidender Vorauswahl-Fakten oder Vorziehen konkreter Raumdetails auf Home
+
+**Home UnitType Teaser Signal**:
+Home kennzeichnet die vier UnitType-Teaser in Web und Mobile durch ihre etablierte Farbe, das vertikale Kategorie-Label und markante Typografie; zusaetzliche SVG-Icons sind nicht Teil dieses Signals.
+_Avoid_: redundante Illustrationen oder Icons, die den kompakten Streifen ohne zusaetzliche Orientierung ueberladen
+
+**Mobile Home UnitType Teaser Set**:
+Mobile Home zeigt alle vier UnitTypes direkt in einer stabilen vertikalen Folge; die vollstaendige Auswahl bleibt ohne Carousel, Filter oder vorgelagerten Auswahlzustand erreichbar.
+_Avoid_: horizontal versteckte Kategorien, wechselnde Reihenfolge oder nur kuratierte Teilmenge der vier UnitTypes
+
 **Mobile Navigation Model**:
 RoomFull Mobile V1 organisiert seine Navigation explizit ueber React Navigation mit klar modellierten Stacks, Overlays und Auth-Grenzen statt ueber dateibasierte Router-Magie.
 _Avoid_: versteckte Navigationsstruktur oder implizite Dateisystem-Routen als primaeres Architekturmodell
+
+**Mobile Sheet Presentation**:
+Ein Mobile Sheet praesentiert einen fokussierten sekundaeren Arbeitsschritt unter Erhalt des sichtbaren Ausgangskontexts; umfangreiche Auswahl- oder Hauptablaeufe bleiben eigene vollflaechige Screens.
+_Avoid_: jeden mobilen Flow in ein Sheet draengen, fachliche Hauptziele als verschachtelte Overlays modellieren oder Sheet und vollflaechigen Modal-Screen synonym verwenden
+
+**Mobile App Header Density**:
+Der wiederkehrende mobile App-Header besteht aus Safe Area und kompakter Markenzeile mit kleinerem RoomFull-Logo, Menue- beziehungsweise Schliessen-Aktion und vierfarbiger Unterkante; Auth-Screens verwenden stattdessen die getrennte Mobile Auth Shell.
+_Avoid_: hohe Web-Header-Abstaende, fehlende Safe-Area-Beruecksichtigung oder globale Header-Huelle auf Auth-Screens
+
+**Mobile App Header Scroll Behavior**:
+Der kompakte mobile App-Header bleibt auf regulaeren Screens stabil sichtbar und reagiert nicht mit Ein-/Ausblenden auf die Scrollrichtung.
+_Avoid_: scrollabhaengige Header-Animation, zeitweise unerreichbares Hauptmenue oder unterschiedliches Verhalten je Content-Screen
+
+**Mobile Info & Recht Navigation**:
+RoomFull Mobile verwendet keinen wiederkehrenden Screen-Footer; FAQ und Datenschutz beziehungsweise Privacy & Imprint bleiben stattdessen im App-Menue unter dem ruhigen Bereich `Info & Recht` dauerhaft erreichbar.
+_Avoid_: Scope-Verlust der rechtlichen Ziele oder Web-Footer am Ende jedes mobilen Screens
+
+**Mobile Main Menu Modal**:
+Das mobile Hauptmenue oeffnet als nahezu vollflaechige modale Ebene unter Beruecksichtigung der Safe Area; der Hintergrund ist gedimmt, fuer Bedienung und Accessibility gesperrt, das Menue intern scrollbar und ueber eine explizite Schliessen-Aktion verlassbar. Dies ist eine bewusste native Abweichung vom verankerten Web-Dropdown.
+_Avoid_: seitlicher Drawer, kleines Header-Dropdown, bedienbarer Hintergrund oder nur implizites Schliessen durch erneuten Menue-Tap
+
+**Mobile Customer Menu Hierarchy**:
+Das mobile Customer-Menue ordnet zuerst `Platz finden` und `Meine Buchungen`, danach eine nicht tappbare User-Summary mit `Mein Account`, `My Teams` und `Kontakt`, anschliessend Sprache sowie `Info & Recht` und ganz unten raeumlich getrennt `Abmelden`.
+_Avoid_: flache ungegliederte Linkliste, tappbare User-Summary als Konkurrenz zu Mein Account oder Abmelden zwischen normalen Navigationszielen
+
+**Mobile Anonymous Menu Hierarchy**:
+Das anonyme mobile Menue zeigt zuerst `Platz finden`, danach eine eigene Auth-Gruppe mit primaer `Einloggen` und sekundaer `Registrieren` sowie abschliessend Sprache und `Info & Recht`; Konto-Summary und Abmelden entfallen vollstaendig.
+_Avoid_: leere Konto-Platzhalter, gleichgewichtete flache Linkliste oder Registrierung als dritter Home-Hero-CTA statt Auth-Menueaktion
+
+**Mobile Auth Shell**:
+Die gemeinsame mobile Huelle fuer Login und Registrierung zeigt direkt unter der Safe Area nur eine kompakte RoomFull-Marken- und Ruecknavigation; globales Menue, Web-Header und Footer bleiben auf Auth-Screens verborgen, damit Formular und Hauptaktion frueh sichtbar sind.
+_Avoid_: grosse dekorative Leerflaechen, vollstaendige App-Navigation oder Web-Footer im mobilen Auth-Einstieg
+
+**Mobile Auth Switch**:
+Der Wechsel zwischen Login und Registrierung ist eine kompakte sekundaere Textaktion unter dem primaeren Formular-Button und behaelt ein vorhandenes internes Weiterleitungsziel bei.
+_Avoid_: gleichgewichteter zweiter Grossbutton oder Verlust des begonnenen Buchungsziels beim Wechsel des Auth-Modus
+
+**Mobile Auth Intro Copy**:
+Die Orientierungscopy eines mobilen Auth-Screens benennt eine fortzusetzende Buchung nur bei einem Auth-Einstieg aus dem Booking Flow; direkte Auth-Einstiege verwenden eine neutrale RoomFull-Anmeldung oder Kontoerstellung.
+_Avoid_: pauschal behaupten, dass jeder Login oder jede Registrierung eine begonnene Buchung fortsetzt
+
+**Mobile Auth Header Density**:
+Der schwarze Kopf der mobilen Auth-Card bleibt als markantes RoomFull-Element erhalten, verwendet aber eine kompakte Headline, hoechstens zwei kurze Orientierungszeilen und reduzierte Innenabstaende.
+_Avoid_: Web-typografische Groesse, die auf kleinen iPhones Formularfelder oder Hauptaktion unnoetig unter den sichtbaren Bereich drueckt
+
+**Mobile Guest Login Entry**:
+Der mobile Login bietet den Gastzugang als klar getrennten sekundaeren Einstieg in eine isolierte Demo Customer Session an; auf dem Registrierungs-Screen wird er nicht wiederholt und ein sicherer begonnener Auth-Zielpfad wird nach erfolgreichem Demo-Login fortgesetzt.
+_Avoid_: Gastzugang als Registrierung, eigene Guest-Rolle, gleichrangige Konkurrenz zur regulaeren Anmeldung oder Rueckfall auf Home trotz begonnenem Booking Flow
+
+**Mobile Guest Login Panel**:
+Der Gastzugang erscheint direkt unter der regulaeren Login-Card als kompakte sekundaere Card mit kurzer Ueberschrift, genau einem Erklaersatz und einer klaren Outline-Aktion.
+_Avoid_: eigener Hero-Kopf, Erklaerlisten oder eine visuelle Gewichtung wie beim regulaeren Login
+
+**Mobile Auth Keyboard Baseline**:
+Mobile Auth-Formulare halten das aktive Feld und die Hauptaktion bei eingeblendeter iOS-Tastatur erreichbar, fuehren per Return-Taste durch die Felder und senden am letzten Feld ab; das exakte Verhalten wird spaeter auf echten Zielgeraeten feinjustiert.
+_Avoid_: dauerhaft sticky Auth-Aktion, verdeckte Eingabefelder oder eine als endgueltig behandelte Simulator-Abstimmung
+
+**Mobile Auth Error Feedback**:
+Mobile Auth-Formulare zeigen lokal korrigierbare Eingabefehler am betroffenen Feld und uebergreifende Serverfehler kompakt oberhalb der Felder; Name und E-Mail bleiben erhalten, der erste korrigierbare Fehler erhaelt Fokus und Bedeutung wird nie nur durch Farbe vermittelt.
+_Avoid_: unspezifische Toast-only-Fehler, geloeschte unkritische Eingaben oder reine Farbcodierung
+
+**Mobile Password Reset Scope**:
+RoomFull Mobile bietet keinen Passwort-Reset an, solange die WebApp keinen entsprechenden vollstaendigen Funktionsfluss besitzt.
+_Avoid_: mobile-only Reset-Aktion, nicht funktionierender Link oder reines UI ohne Backend- und E-Mail-Contract
+
+**Mobile Registration Demo Notice**:
+Die mobile Registrierung zeigt innerhalb der Register-Card einen kompakten Portfolio-Demo-Hinweis: RoomFull ist kein echter Coworking-Service, es sollen keine echten personenbezogenen Daten oder echten beziehungsweise wiederverwendeten Passwoerter eingegeben werden und Demo-Daten koennen geloescht werden.
+_Avoid_: Ausblenden der Warnung, Verteilung ueber mehrere Screens oder Wiederholung auf dem regulaeren Login-Screen
 
 **Mobile Screen Layer**:
 RoomFull Mobile fuehrt `screens/` als schlanken Kompositionslayer fuer navigierbare Ansichten; fachliche Regeln, API-Logik und schwere Interaktionslogik bleiben in `features`, `entities`, `widgets` und `shared`.
@@ -73,6 +261,34 @@ _Avoid_: parallele lokalisierte und unlokalisierte Page-Baeume mit derselben Fun
 **Language Switch**:
 Eine UI-Aktion, die zwischen `de` und `en` wechselt, den aktuellen Pfad inklusive Query erhaelt und die gewaehlte Locale fuer spaetere Root-Besuche speichert.
 _Avoid_: Sprachwechsel als Navigation zur Startseite oder Verlust von fachlichem UI-Zustand
+
+**Mobile Locale**:
+Der zentrale nicht routengebundene Sprachzustand von RoomFull Mobile fuer `de` oder `en`, aus dem UI-Copy, Formatierung, lokalisierte API-Projektionen und Share-Inhalte abgeleitet werden.
+_Avoid_: locale-abhaengige Mobile-Routen, eigene Locale pro Screen oder Share-Flow oder Sprache nur implizit aus dem Geraet ableiten
+
+**Mobile Locale Initialization**:
+Beim ersten Mobile-Start wird ein unterstuetztes `de` oder `en` aus der bevorzugten Geraetesprache uebernommen, sonst `de`; danach hat eine persistierte bewusste Customer-Auswahl Vorrang vor der Geraetesprache.
+_Avoid_: gespeicherte Auswahl bei jedem Start mit der Geraetesprache ueberschreiben, andere Geraetesprachen ungeprueft uebernehmen oder Locale als sensibles Secret speichern
+
+**Mobile Language Switch**:
+Die Mobile-Aktion zum unmittelbaren Wechsel der zentralen Mobile Locale auf dem aktuellen Screen, ohne Navigation-Reset und ohne Verlust von Navigation-Parametern oder sicher erhaltbarem Flow-Zustand.
+_Avoid_: Ruecksprung auf Home, Neuaufbau des Navigation Stacks oder nur teilweise aktualisierte Screen-Copy
+
+**Mobile UI Dictionary**:
+Die statisch gebuendelte typisierte `de`/`en`-Copy des vereinbarten Mobile-Customer-Scope; `de` definiert die Struktur und `en` muss dieselbe Shape per TypeScript erfuellen.
+_Avoid_: gesamten Web-Admin-Scope kopieren, rohe Backend-Messages als sichtbare Copy oder fuer zwei Sprachen unnoetig eine zweite Uebersetzungs-Engine einfuehren
+
+**RoomFull Development Build**:
+Ein Mobile-Build mit `expo-dev-client` fuer lokale Simulator-Entwicklung oder interne Installation auf registrierten iPhones; er dient nativer Feature-Abnahme und wird nicht an TestFlight uebermittelt.
+_Avoid_: Development Build als App-Store-Artefakt, dauerhafter Expo-Go-Ersatz ohne eigenes App-Binary oder identischer Build fuer Entwicklung und TestFlight
+
+**RoomFull TestFlight Build**:
+Ein separates App-Store-signiertes Production-Artefakt, das nach erfolgreicher Development-Build-Abnahme ueber EAS Build erzeugt und in V1 bewusst manuell an TestFlight uebermittelt wird.
+_Avoid_: Development Client in TestFlight, automatische Submission bei jedem Push, TestFlight ohne Production-Profil oder Build vor nativer Geraeteabnahme
+
+**Mobile Build Profile Boundary**:
+Mobile V1 trennt `development-device` fuer internen Development-Client-Zugriff und `production` fuer TestFlight; ein eigenes Preview-Profil und EAS Update gehoeren nicht zum vereinbarten V1-Workflow.
+_Avoid_: Profile ohne klaren Distributionszweck, Preview nur aus Template-Vollstaendigkeit oder EAS Update als unbeabsichtigter weiterer Release-Kanal
 
 **Mobile UI Localization**:
 RoomFull Mobile V1 behandelt `de` und `en` von Beginn an als Teil der App-Struktur, setzt die UI-Lokalisierung aber pragmatisch ueber ein schlankes lokales Dictionary statt ueber schwere i18n-Infrastruktur um.
@@ -320,19 +536,19 @@ _Avoid_: den Account-Screen in V1 zu einem zweiten Auth-/Profil-Feature auswachs
 
 **Frontend Session**:
 Der aktuelle Auth-Zustand der laufenden Frontend-App inklusive angemeldetem Session-User, Ladezustand und Logout-Moeglichkeit.
-_Avoid_: einzelne Widgets oder Pages lesen Auth-Zustand direkt aus Token Storage
+_Avoid_: einzelne Widgets oder Pages leiten Auth-Zustand direkt aus Cookies oder Einzelrequests ab
 
 **Session User**:
 Die fuer die laufende Frontend Session benoetigten User-Daten inklusive Registrierungsdatum. Er ist bewusst vom vollstaendigen fachlichen **User** entkoppelt.
 _Avoid_: Header und Auth-Shell direkt an das User-Entity-Modell koppeln
 
 **Session Lifecycle**:
-Login- und Register-Features starten eine Frontend Session; Logout beendet eine Frontend Session. Token Storage bleibt dabei internes Detail.
-_Avoid_: UI-Bereiche manipulieren Auth Storage direkt
+Login- und Register-Features uebernehmen den vom Backend authentifizierten User in die Frontend Session; Logout beendet den lokalen Zustand und die serverseitig kontrollierte HttpOnly-Cookie-Session. Das Cookie bleibt fuer JavaScript unlesbar.
+_Avoid_: UI-Bereiche lesen oder manipulieren Auth-Cookies beziehungsweise fuehren eigenen Browser-Token-Storage ein
 
 **Authenticated API Request**:
-Ein Frontend-API-Aufruf, dessen Authorization Header zentral durch den technischen API-Client aus der Frontend Session abgeleitet wird.
-_Avoid_: Pages, Widgets oder fachliche API-Funktionen reichen `authToken` als Parameter weiter
+Ein Frontend-API-Aufruf ueber den zentralen technischen API-Client mit `credentials: "include"`, sodass der Browser das HttpOnly-Session-Cookie mitsendet.
+_Avoid_: Pages, Widgets oder fachliche API-Funktionen reichen `authToken` als Parameter weiter oder setzen Authorization Header selbst
 
 **Mobile API Integration**:
 RoomFull Mobile V1 nutzt dieselben bestehenden Backend-Endpunkte direkt wie die Web-App und fuehrt keinen separaten Mobile-BFF-Layer ein.
@@ -379,16 +595,28 @@ Wenn RoomFull Mobile V1 fuer "Meine Buchungen" nur eine Darstellungsart nutzt, i
 _Avoid_: aus rein technischer Einfachheit auf eine visuell deutlich schwaechere Default-Darstellung ausweichen
 
 **Mobile Calendar Export Scope**:
-RoomFull Mobile V1 enthaelt keinen `.ics`- oder Kalenderexport; dieser Workflow ist ein moeglicher spaeterer Ausbau, aber kein Teil des ersten mobilen Kernschnitts.
-_Avoid_: Dateihandling- und Share-Workflows in V1 priorisieren, bevor der mobile Buchungskern stabil ist
+RoomFull Mobile V1 umfasst sowohl den Personal Booking Calendar Export fuer eligible eigene Bookings als auch den getrennten Team Booking Share Calendar Export innerhalb eines bereiten Share Packages; beide bleiben manuell weitergegebene `.ics`-Artefakte innerhalb der Mobile Calendar Integration Boundary.
+_Avoid_: beide Exporte vermischen, automatischen Kalender-Sync oder Versand behaupten oder die interne persoenliche Datei an Team Members weitergeben
+
+**Mobile Calendar Integration Boundary**:
+RoomFull Mobile uebergibt Kalenderdaten in V1 nur einmalig als `.ics`; es verbindet kein Kalenderkonto, liest keine privaten Termine, prueft keine externen Konflikte und synchronisiert weder Aenderungen noch Stornierungen, Teilnehmer oder RSVP automatisch zurueck.
+_Avoid_: Kalenderberechtigungen oder OAuth als Voraussetzung, abonnierbarer Feed, automatische Event-Pflege oder Zwei-Wege-Synchronisation versprechen
+
+**Mobile Calendar File Handoff**:
+Die technische Uebergabe eines temporaer im App-Cache erzeugten Personal- oder Team-Share-`.ics`-Artefakts an das native Share Sheet. RoomFull erzeugt und uebergibt die Datei, waehrend iOS und die installierten Ziel-Apps ueber angebotene Aktionen und einen moeglichen Import entscheiden.
+_Avoid_: direkte Kalenderkonto-Integration, persistente Exportablage, garantierten Kalenderimport oder einen Native Build als fachliche Voraussetzung des Exports behaupten
 
 **Mobile My Bookings V1 Shape**:
-RoomFull Mobile V1 reduziert "Meine Buchungen" bewusst auf eine reine Kartenansicht ohne View-Switcher und ohne Kalenderexport.
-_Avoid_: die Web-Mehransichtenlogik mitsamt `.ics`-Aktionen unveraendert in den mobilen V1-Scope uebernehmen
+RoomFull Mobile V1 reduziert "Meine Buchungen" bewusst auf eine reine Kartenansicht ohne View-Switcher, behaelt aber den Personal Booking Calendar Export fuer eligible eigene Bookings bei.
+_Avoid_: die Web-Mehransichtenlogik unveraendert uebernehmen oder den fachlich vorhandenen persoenlichen Kalenderexport mit den entfallenen Ansichtsmodi verwechseln
 
 **Mobile Booking Card Actions**:
-Mobile Booking-Cards zeigen in V1 hoechstens eine sichtbare Aktion pro aktiver anstehender Booking; fruehere oder stornierte Bookings tragen keine eigene Aktionsleiste.
-_Avoid_: mehrere nebeneinander oder untereinander gestapelte Aktionsbuttons pro Karte im mobilen Default
+Mobile Booking-Cards zeigen fuer eine aktive anstehende Booking genau den sichtbaren Einstieg `Buchung verwalten`; er oeffnet das Mobile Booking Action Sheet, waehrend fruehere oder stornierte Bookings keine eigene Aktionsleiste tragen.
+_Avoid_: mehrere nebeneinander oder untereinander gestapelte Aktionsbuttons pro Karte oder Aktionen auf abgeschlossenen Bookings
+
+**Mobile Booking Action Sheet**:
+Das native Aktionsblatt einer konkreten Booking zeigt nur aktuell erlaubte Aktionen aus Personal Booking Calendar Export, Team Booking Share und Stornierung; Share navigiert weiter, Export uebergibt die Datei nativ und Stornierung bleibt destruktiv getrennt.
+_Avoid_: unzulaessige deaktivierte Aktionen als Standard, Storno ohne klare Gefahrendarstellung oder Vermischung der beiden Kalenderexporte
 
 **Mobile My Bookings Section Hierarchy**:
 Die Bereiche fuer anstehende und fruehere Buchungen bleiben mobil klar getrennt, werden aber mit leichterer Header-Hierarchie statt mit schweren Blockpanels inszeniert.
@@ -433,12 +661,15 @@ _Avoid_: irreversiblen Storno nur ueber einen einzelnen Danger-Tap bestaetigen o
 - "eigene Mobile-API" klang moeglich; aufgeloest als **Mobile API Integration**: direkter Zugriff auf dieselben Backend-Endpunkte, kein separater BFF in V1.
 - "DE/EN spaeter" stand im Raum; aufgeloest als **Mobile UI Localization**: i18n von Anfang an strukturell mitdenken, aber schlank umsetzen.
 - "Expo Router vs. React Navigation" war offen; aufgeloest als **Mobile Navigation Model**: React Navigation als primaeres Navigationssystem.
+- "Welche Sheet-Grundlage nutzt RoomFull Mobile?" war offen; aufgeloest als **Mobile Sheet Presentation** innerhalb des React-Navigation-Modells, waehrend grosse Auswahlablaeufe vollflaechig bleiben.
 - "`screens/` oder reine FSD-Layer" war offen; aufgeloest als **Mobile Screen Layer**: eigener, aber bewusst duenner Kompositionslayer.
 - "My Bookings" drohte in V1 zu breit zu werden; aufgeloest als **Mobile My Bookings Scope**: keine Kalenderansicht als Muss, moeglichst nur eine primaere Darstellungsart.
 - "Liste oder Karten" war offen; aufgeloest als **Mobile My Bookings Primary View**: Kartenansicht als einzige primaere Darstellung in V1.
-- "`.ics` vielleicht direkt mitnehmen" stand im Raum; aufgeloest als **Mobile Calendar Export Scope**: kein Kalenderexport in V1.
-- "Wie stark brechen wir My Bookings fuer V1 herunter?" war offen; aufgeloest als **Mobile My Bookings V1 Shape**: nur Kartenansicht, kein Switcher, kein `.ics`.
-- "Wie viele Actions traegt eine Mobile-Booking-Card?" war offen; aufgeloest als **Mobile Booking Card Actions**: hoechstens eine Aktion auf aktiven anstehenden Cards, sonst keine Aktionsleiste.
+- "`.ics` vielleicht direkt mitnehmen" wurde zunaechst als kein Kalenderexport in V1 aufgeloest und spaeter revidiert: **Mobile Calendar Export Scope** umfasst Personal Booking Calendar Export und Team Booking Share Calendar Export.
+- "Was bedeutet kein Kalender-Sync trotz mobiler `.ics`-Exporte?" war offen; aufgeloest als **Mobile Calendar Integration Boundary**: einmalige Dateiuebergabe ohne dauerhafte Kalenderverbindung oder automatische Ruecksynchronisation.
+- "Wie stark brechen wir My Bookings fuer V1 herunter?" war offen; aufgeloest und spaeter praezisiert als **Mobile My Bookings V1 Shape**: nur Kartenansicht ohne Switcher, aber mit persoenlichem Kalenderexport.
+- "Wie viele Actions traegt eine Mobile-Booking-Card?" war offen; aufgeloest und mit wachsendem V1-Scope konkretisiert als **Mobile Booking Card Actions**: genau ein sichtbarer Einstieg `Buchung verwalten` auf aktiven anstehenden Cards, sonst keine Aktionsleiste.
+- "Wo liegen Kalenderexport, Team Share und Storno auf Mobile?" war offen; aufgeloest als kontextsensitives **Mobile Booking Action Sheet** hinter `Buchung verwalten`.
 - "Wie schwer duerfen die Section-Header wirken?" war offen; aufgeloest als **Mobile My Bookings Section Hierarchy**: klar getrennt, aber leichter als im Web.
 - "Wie lang darf die Intro-Copy auf My Bookings sein?" war offen; aufgeloest als **Mobile My Bookings Intro Copy**: starke Headline, aber nur sehr kurzer Orientierungssatz.
 - "Wie kompakt duerfen die Booking-Cards werden?" war offen; aufgeloest als **Mobile Booking Card Density**: spuerbar kompakter bei erhaltener Klarheit.
@@ -592,8 +823,8 @@ Der generierte Betreff und Einladungstext aus nicht editierbaren Booking-Fakten,
 _Avoid_: editierbare Booking-Fakten im Share, nur die persoenliche Nachricht kopieren, vom gespeicherten Booking-Zeitraum abweichende Angaben erzeugen
 
 **Team Booking Share Language**:
-Die aktive Localized Route bestimmt Sprache sowie Datums- und Textformat des Team Booking Share Content; der Share besitzt keinen eigenen Sprachzustand.
-_Avoid_: separater Sprachschalter im Share, von der UI-Locale abweichende Copy-Locale, sprachunabhaengige feste deutsche Share-Copy
+Die aktive Client-Locale bestimmt Sprache sowie Datums- und Textformat des Team Booking Share Content: im Web die Localized Route, in Mobile die Mobile Locale. Der Share besitzt keinen eigenen Sprachzustand.
+_Avoid_: separater Sprachschalter im Share, von der aktiven Client-Locale abweichende Copy-Locale, sprachunabhaengige feste deutsche Share-Copy
 
 **Personal Booking Calendar Export**:
 Die bestehende getrennte Aktion "Zum Kalender hinzufuegen" erzeugt fuer eine eigene aktive anstehende Booking eine persoenliche Kalenderdatei ohne Team Members.
@@ -904,6 +1135,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Team Booking Share Team Change** erhaelt Booking-bezogenen Text und setzt Team-bezogene Empfaenger zurueck.
 - **Personal Booking Calendar Export** und **Team Booking Share Calendar Export** bleiben getrennte Artefakte derselben eligible Booking.
 - Die **Booking Calendar UID** kennzeichnet beide Kalenderartefakte als dasselbe Ereignis.
+- Der **Mobile Calendar File Handoff** uebergibt beide Kalenderartefakte temporaer an das native Share Sheet, ohne Kalenderkonto oder Kalenderberechtigung.
 - Der **Team Booking Share Context** schuetzt und liefert die Booking-Grundlage der **Team Booking Share Page** unabhaengig von den Team-Daten.
 - **Team Booking Share Context Errors** verbergen fremde Bookings und machen einen Eligibility-Verlust der eigenen Booking unterscheidbar.
 - **Team Booking Share Eligibility** entspricht dem fachlichen Geltungsbereich des persoenlichen Kalenderexports fuer eigene Bookings.
@@ -914,7 +1146,7 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Team Booking Share Recipient Format** haelt die BCC-Uebergabe auf eine einfache kommagetrennte Adressliste beschraenkt.
 - Die **Team Booking Share Message** existiert nur waehrend der Vorbereitung und im anschliessend kopierten Inhalt.
 - **Team Booking Share Content** verbindet die fachlich unveraenderten Booking-Daten mit der optionalen persoenlichen Nachricht.
-- **Team Booking Share Language** leitet die Share-Copy aus der aktiven Localized Route ab.
+- **Team Booking Share Language** leitet die Share-Copy aus der aktiven Client-Locale ab.
 - Ein **Customer** besitzt seine privaten **Teams**; andere Users werden dadurch nicht zu Teammitgliedern innerhalb RoomFull.
 - **Team Name Uniqueness** haelt die privaten Teams eines Customers in Auswahl und Verwaltung unterscheidbar.
 - **Team Deletion** entfernt die private Kontaktgruppe vollstaendig, da weder Bookings noch Team Booking Shares auf sie verweisen.
@@ -940,12 +1172,12 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Booking Time Input** wird durch **Booking Time Grid**, Öffnungszeiten und **Duration Policy** validiert.
 - **Booking Time Display** projiziert sichtbare Booking-Zeitpunkte unabhängig von der Browser-Zeitzone nach `Europe/Berlin`.
 - Die **Home Page** ist der Service-Einstieg; die **Booking Options Page** ist der fokussierte Buchungseinstieg.
-- Die **Home Page** zeigt anonymen Visitors "Jetzt buchen", "Registrieren" und "Einloggen"; angemeldeten Users zeigt sie "Jetzt buchen" und "Meine Buchungen".
+- Die **Home Page** zeigt neben "Jetzt Platz finden" genau eine auth-aware Sekundaeraktion: anonym "Einloggen", angemeldeten Users "Meine Buchungen". Registrierung bleibt ueber Menue und Auth-Wechsel erreichbar.
 - Angebots-Teaser auf der **Home Page** fuehren zu `/booking-options/[slug]`, nicht direkt zu `/bookings/new`.
 - Die **Home Page** nennt BookingOption-Teaser in der UI "Arbeitsbereiche".
 - Die **Home Page** nutzt **BookingOptions** als Datenbasis, praesentiert sie aber kuratiert als Service-Angebote.
 - Die **Home Page** teasert Varianten nur an; konkrete Area- oder Unit-Varianten werden erst auf `/booking-options/[slug]` ausgewaehlt.
-- Die **Home Page** nutzt eigene SVG-Icons als visuelle Arbeitsbereich-Signale.
+- Die **Home Page** nutzt Farbe, vertikales Kategorie-Label und Typografie als **Home UnitType Teaser Signal**; sie verwendet keine zusaetzlichen UnitType-SVG-Icons.
 - Die **Booking Options Page** bleibt eine Kategorie-Übersicht und zeigt aktive Area- oder Unit-Namen nur als Vorschau; konkrete Auswahl passiert auf `/booking-options/[slug]`.
 - Die **Create Booking Page** ist der gemeinsame UI-Einstieg fuer beide Booking Request Modes.
 - Der **Create Booking Entry Context** entscheidet, welcher Booking Request Mode vorbereitet wird.
@@ -982,10 +1214,11 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Account Overview** darf die nächste **Upcoming Booking** als Navigation zur eigenen Buchungsliste zeigen, bleibt aber selbst Account-Inhalt.
 - Logout bleibt Teil des **Session Lifecycle** im Header und gehoert in V1 nicht auf **Account Overview**.
 - Profilbearbeitung und Passwortaenderung sind als eigene Account-Feature-Slices in der `ROADMAP.md` vorgemerkt und keine Platzhalter in **Account Overview**.
-- **Frontend Session** ist die zentrale Quelle fuer Auth-Zustand im Frontend; Header und auth-required UI konsumieren sie statt direkt Token Storage zu lesen.
+- **Frontend Session** ist die zentrale Quelle fuer Auth-Zustand im Frontend; Header und auth-required UI konsumieren sie statt Cookies oder Einzelrequests als eigene Auth-Quelle zu behandeln.
+- **Mobile Session** ist die von der Web-Session unabhaengig aufgebaute authentifizierte Beziehung der Mobile-App zum selben User und denselben Customer-Berechtigungen im RoomFull-Backend.
 - **Session User** haelt die Session-relevanten User-Daten ohne direkte Kopplung an das User-Entity-Modell.
-- **Session Lifecycle** trennt Nutzeraktionen wie Login/Register/Logout von der internen Token-Speicherung.
-- **Authenticated API Request** haelt `authToken` aus Pages, Widgets, Features und fachlichen API-Funktionen heraus.
+- **Session Lifecycle** trennt Nutzeraktionen wie Login/Register/Logout vom serverseitig kontrollierten HttpOnly-Cookie.
+- **Authenticated API Request** haelt Cookie- und Transportdetails aus Pages, Widgets, Features und fachlichen API-Funktionen heraus.
 - **Auto-Assign Scope** begrenzt den Automatikmodus dauerhaft auf `HOT_DESK`.
 - **Hot Desk Allocation Mode** weist bei passender Anfrage automatisch eine freie Unit zu.
 - **Hot Desk Allocation Strategy** macht die konkrete Unit-Auswahl reproduzierbar.
@@ -1051,13 +1284,19 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Blockiert eine zu grosse Empfaengerauswahl den Share?" war offen; aufgeloest: nein, die **Team Booking Share Capacity Warning** informiert deutlich, bleibt aber nicht blockierend.
 - "Muss fuer eine einmalige Abweichung das Team geaendert werden?" war offen; aufgeloest: nein, bei der **Team Booking Share Recipient Selection** duerfen einzelne Team Members fluechtig abgewaehlt werden.
 - "Darf der bestehende persoenliche Kalenderexport an Team Members weitergegeben werden?" war offen; aufgeloest: nein, wegen sichtbarer interner Booking-Metadaten nutzt das Share Package einen getrennten **Team Booking Share Calendar Export**.
+- "Braucht der mobile `.ics`-Export einen eigenen Native Build oder direkten Kalenderzugriff?" war offen; aufgeloest: nein, der **Mobile Calendar File Handoff** nutzt Expo-Go-kompatible Datei- und Sharing-Module; die reale iPhone-Ziel-App-Auswahl wird dennoch im Development Build und ueber TestFlight abgenommen.
 - "Ist der Team Booking Share Calendar Export ohne Empfaenger verfuegbar?" war offen; aufgeloest: nein, **Team Booking Share Readiness** schaltet alle vier Package-Aktionen gemeinsam frei; der separate persoenliche Export bleibt unabhaengig.
 - "Duerfen mehrere Teams fuer einen Share kombiniert werden?" war offen; aufgeloest: nein, die **Team Booking Share Recipient Selection** verwendet genau ein Team.
 - "Sollen Team Members die Adressen der anderen Empfaenger sehen?" war offen; aufgeloest: nein, **Team Booking Share Recipient Privacy** sieht die Uebergabe fuer BCC vor.
 - "Welches Format kopiert die BCC-Aktion?" war offen; aufgeloest: **Team Booking Share Recipient Format** nutzt nur normalisierte E-Mail-Adressen, getrennt durch `, `.
 - "Speichert RoomFull die persoenliche Share-Nachricht?" war offen; aufgeloest: nein, die **Team Booking Share Message** wird nur in den aktuell kopierten Einladungstext aufgenommen.
 - "Welche Inhalte darf der Customer im Share veraendern?" war offen; aufgeloest: nur die optionale persoenliche Nachricht; Betreff und Booking-Fakten des **Team Booking Share Content** werden aus der Booking erzeugt.
-- "Hat der Share eine eigene Sprachauswahl?" war offen; aufgeloest: nein, **Team Booking Share Language** folgt der aktiven Localized Route.
+- "Hat der Share eine eigene Sprachauswahl?" war offen; aufgeloest: nein, **Team Booking Share Language** folgt der aktiven Client-Locale.
+- "Wie bestimmt RoomFull Mobile DE oder EN?" war offen; aufgeloest: gemaess **Mobile Locale Initialization** beim ersten Start aus unterstuetzter Geraetesprache mit `de` als Fallback, danach durch die persistierte bewusste Auswahl.
+- "Braucht Mobile eine eigene i18n-Library oder locale-abhaengige Routen?" war offen; aufgeloest: nein, das **Mobile UI Dictionary** folgt dem typisierten Web-Muster und die **Mobile Locale** bleibt zentraler Client-Zustand.
+- "Was passiert beim mobilen Sprachwechsel?" war offen; aufgeloest: Der **Mobile Language Switch** aktualisiert den aktuellen Screen ohne Navigation-Reset.
+- "Development Build oder EAS Build fuer TestFlight?" war als falsches Entweder-oder offen; aufgeloest durch die **Mobile Build Profile Boundary**: Development Build fuer Entwicklung und Geraeteabnahme, separater EAS Production Build fuer TestFlight.
+- "Braucht Mobile V1 Preview-Builds, EAS Update oder automatische Submission?" war offen; aufgeloest: nein, der **RoomFull TestFlight Build** wird nach manueller Freigabe erzeugt und uebermittelt.
 - "Braucht ein Team Member einen RoomFull-Account?" war offen; aufgelöst: nein, **Team Members** sind vom Customer gepflegte Kontakte und keine **Users**.
 - "Werden registrierte Users mit Team Members verknuepft?" war offen; aufgelöst: nein, **Teams** bleiben private Kontaktgruppen ohne Account-Abgleich, Zustimmung oder In-App-Benachrichtigungen.
 - "Ist ein Team Member ein zentraler Kontakt fuer mehrere Teams?" war offen; aufgelöst: nein, jeder **Team Member** gehoert genau einem **Team**; dieselbe Person kann dort mehrfach unabhaengig gepflegt werden.
@@ -1160,16 +1399,65 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Soll i18n Slice 1 die komplette App uebersetzen?" war offen; aufgelöst: nein, **I18n Slice 1** liefert Infrastruktur und den oeffentlichen Booking-Einstieg; Admin, Account und weitere Booking-Ansichten folgen in kleineren Slices.
 - "Was passiert mit noch nicht uebersetzten Bereichen unter `/en`?" war offen; aufgelöst: waehrend **I18n Translation Transition** bleiben sie erreichbar und duerfen temporaer deutsche UI-Copy zeigen.
 - "Soll Booking Options alle Varianten direkt zeigen?" war offen; aufgelöst: nein, `/booking-options` bleibt schlanke Kategorie-Übersicht, Details bleiben unter `/booking-options/[slug]`.
-- "Welche CTAs zeigt die Home Page?" war offen; aufgelöst: anonym `Jetzt buchen`, `Registrieren`, `Einloggen`; angemeldet `Jetzt buchen`, `Meine Buchungen`.
+- "Welche CTAs zeigt die Home Page?" war offen; zunaechst faelschlich mit drei anonymen Aktionen dokumentiert, anhand des aktuellen Codes korrigiert: immer `Jetzt Platz finden`, dazu anonym `Einloggen` oder angemeldet `Meine Buchungen`.
 - "Duerfen Home-Angebote direkt buchen?" war offen; aufgelöst: nein, Home-Angebots-Teaser verlinken auf `/booking-options/[slug]`; erst dort beginnt die konkrete Area- oder Unit-Auswahl.
 - "Wie heissen Angebote auf der Home Page?" war offen; aufgelöst: UI nennt sie "Arbeitsbereiche", fachlich bleiben es **BookingOptions**.
 - "Sind Home-Arbeitsbereiche statisch oder API-basiert?" war offen; aufgelöst: Home nutzt **BookingOptions** als Datenbasis und kuratiert deren Praesentation.
 - "Wo werden Varianten ausgewaehlt?" war offen; aufgelöst: Home teasert Varianten nur an, konkrete Variantenwahl passiert auf `/booking-options/[slug]`.
-- "Braucht Home visuelle Medien?" war offen; aufgelöst: ja, Home nutzt eigene SVG-Icons als klare Arbeitsbereich-Signale.
-- "Wer besitzt aktuellen Auth-Zustand im Frontend?" war offen; aufgelöst: **Frontend Session** besitzt ihn zentral, Token Storage bleibt Implementierungsdetail.
+- "Braucht Home eigene UnitType-SVG-Icons?" war zunaechst faelschlich mit ja dokumentiert; anhand von aktuellem Code und Screenshot korrigiert: nein, das **Home UnitType Teaser Signal** besteht aus Farbe, vertikalem Label und Typografie.
+- "Wer besitzt aktuellen Auth-Zustand im Frontend?" war offen; aufgelöst: **Frontend Session** besitzt User und Status zentral, waehrend das Backend das unlesbare HttpOnly-Cookie kontrolliert.
 - "Ist der aktuelle Session-User dasselbe wie das User-Entity?" war offen; aufgelöst: nein, **Session User** ist bewusst entkoppelt.
-- "Wer darf Auth Storage manipulieren?" war offen; aufgelöst: Session Lifecycle kapselt Storage; Features starten oder beenden Sessions ueber die Session API.
-- "Wer fuegt Authorization Header an Frontend-API-Requests?" war offen; aufgelöst: technische `Authenticated API Request`s im API-Client, gespeist durch die Frontend Session.
+- "Wer darf Auth Storage manipulieren?" war offen; anhand der realen Implementierung korrigiert: kein Frontend-Bereich manipuliert Auth Storage; Features starten oder beenden Sessions ueber die Session API und das Backend setzt beziehungsweise loescht das HttpOnly-Cookie.
+- "Wer fuegt Authorization Header an Frontend-API-Requests?" war zunaechst faelschlich mit dem API-Client beantwortet; anhand des aktuellen Codes korrigiert: Web setzt keinen Authorization Header, sondern der zentrale API-Client sendet das HttpOnly-Cookie ueber `credentials: "include"`.
+- "Nutzt RoomFull Mobile dieselbe Cookie-Session wie die WebApp?" war offen; aufgelöst: nein, die **Mobile Session** wird eigenstaendig aufgebaut, repraesentiert aber denselben User und dieselben fachlichen Berechtigungen.
+- "Nutzen mobile Auth-Screens die globale App-Huelle?" war offen; aufgelöst: nein, Login und Registrierung nutzen die reduzierte **Mobile Auth Shell** ohne globales Menue und Footer.
+- "Wie wechseln Mobile Users zwischen Login und Registrierung?" war offen; aufgelöst: ueber den kompakten **Mobile Auth Switch** unter der primaeren Formularaktion, bei erhaltenem Weiterleitungsziel.
+- "Spricht jeder mobile Auth-Einstieg von einer fortzusetzenden Buchung?" war offen; aufgelöst: nein, die **Mobile Auth Intro Copy** unterscheidet Booking-Flow-Einstieg und direkten Auth-Einstieg.
+- "Bleibt der grosse schwarze Kopf auf mobilen Auth-Screens erhalten?" war offen; aufgelöst: ja, aber mit der verdichteten **Mobile Auth Header Density**.
+- "Gehoert der Gastzugang in RoomFull Mobile V1?" war offen; aufgelöst: ja, als **Mobile Guest Login Entry** ausschliesslich auf dem Login-Screen.
+- "Setzt der mobile Gastzugang einen begonnenen Booking Flow fort?" war offen; aufgelöst: ja, der **Mobile Guest Login Entry** uebernimmt dasselbe sichere Auth-Ziel wie Login und Registrierung.
+- "Wie praesentiert Mobile den Gastzugang?" war offen; aufgelöst: als kompaktes, klar getrenntes **Mobile Guest Login Panel** direkt unter der regulaeren Login-Card.
+- "Welches iOS-Tastaturverhalten gilt fuer mobile Auth-Formulare?" war offen; aufgelöst: Die **Mobile Auth Keyboard Baseline** definiert Erreichbarkeit, Feldfolge und Submit; Geraete-Finetuning bleibt Teil der spaeteren Feature-Abnahme.
+- "Wie zeigt Mobile Auth-Fehler?" war offen; aufgelöst: ueber **Mobile Auth Error Feedback** mit feldnahen Eingabefehlern, uebergreifenden Servermeldungen und erhaltenen unkritischen Eingaben.
+- "Braucht RoomFull Mobile V1 einen Passwort-Reset?" war offen; aufgelöst: nein, der **Mobile Password Reset Scope** folgt dem vorhandenen Funktionsumfang der WebApp.
+- "Bedeutet Mobile-Paritaet den gesamten Funktionsumfang der WebApp?" war offen; aufgelöst: nein, **Mobile Customer Feature Parity** gilt innerhalb des vereinbarten Customer-Self-Service-Scope; Admin und explizit vertagte Bereiche bleiben ausserhalb von V1.
+- "Gehoeren My Teams und Team Booking Share in Mobile V1?" war offen; aufgelöst: ja, gemeinsam als **Mobile Teams V1 Scope**, umgesetzt nach Auth, Booking und My Bookings.
+- "Bleibt Team Booking Share mobil ein einziger Langscreen?" war offen; aufgelöst: nein, **Mobile Team Booking Share Flow** trennt Empfaengervorbereitung und Uebergabe ohne Persistenz.
+- "Wie praesent bleibt die Booking im mobilen Team Share?" war offen; aufgelöst: als kompakte aufklappbare **Mobile Team Share Booking Summary** in beiden Schritten.
+- "Wo erklaert Mobile die Share-Systemgrenze?" war offen; aufgelöst: als **Mobile Team Share Handoff Notice** in Schritt 2 unmittelbar vor den Uebergabeaktionen.
+- "Wie waehlt Mobile das Team im Share?" war offen; aufgelöst: ueber **Mobile Team Share Team Selection** als alphabetisches Sheet unter Beibehaltung der bewussten Auswahlgrenze.
+- "Wie bearbeitet Mobile bis zu 50 Share-Empfaenger?" war offen; aufgelöst: ueber **Mobile Team Share Recipient Selection** als vollflaechigen fluechtigen Unterzustand von Schritt 1.
+- "Wie verhaelt sich die persoenliche Nachricht im mobilen Share?" war offen; aufgelöst: gemaess **Mobile Team Share Personal Message** kompakt wachsend und nur im laufenden Flow erhalten.
+- "Wo zeigt Mobile eine ueberschrittene Booking-Kapazitaet im Team Share?" war offen; aufgelöst: gemaess **Mobile Team Share Capacity Warning Placement** in Zusammenfassung und Auswahl, weiterhin nicht blockierend.
+- "Wie praesentiert Mobile das vierteilige Share Package?" war offen; aufgelöst: als **Mobile Team Share Package Actions** mit vier getrennten Aktionszeilen und lokalem Feedback.
+- "Bleibt der mobile Share bei Wechsel in eine Versand-App erhalten?" war offen; aufgelöst: **Mobile Team Share Resume** behaelt ihn bei normalem Backgrounding, aber nicht garantiert nach Prozessende.
+- "Wie endet der mobile Team Share ohne bekannten Versandstatus?" war offen; aufgelöst: **Mobile Team Share Completion** nutzt neutrales `Fertig` zu My Bookings und verwirft nur den fluechtigen Zustand.
+- "Was passiert nach einem My-Teams-Ausflug aus dem mobilen Share-Empty-State?" war offen; aufgelöst: **Mobile Team Share Empty-State Return** behaelt den Stack-Zustand und aktualisiert bei manueller Rueckkehr ohne Vorauswahl.
+- "Steht das Create-Team-Formular dauerhaft vor der mobilen Teamliste?" war offen; aufgelöst: nein, **Mobile My Teams Overview** ist list-first und oeffnet die Erstellung als fokussiertes Sheet.
+- "Wie erklaert Mobile das fachliche Team-Modell?" war offen; aufgelöst: **Mobile My Teams Overview** verdichtet die drei notwendigen Abgrenzungen in einen kompakten Info-Callout statt einer zweiten grossen Intro-Card.
+- "Wie oeffnet Mobile ein Team aus der Uebersicht?" war offen; aufgelöst: ueber die vollflaechige **Mobile Team Card** mit Name, Member-Anzahl und Chevron.
+- "Wohin navigiert Mobile nach erfolgreicher Team-Erstellung?" war offen; aufgelöst: gemaess **Mobile Team Creation Continuation** direkt ins neue Team Detail, mit My Teams als Zurueck-Ziel.
+- "Was ist der Hauptinhalt des mobilen Team Details?" war offen; aufgelöst: gemaess **Mobile Team Detail Hierarchy** die Member-Verwaltung; seltene Team-Einstellungen bleiben sekundaer erreichbar.
+- "Wo werden Teamname und Team-Loeschung mobil verwaltet?" war offen; aufgelöst: im beschriftet erreichbaren **Mobile Team Management Sheet**.
+- "Wie bestaetigt Mobile die endgueltige Team-Loeschung?" war offen; aufgelöst: ueber **Mobile Team Deletion Confirmation** mit Teamname, Member-Anzahl und exakter Namenseingabe.
+- "Wo legt Mobile einen Team Member an?" war offen; aufgelöst: im **Mobile Add Team Member Sheet** fuer genau einen Kontakt mit Name und E-Mail.
+- "Was passiert nach erfolgreichem Hinzufuegen eines Team Members?" war offen; aufgelöst: **Mobile Add Team Member Continuation** bietet weiteren Kontakt oder bewussten Abschluss zur aktualisierten Liste.
+- "Wie bearbeitet oder entfernt Mobile einen Team Member?" war offen; aufgelöst: ueber **Mobile Team Member Management** mit vollflaechiger Member-Card und fokussiertem Verwaltungs-Sheet.
+- "Wie bestaetigt Mobile das Entfernen eines einzelnen Team Members?" war offen; aufgelöst: ueber **Mobile Team Member Removal Confirmation** mit Name, E-Mail und destruktivem Bestaetigungsbutton ohne Texteingabe.
+- "Wo zeigt Mobile den Team-Demo-Datenhinweis?" war offen; aufgelöst: gemaess **Mobile Team Demo Notice Placement** vollstaendig in My Teams und kurz direkt in Add-/Edit-Member-Sheets.
+- "Uebernimmt Mobile den Portfolio-Demo-Hinweis der Web-Registrierung?" war offen; aufgelöst: ja, als kompakter **Mobile Registration Demo Notice** mit vollstaendiger Daten-, Passwort- und Loeschwarnung.
+- "Muss Mobile Home bereits im ersten Viewport einen Arbeitsbereich zeigen?" war offen; aufgelöst: nein, **Mobile Home Hero Density** priorisiert Hero und primaeren Booking-CTA; UnitType-Teaser duerfen darunter beginnen.
+- "Wie ordnet Mobile die beiden Home-Hero-Aktionen an?" war offen; aufgelöst: als responsives **Mobile Home CTA Pair**, nebeneinander bei genug Platz und sonst gestapelt.
+- "Was ist auf Mobile Home bei einem UnitType-Teaser tappbar?" war offen; aufgelöst: die gesamte **Mobile Home UnitType Teaser Action**; das Aktionslabel ist kein separater Button.
+- "Welche Fakten zeigt ein UnitType-Teaser auf Mobile Home?" war offen; aufgelöst: **Mobile Home UnitType Teaser Meta** umfasst Verfuegbarkeit, Mindestdauer und Kapazitaet.
+- "Fuehrt Mobile zusaetzliche UnitType-Icons auf Home ein?" war offen; aufgelöst: nein, Web und Mobile nutzen dasselbe **Home UnitType Teaser Signal** ohne zusaetzliche Icons.
+- "Zeigt Mobile Home alle vier UnitTypes direkt?" war offen; aufgelöst: ja, als vertikales **Mobile Home UnitType Teaser Set** ohne Carousel oder Filter.
+- "Braucht RoomFull Mobile einen globalen Footer?" war offen; aufgelöst: nein, die **Mobile Info & Recht Navigation** verlagert FAQ und Datenschutz beziehungsweise Privacy & Imprint dauerhaft ins App-Menue.
+- "Welche Form hat das mobile Hauptmenue?" war offen; nach Pruefung des aktuellen Web-Dropdowns aufgelöst: als **Mobile Main Menu Modal** mit gesperrtem Hintergrund, eigenem Scrollbereich und explizitem Schliessen.
+- "Wie hoch und markant bleibt der wiederkehrende Mobile-Header?" war offen; aufgelöst: gemaess **Mobile App Header Density** als kompakte Safe-Area-Markenzeile mit Logo, Aktion und Farbkante.
+- "Blendet sich der mobile App-Header beim Scrollen aus?" war offen; aufgelöst: nein, **Mobile App Header Scroll Behavior** haelt ihn stabil sichtbar.
+- "Wie gruppiert Mobile das Customer-Hauptmenue?" war offen; aufgelöst: gemaess **Mobile Customer Menu Hierarchy** in Booking, Konto, Sprache/Info & Recht und getrenntes Abmelden.
+- "Wie unterscheidet sich das anonyme mobile Hauptmenue?" war offen; aufgelöst: gemaess **Mobile Anonymous Menu Hierarchy** mit Produktziel, eigener Auth-Gruppe und ruhigem Sprache-/Rechtsbereich.
 - "Aktuelle Buchungen" war unscharf; aufgelöst: **Upcoming Booking** meint eigene aktive Bookings mit `endTime >= now`, inklusive gerade laufender Bookings.
 - "Stornierte Buchungen in der eigenen Liste" war offen; aufgelöst: stornierte Bookings erscheinen in **Closed Booking**, nicht in **Upcoming Booking**.
 - "Booking Context zuerst oder Frontend-Zwischenlösung?" war offen; aufgelöst: eigener Backend-Endpoint zuerst.

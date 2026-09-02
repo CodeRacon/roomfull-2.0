@@ -1,0 +1,310 @@
+# API Summary
+
+## Ziel
+
+Die API bildet den Kern von RoomFull 2.0 ab: Auth, Units, Verfügbarkeit, Bookings und Admin-Verwaltung.
+
+Sie bleibt bewusst klein, aber bildet die zentrale Business-Logik sauber im Backend ab.
+
+## Kernmodule
+
+- `auth`
+- `public booking options`
+- `public units`
+- `bookings`
+- `customer contact`
+- `customer teams`
+- `admin units`
+
+## Endpunkte
+
+### Auth
+
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/demo-login`
+- `GET /auth/me`
+
+`POST /auth/demo-login` erzeugt einen frischen Demo Customer als normalen `CUSTOMER` mit Demo-Markierung und erstellt aktuell eine zukünftige aktive Demo-Booking, eine vergangene aktive Demo-Booking, eine stornierte Demo-Booking, eine Customer Contact Request und drei Customer Teams mit je zwei Team Members.
+
+Abgelaufene Demo Customers werden über das manuelle Backend-Kommando `npm run demo:cleanup` bereinigt. Das ist kein API-Endpunkt. Der Cleanup löscht nur `isDemo=true` mit `demoExpiresAt < now` und entfernt vorher abhängige Bookings, Contact Requests, Team Members und Teams.
+
+Aktuell gibt es keine API-Endpunkte für Account-Identitäts- oder Sicherheitsänderungen. Künftige Endpunkte für Name, E-Mail, Passwort, Credential-Status, Account-Löschung oder Demo-zu-Regular-Umwandlung müssen Demo Customers (`isDemo=true`) backendseitig mit `403 Forbidden` ablehnen.
+
+### Public Units
+
+- `GET /public/booking-options`
+- `GET /public/units`
+- `GET /public/units/:unitId`
+
+`GET /public/booking-options` speist die Booking Options Page als fokussierten Buchungseinstieg.
+
+Der Endpoint liefert grundsätzliche Customer-Angebote ohne Zeitraum:
+
+- `HOT_DESK`
+- `BOOTH`
+- `TEAM_ROOM`
+- `MEETING_ROOM`
+
+Der Contract enthält:
+
+- `key`
+- `unitType` mit `id`, `name`, `minDurationMinutes`, `maxDurationMinutes`
+- `bookingMode`
+- `areaSelection`
+- `status`
+- `totalActiveUnits`
+- `maxCapacity`
+- `areas`
+- `units` als schlanke Vorschau mit `id` und `name`
+
+`HOT_DESK` liefert Areas mit aktiver Unit-Anzahl und `units: []`. `BOOTH`, `TEAM_ROOM` und `MEETING_ROOM` liefern `areas: []` sowie ihre aktiven Units in `displayOrder`.
+
+`GET /public/units` bleibt für konkrete Unit-Auswahl und Unit-Details bestehen.
+`Unit.unitType` enthält ebenfalls `minDurationMinutes` und `maxDurationMinutes`.
+Der Endpoint ist optional nach `unitType` filterbar, z. B. `GET /public/units?unitType=BOOTH`.
+Der Endpoint unterstützt `locale=de|en` für lokalisierte DB-Content-Felder wie `description`; der Response-Contract bleibt ein einfaches `description`.
+Ungültige `unitType`-Werte liefern `400 Bad Request`.
+
+### Bookings
+
+- `GET /bookings/context`
+- `GET /bookings/availability?date=YYYY-MM-DD&unitId=...`
+- `GET /bookings/availability?date=YYYY-MM-DD&areaId=...&unitType=HOT_DESK`
+- `POST /bookings`
+- `GET /me/bookings`
+- `GET /me/bookings/:bookingId/share-context`
+- `GET /units/:unitId/calendar-state?month=YYYY-MM`
+- `DELETE /bookings/:bookingId`
+
+`GET /me/bookings` liefert eigene Bookings inklusive minimaler Unit-Anzeigedaten (`unit.id`, `unit.name`, `unit.unitType.name`), damit die UI Buchungen typgerecht darstellen kann.
+
+`GET /me/bookings/:bookingId/share-context` ist Customer-only und liefert fuer eine eigene eligible Booking die Team-Share-Daten:
+
+- `booking.id`
+- `booking.startTime`
+- `booking.endTime`
+- `unit.id`
+- `unit.name`
+- `unit.capacity`
+- `unit.unitType.name`
+
+Eligible bedeutet `status=ACTIVE` und `endTime >= now`.
+Fehlende oder fremde Bookings liefern `404`; stornierte oder vergangene eigene Bookings liefern `409`.
+
+### Customer Contact
+
+- `POST /contact-requests`
+
+`POST /contact-requests` ist Customer-only und speichert eine Customer Contact Request ohne E-Mail-Versand.
+
+Request:
+
+- `type=QUESTION|FEEDBACK|CRITICISM`
+- `message`
+
+Neue Contact Requests starten mit globalem `isRead=false`.
+Visitors erhalten `401`, Admins erhalten `403`.
+
+### Customer Teams
+
+- `GET /me/teams`
+- `POST /me/teams`
+- `GET /me/teams/:teamId`
+- `PUT /me/teams/:teamId`
+- `DELETE /me/teams/:teamId`
+- `POST /me/teams/:teamId/members`
+- `PUT /me/teams/:teamId/members/:memberId`
+- `DELETE /me/teams/:teamId/members/:memberId`
+
+Alle Team-Endpunkte sind Customer-only und session-scoped. Requests enthalten keine `userId`.
+
+`GET /me/teams` liefert eigene Team Summaries:
+
+- `id`
+- `name`
+- `memberCount`
+
+`GET /me/teams/:teamId` liefert ein eigenes Team inklusive `members` mit `id`, `name` und normalisierter `email`.
+Fehlende und fremde Teams liefern identisch `404`.
+
+`POST /me/teams` legt ein leeres privates Team an.
+Der Teamname wird getrimmt, darf 1 bis 80 Zeichen haben und ist pro Customer ueber einen normalisierten Key case-insensitive eindeutig.
+Ein Customer darf maximal 20 Teams besitzen.
+
+`PUT /me/teams/:teamId` benennt ein eigenes Team um und nutzt dieselben Teamnamen-Regeln wie Create.
+Der unveraenderte eigene Teamname ist erlaubt, doppelte Namen anderer eigener Teams liefern `409`.
+
+`DELETE /me/teams/:teamId` loescht ein eigenes Team endgueltig.
+Zugehoerige Members werden per Cascade entfernt.
+
+`POST /me/teams/:teamId/members` fuegt einem eigenen Team einen Kontakt hinzu.
+Member-Namen werden getrimmt und duerfen 1 bis 100 Zeichen haben.
+Member-E-Mails werden getrimmt, kleingeschrieben, duerfen hoechstens 254 Zeichen haben und sind pro Team case-insensitive eindeutig.
+Dieselbe E-Mail ist in anderen Teams erlaubt.
+Ein Team darf maximal 50 Members besitzen.
+Fehlende und fremde Teams liefern identisch `404`.
+
+`PUT /me/teams/:teamId/members/:memberId` aktualisiert einen Kontakt in einem eigenen Team und nutzt dieselben Member-Regeln wie Create.
+Die unveraenderte eigene E-Mail ist erlaubt, doppelte E-Mails anderer Members im selben Team liefern `409`.
+Fehlende und fremde Teams oder Members liefern identisch `404`.
+
+`DELETE /me/teams/:teamId/members/:memberId` loescht einen Kontakt aus einem eigenen Team endgueltig.
+Fehlende und fremde Teams oder Members liefern identisch `404`.
+
+Visitors erhalten `401`, Admins erhalten `403`.
+Ungueltige Team- oder Member-Felder liefern `400`, doppelte Teamnamen oder Member-E-Mails und erreichte Team- oder Memberlimits liefern `409`.
+
+### Admin
+
+- `GET /admin/units`
+- `GET /admin/units/context`
+- `POST /admin/units`
+- `PUT /admin/units/:unitId`
+- `PATCH /admin/units/:unitId/deactivate`
+- `GET /admin/bookings`
+- `GET /admin/analytics/booking-demand`
+- `GET /admin/contact-requests`
+- `GET /admin/contact-requests/unread-count`
+- `PATCH /admin/contact-requests/:contactRequestId/read`
+
+`GET /admin/units` liefert BookableUnits für die Admin-Inventaransicht und darf aktive, deaktivierte oder alle Units enthalten.
+
+Unterstützte Query-Parameter:
+
+- `status=active|deactivated|all` (Default: `active`)
+- `unitType=HOT_DESK|BOOTH|TEAM_ROOM|MEETING_ROOM`
+- `search=<name>`
+
+`GET /admin/units/context` liefert Auswahlwerte für Admin-Unit-Formulare:
+
+- `unitTypes`
+- `areas`
+
+`GET /admin/bookings` liefert einen gemeinsamen Admin-Operations-Datensatz aus gefilterten Bookings, effektivem Zeitraum und operativer Summary.
+
+Unterstützte Query-Parameter:
+
+- `status=upcoming|today|completed|cancelled|all`
+- `range=week|month|quarter|year`
+- `from=YYYY-MM-DD`
+- `to=YYYY-MM-DD`
+- `limit=1..500`
+- `search=<customer name or email>`
+
+`status=all` umfasst Vergangenheit und Zukunft im gewählten Zeitraum, damit anstehende Bookings nicht aus der Gesamtsicht fallen.
+`range` wird passend zum Status als rollierender Berliner Kalenderzeitraum aufgelöst und darf nicht mit `from/to` kombiniert werden.
+`search` durchsucht ausschließlich Customer-Name und Customer-E-Mail, nicht Unit-Namen oder sonstige Booking-Felder.
+Die Summary folgt Zeitraum und Customer-Suche, ignoriert Status und `limit` und zählt für `topBookedUnit` nur aktive Bookings.
+
+`GET /admin/analytics/booking-demand` liefert den Nachfrageverlauf für das Admin Analytics Dashboard.
+Die Metrik zählt aktive Bookings gruppiert nach Booking-Startdatum.
+Zusätzlich liefert der Endpoint aktive Bookings im gewählten Zeitraum gruppiert nach `UnitType`.
+Die Stornoquote vergleicht aktive und stornierte Bookings im selben Zeitraum.
+Ohne explizite `from/to`-Werte nutzt der Endpoint 30 Tage zurück und 30 Tage voraus.
+
+`GET /admin/contact-requests` liefert Customer Contact Requests inklusive minimaler Customer-Anzeigedaten (`user.name`, `user.email`) für die Admin Contact Inbox.
+
+Unterstützte Query-Parameter:
+
+- `type=QUESTION|FEEDBACK|CRITICISM`
+- `readState=all|read|unread`
+- `sort=received_desc|received_asc`
+
+`GET /admin/contact-requests/unread-count` liefert die globale Anzahl ungelesener Contact Requests für dezente Admin-Hinweise.
+
+`PATCH /admin/contact-requests/:contactRequestId/read` markiert eine Contact Request global als gelesen.
+Der Lesestatus ist nicht pro Admin getrennt.
+
+## Rollenbezug
+
+- `customer` nutzt Auth, Units und eigene Bookings
+- `customer` darf Customer Contact Requests absenden
+- `admin` nutzt zusätzlich Admin-Endpunkte und darf ebenfalls Bookings anlegen
+
+## Booking-Modi
+
+`POST /bookings` unterstützt zwei Modi:
+
+- direkt: `unitId + date + startTime + endTime`
+- auto-assign: `areaId + unitType + date + startTime + endTime` (dauerhaft nur `HOT_DESK`)
+
+`date` ist `YYYY-MM-DD`; `startTime` und `endTime` sind lokale `HH:mm`-Werte in `Europe/Berlin`. Der Browser erzeugt keine fachlichen ISO-Zeitpunkte.
+
+`GET /bookings/context` ist auth-required und validiert den Einstiegskontext fuer `/bookings/new`:
+
+- direkt: `unitId`
+- auto-assign: `unitType=HOT_DESK + areaId`
+
+Der Endpoint unterstützt `locale=de|en` für lokalisierte Unit-/Area-Beschreibungen.
+Der Endpoint liefert Anzeige- und Dauerregel-Kontext, aber keine zeitbezogene Verfügbarkeit.
+
+`GET /bookings/availability` liefert nach Datumsauswahl die gemeinsame Availability-Basis fuer Direct Booking und Hot-Desk-Auto-Assign:
+
+- globales 15-Minuten-Grid
+- Öffnungszeiten als lokale `HH:mm`
+- `slots` als berechnete Availability Slots mit `availableUnitCount`
+- `blockedIntervals` als lokale `HH:mm`
+- keine konkreten Hot-Desk-Unit-IDs
+- Submit bleibt finale Verfügbarkeitsprüfung
+
+BookingOptions nutzen dieselbe fachliche Unterscheidung:
+
+- `AUTO_ASSIGN` für Hot Desk
+- `CHOOSE_UNIT` für Booth, Team Room und Meeting Room
+
+## Validierung
+
+### Booking
+
+- `start < end`
+- Start und Ende am selben Kalendertag
+- nur zukünftige Zeiträume
+- nur Mo-Fr und innerhalb 08:00-22:00
+- Start und Ende auf globalem 15-Minuten-Grid
+- Dauer nach UnitType-Policy
+- keine Überschneidung aktiver Bookings auf derselben Unit
+- Auto-Assign ist race-sicher (Transaktion/Konflikt-Retry)
+
+### Direct Booking Calendar State
+
+- auth-required
+- Customer und Admin erlaubt
+- liefert `available`, `partially-booked` oder `fully-booked` pro buchbarem Werktag eines Monats
+- `fully-booked` bedeutet: Es existiert keine freie, zur Duration Policy der Unit passende Zeitspanne mehr
+- berücksichtigt nur aktive Bookings
+- liefert keine rohen Booking-, User- oder Owner-Daten
+- `month` muss `YYYY-MM`, aktuell oder zukünftig sein
+- unbekannte/inaktive Unit liefert `404`
+
+### Unit Management
+
+- Name nicht leer
+- deutsche und englische Beschreibung nicht leer
+- Admin-Responses liefern `descriptionDe` und `descriptionEn`; Public-Responses liefern die für das Locale aufgelöste `description`
+- das Legacy-Feld `description` folgt der deutschen Beschreibung
+- Kapazität > 0
+- `unitTypeId` muss existieren
+- `areaId` optional, muss bei Angabe existieren
+- `HOT_DESK` braucht immer eine `areaId`
+
+### Customer Contact
+
+- nur eingeloggte Customers duerfen Contact Requests absenden
+- erlaubte Typen sind `QUESTION`, `FEEDBACK`, `CRITICISM`
+- `message` darf nicht leer sein
+- kein E-Mail-Versand
+- Lesestatus startet global ungelesen
+- Admins duerfen Contact Requests lesen, filtern und global als gelesen markieren
+
+## Fehlerbilder
+
+- `400 Bad Request`
+- `401 Unauthorized`
+- `403 Forbidden`
+- `404 Not Found`
+- `409 Conflict`
+
+## Leitregel
+
+Controller bleiben dünn, Services bündeln Fachlogik, DB-Layer kapselt Queries.
