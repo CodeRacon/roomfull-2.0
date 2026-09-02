@@ -14,7 +14,11 @@ docs/deployment/phase4-provider-chatgpt-context.md
 
 SKILL.md
 AGENTS.md
-.agents/
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/roomfull/
+!.agents/skills/roomfull/**
 
 node_modules
 
@@ -30,3 +34,4 @@ out
 .env.local
 **/.DS_Store
 skills-lock.json
+.vscode/settings.json

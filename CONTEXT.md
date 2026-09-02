@@ -536,19 +536,19 @@ _Avoid_: den Account-Screen in V1 zu einem zweiten Auth-/Profil-Feature auswachs
 
 **Frontend Session**:
 Der aktuelle Auth-Zustand der laufenden Frontend-App inklusive angemeldetem Session-User, Ladezustand und Logout-Moeglichkeit.
-_Avoid_: einzelne Widgets oder Pages lesen Auth-Zustand direkt aus Token Storage
+_Avoid_: einzelne Widgets oder Pages leiten Auth-Zustand direkt aus Cookies oder Einzelrequests ab
 
 **Session User**:
 Die fuer die laufende Frontend Session benoetigten User-Daten inklusive Registrierungsdatum. Er ist bewusst vom vollstaendigen fachlichen **User** entkoppelt.
 _Avoid_: Header und Auth-Shell direkt an das User-Entity-Modell koppeln
 
 **Session Lifecycle**:
-Login- und Register-Features starten eine Frontend Session; Logout beendet eine Frontend Session. Token Storage bleibt dabei internes Detail.
-_Avoid_: UI-Bereiche manipulieren Auth Storage direkt
+Login- und Register-Features uebernehmen den vom Backend authentifizierten User in die Frontend Session; Logout beendet den lokalen Zustand und die serverseitig kontrollierte HttpOnly-Cookie-Session. Das Cookie bleibt fuer JavaScript unlesbar.
+_Avoid_: UI-Bereiche lesen oder manipulieren Auth-Cookies beziehungsweise fuehren eigenen Browser-Token-Storage ein
 
 **Authenticated API Request**:
-Ein Frontend-API-Aufruf, dessen Authorization Header zentral durch den technischen API-Client aus der Frontend Session abgeleitet wird.
-_Avoid_: Pages, Widgets oder fachliche API-Funktionen reichen `authToken` als Parameter weiter
+Ein Frontend-API-Aufruf ueber den zentralen technischen API-Client mit `credentials: "include"`, sodass der Browser das HttpOnly-Session-Cookie mitsendet.
+_Avoid_: Pages, Widgets oder fachliche API-Funktionen reichen `authToken` als Parameter weiter oder setzen Authorization Header selbst
 
 **Mobile API Integration**:
 RoomFull Mobile V1 nutzt dieselben bestehenden Backend-Endpunkte direkt wie die Web-App und fuehrt keinen separaten Mobile-BFF-Layer ein.
@@ -1214,11 +1214,11 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - **Account Overview** darf die nächste **Upcoming Booking** als Navigation zur eigenen Buchungsliste zeigen, bleibt aber selbst Account-Inhalt.
 - Logout bleibt Teil des **Session Lifecycle** im Header und gehoert in V1 nicht auf **Account Overview**.
 - Profilbearbeitung und Passwortaenderung sind als eigene Account-Feature-Slices in der `ROADMAP.md` vorgemerkt und keine Platzhalter in **Account Overview**.
-- **Frontend Session** ist die zentrale Quelle fuer Auth-Zustand im Frontend; Header und auth-required UI konsumieren sie statt direkt Token Storage zu lesen.
+- **Frontend Session** ist die zentrale Quelle fuer Auth-Zustand im Frontend; Header und auth-required UI konsumieren sie statt Cookies oder Einzelrequests als eigene Auth-Quelle zu behandeln.
 - **Mobile Session** ist die von der Web-Session unabhaengig aufgebaute authentifizierte Beziehung der Mobile-App zum selben User und denselben Customer-Berechtigungen im RoomFull-Backend.
 - **Session User** haelt die Session-relevanten User-Daten ohne direkte Kopplung an das User-Entity-Modell.
-- **Session Lifecycle** trennt Nutzeraktionen wie Login/Register/Logout von der internen Token-Speicherung.
-- **Authenticated API Request** haelt `authToken` aus Pages, Widgets, Features und fachlichen API-Funktionen heraus.
+- **Session Lifecycle** trennt Nutzeraktionen wie Login/Register/Logout vom serverseitig kontrollierten HttpOnly-Cookie.
+- **Authenticated API Request** haelt Cookie- und Transportdetails aus Pages, Widgets, Features und fachlichen API-Funktionen heraus.
 - **Auto-Assign Scope** begrenzt den Automatikmodus dauerhaft auf `HOT_DESK`.
 - **Hot Desk Allocation Mode** weist bei passender Anfrage automatisch eine freie Unit zu.
 - **Hot Desk Allocation Strategy** macht die konkrete Unit-Auswahl reproduzierbar.
@@ -1405,10 +1405,10 @@ _Avoid_: implizite Defaults ohne dokumentierte Werte
 - "Sind Home-Arbeitsbereiche statisch oder API-basiert?" war offen; aufgelöst: Home nutzt **BookingOptions** als Datenbasis und kuratiert deren Praesentation.
 - "Wo werden Varianten ausgewaehlt?" war offen; aufgelöst: Home teasert Varianten nur an, konkrete Variantenwahl passiert auf `/booking-options/[slug]`.
 - "Braucht Home eigene UnitType-SVG-Icons?" war zunaechst faelschlich mit ja dokumentiert; anhand von aktuellem Code und Screenshot korrigiert: nein, das **Home UnitType Teaser Signal** besteht aus Farbe, vertikalem Label und Typografie.
-- "Wer besitzt aktuellen Auth-Zustand im Frontend?" war offen; aufgelöst: **Frontend Session** besitzt ihn zentral, Token Storage bleibt Implementierungsdetail.
+- "Wer besitzt aktuellen Auth-Zustand im Frontend?" war offen; aufgelöst: **Frontend Session** besitzt User und Status zentral, waehrend das Backend das unlesbare HttpOnly-Cookie kontrolliert.
 - "Ist der aktuelle Session-User dasselbe wie das User-Entity?" war offen; aufgelöst: nein, **Session User** ist bewusst entkoppelt.
-- "Wer darf Auth Storage manipulieren?" war offen; aufgelöst: Session Lifecycle kapselt Storage; Features starten oder beenden Sessions ueber die Session API.
-- "Wer fuegt Authorization Header an Frontend-API-Requests?" war offen; aufgelöst: technische `Authenticated API Request`s im API-Client, gespeist durch die Frontend Session.
+- "Wer darf Auth Storage manipulieren?" war offen; anhand der realen Implementierung korrigiert: kein Frontend-Bereich manipuliert Auth Storage; Features starten oder beenden Sessions ueber die Session API und das Backend setzt beziehungsweise loescht das HttpOnly-Cookie.
+- "Wer fuegt Authorization Header an Frontend-API-Requests?" war zunaechst faelschlich mit dem API-Client beantwortet; anhand des aktuellen Codes korrigiert: Web setzt keinen Authorization Header, sondern der zentrale API-Client sendet das HttpOnly-Cookie ueber `credentials: "include"`.
 - "Nutzt RoomFull Mobile dieselbe Cookie-Session wie die WebApp?" war offen; aufgelöst: nein, die **Mobile Session** wird eigenstaendig aufgebaut, repraesentiert aber denselben User und dieselben fachlichen Berechtigungen.
 - "Nutzen mobile Auth-Screens die globale App-Huelle?" war offen; aufgelöst: nein, Login und Registrierung nutzen die reduzierte **Mobile Auth Shell** ohne globales Menue und Footer.
 - "Wie wechseln Mobile Users zwischen Login und Registrierung?" war offen; aufgelöst: ueber den kompakten **Mobile Auth Switch** unter der primaeren Formularaktion, bei erhaltenem Weiterleitungsziel.
